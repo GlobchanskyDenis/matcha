@@ -91,7 +91,10 @@ func TestTokenEnkoder(t *testing.T) {
 	for i:=0; i<len(encodedToken); i++ {
 		if (encodedToken[i] < '0' || encodedToken[i] > '9') && 
 		(encodedToken[i] < 'a' || encodedToken[i] > 'z') && 
-		(encodedToken[i] < 'A' || encodedToken[i] > 'Z') {
+		(encodedToken[i] < 'A' || encodedToken[i] > 'Z') &&
+		encodedToken[i] != '-' && encodedToken[i] != '_' && encodedToken[i] != '.' &&
+		encodedToken[i] != '!' && encodedToken[i] != '~' && encodedToken[i] != '*' &&
+		encodedToken[i] != '\'' && encodedToken[i] != '(' && encodedToken[i] != ')' {
 			t.Errorf("\033[31mFAILED\033[m - wrong char %s\n\n", encodedToken)
 			wasError = true
 		}

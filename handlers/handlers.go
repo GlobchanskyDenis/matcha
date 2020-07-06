@@ -8,15 +8,16 @@ import (
 	"unicode/utf8"
 	. "MatchaServer/config"
 
+	"encoding/base64"
 	"crypto/aes"
 	 "crypto/cipher"
 	 "crypto/rand"
 	"io"
-	// "io/ioutil"
 )
 
 const (
 	passwdSalt = "+++"
+	masterKey = "passphrasewhichneedstobe32bytes!"
 )
 
 func isLetter(c rune) bool {
@@ -277,11 +278,12 @@ func TokenHash(login string, lastVisited time.Time) string {
 
 func TokenEncode(login string) (string, error) {
 
-	text := []byte(login)
-	key := []byte("passphrasewhichneedstobe32bytes!")
+	// Thanks to https://tutorialedge.net/golang/go-encrypt-decrypt-aes-tutorial/
+	// for good explanation of Encoding with masterKey
+	// AES - Advanced Encryption Standard
 
 	// generate a new aes cipher using our 32 byte long key
-	c, err := aes.NewCipher(key)
+	c, err := aes.NewCipher(masterKey)
 	// if there are any errors, handle them
 	if err != nil {
 		return "", err
@@ -311,15 +313,14 @@ func TokenEncode(login string) (string, error) {
 	// additional data and appends the result to dst, returning the updated
 	// slice. The nonce must be NonceSize() bytes long and unique for all
 	// time, for a given key.
-	token := gcm.Seal(nonce, nonce, text, nil)
-	return string(token), nil
+	token := gcm.Seal(nonce, nonce, []byte(login), nil)
+	return base64.URLEncoding.EncodeToString(token), nil
 }
 
 func TokenDecode(token string) (string, error) {
-	key := []byte("passphrasewhichneedstobe32bytes!")
-	ciphertext := []byte(token)
+	encodedToken := []byte(base64.URLEncoding.DecodeString(token))
 
-	c, err := aes.NewCipher(key)
+	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
 		return "", err
 	}
@@ -330,14 +331,14 @@ func TokenDecode(token string) (string, error) {
 	}
 
 	nonceSize := gcm.NonceSize()
-	if len(ciphertext) < nonceSize {
+	if len(encodedToken) < nonceSize {
 		return "", fmt.Errorf("size error in decoding")
 	}
 
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	nonce, encodedToken := encodedToken[:nonceSize], encodedToken[nonceSize:]
+	login, err := gcm.Open(nil, nonce, encodedToken, nil)
 	if err != nil {
 		return "", err
 	}
-	return string(plaintext), nil
+	return string(login), nil
 }
