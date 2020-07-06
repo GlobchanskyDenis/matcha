@@ -74,3 +74,70 @@ func TestTokenHash_2(t *testing.T) {
 		t.Logf("\033[32mDONE\033[m - %s %s\n\n", hash1, hash2)
 	}
 }
+
+func TestTokenEnkoder(t *testing.T) {
+	var login = "admin"
+	var encodedToken string
+	var newEncodedToken string
+	var err Errorf
+	var wasError bool
+	
+	encodedToken, err = TokenEncode(login)
+	if err != nil {
+		t.Errorf("\033[31mFAILED\033[m - error was returned at encoding - %s\n\n", fmt.Sprintf("%s", err))
+		wasError = true
+	}
+	if len(encodedToken) < 8 || len(encodedToken) > 100 {
+		t.Errorf("\033[31mFAILED\033[m - length %d %s\n\n", len(encodedToken), encodedToken)
+		wasError = true
+	}
+
+	newEncodedToken, err = TokenEncode(login)
+	if err != nil {
+		t.Errorf("\033[31mFAILED\033[m - error was returned at encoding - %s\n\n", fmt.Sprintf("%s", err))
+		wasError = true
+	}
+	if len(newEncodedToken) < 8 || len(newEncodedToken) > 100 {
+		t.Errorf("\033[31mFAILED\033[m - length %d %s\n\n", len(newEncodedToken), newEncodedToken)
+		wasError = true
+	}
+
+	if encodedToken == newEncodedToken {
+		t.Errorf("\033[31mFAILED\033[m - tokens should not be identical\n\n")
+		wasError = true
+	}
+	if !wasError {
+		t.Logf("\033[32mDONE\033[m - %s %s\n\n", encodedToken, newEncodedToken)
+	}
+}
+
+func TestTokenDecoder(t *testing.T) {
+	var login = "admin"
+	var encodedToken string
+	var expectedLogin string = login
+	var err Errorf
+	var wasError bool
+	
+	encodedToken, err = TokenEncode(login)
+	if err != nil {
+		t.Errorf("\033[31mFAILED\033[m - error was returned at encoding - %s\n\n", fmt.Sprintf("%s", err))
+		wasError = true
+	}
+	if len(encodedToken) < 8 || len(encodedToken) > 100 {
+		t.Errorf("\033[31mFAILED\033[m - length %d %s\n\n", len(encodedToken), encodedToken)
+		wasError = true
+	}
+
+	login, err = TokenDecode(encodedToken)
+	if err != nil {
+		t.Errorf("\033[31mFAILED\033[m - error was returned at decoding - %s\n\n", fmt.Sprintf("%s", err))
+		wasError = true
+	}
+	if login != expectedLogin {
+		t.Errorf("\033[31mFAILED\033[m - login after encoding/decoding is spoiled. Expected %s Received %s\n\n", expectedLogin, login)
+		wasError = true
+	}
+	if !wasError {
+		t.Logf("\033[32mDONE\033[m - %s %s\n\n", encodedToken, newEncodedToken)
+	}
+}

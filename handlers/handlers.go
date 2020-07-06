@@ -268,3 +268,21 @@ func TokenHash(login string, lastVisited time.Time) string {
 
 	return token
 }
+
+func TokenEncode(login string) (string, error) {
+
+	var currentTime = time.Now()
+	var token string
+	var err error
+
+	token = login + fmt.Sprintf("%s", currentTime)
+	return token, nil
+}
+
+func TokenDecode(token string) (string, error) {
+	var length = len(token)
+	var lenLogin = length - 6 // заменить потом
+	var slice = []byte(token)
+	var login = [:lenlogin]slice
+	return string(login), nil
+}
