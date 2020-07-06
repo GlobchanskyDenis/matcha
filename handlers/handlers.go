@@ -7,6 +7,12 @@ import (
 	"fmt"
 	"unicode/utf8"
 	. "MatchaServer/config"
+
+	"crypto/aes"
+	 "crypto/cipher"
+	 "crypto/rand"
+	"io"
+	// "io/ioutil"
 )
 
 const (
@@ -271,18 +277,67 @@ func TokenHash(login string, lastVisited time.Time) string {
 
 func TokenEncode(login string) (string, error) {
 
-	var currentTime = time.Now()
-	var token string
-	var err error
+	text := []byte(login)
+	key := []byte("passphrasewhichneedstobe32bytes!")
 
-	token = login + fmt.Sprintf("%s", currentTime)
-	return token, nil
+	// generate a new aes cipher using our 32 byte long key
+	c, err := aes.NewCipher(key)
+	// if there are any errors, handle them
+	if err != nil {
+		return "", err
+	}
+
+	// gcm or Galois/Counter Mode, is a mode of operation
+	// for symmetric key cryptographic block ciphers
+	// - https://en.wikipedia.org/wiki/Galois/Counter_Mode
+	gcm, err := cipher.NewGCM(c)
+	// if any error generating new GCM
+	// handle them
+	if err != nil {
+		return "", err
+	}
+
+	// creates a new byte array the size of the nonce
+	// which must be passed to Seal
+	nonce := make([]byte, gcm.NonceSize())
+	// populates our nonce with a cryptographically secure
+	// random sequence
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+
+	// here we encrypt our text using the Seal function
+	// Seal encrypts and authenticates plaintext, authenticates the
+	// additional data and appends the result to dst, returning the updated
+	// slice. The nonce must be NonceSize() bytes long and unique for all
+	// time, for a given key.
+	token := gcm.Seal(nonce, nonce, text, nil)
+	return string(token), nil
 }
 
 func TokenDecode(token string) (string, error) {
-	var length = len(token)
-	var lenLogin = length - 6 // заменить потом
-	var slice = []byte(token)
-	var login = [:lenlogin]slice
-	return string(login), nil
+	key := []byte("passphrasewhichneedstobe32bytes!")
+	ciphertext := []byte(token)
+
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return "", err
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		return "", fmt.Errorf("size error in decoding")
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return "", err
+	}
+	return string(plaintext), nil
 }

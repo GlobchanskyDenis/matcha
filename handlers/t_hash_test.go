@@ -3,6 +3,7 @@ package handlers
 import (
 	"time"
 	"testing"
+	"fmt"
 )
 
 func TestPasswdHash_1(t *testing.T) {
@@ -79,13 +80,21 @@ func TestTokenEnkoder(t *testing.T) {
 	var login = "admin"
 	var encodedToken string
 	var newEncodedToken string
-	var err Errorf
+	var err error
 	var wasError bool
 	
 	encodedToken, err = TokenEncode(login)
 	if err != nil {
 		t.Errorf("\033[31mFAILED\033[m - error was returned at encoding - %s\n\n", fmt.Sprintf("%s", err))
 		wasError = true
+	}
+	for i:=0; i<len(encodedToken); i++ {
+		if (encodedToken[i] < '0' || encodedToken[i] > '9') && 
+		(encodedToken[i] < 'a' || encodedToken[i] > 'z') && 
+		(encodedToken[i] < 'A' || encodedToken[i] > 'Z') {
+			t.Errorf("\033[31mFAILED\033[m - wrong char %s\n\n", encodedToken)
+			wasError = true
+		}
 	}
 	if len(encodedToken) < 8 || len(encodedToken) > 100 {
 		t.Errorf("\033[31mFAILED\033[m - length %d %s\n\n", len(encodedToken), encodedToken)
@@ -115,7 +124,7 @@ func TestTokenDecoder(t *testing.T) {
 	var login = "admin"
 	var encodedToken string
 	var expectedLogin string = login
-	var err Errorf
+	var err error
 	var wasError bool
 	
 	encodedToken, err = TokenEncode(login)
@@ -138,6 +147,6 @@ func TestTokenDecoder(t *testing.T) {
 		wasError = true
 	}
 	if !wasError {
-		t.Logf("\033[32mDONE\033[m - %s %s\n\n", encodedToken, newEncodedToken)
+		t.Logf("\033[32mDONE\033[m - %s %s\n\n", login, expectedLogin)
 	}
 }
