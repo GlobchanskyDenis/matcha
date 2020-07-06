@@ -283,7 +283,7 @@ func TokenEncode(login string) (string, error) {
 	// AES - Advanced Encryption Standard
 
 	// generate a new aes cipher using our 32 byte long key
-	c, err := aes.NewCipher(masterKey)
+	c, err := aes.NewCipher([]byte(masterKey))
 	// if there are any errors, handle them
 	if err != nil {
 		return "", err
@@ -318,7 +318,7 @@ func TokenEncode(login string) (string, error) {
 }
 
 func TokenDecode(token string) (string, error) {
-	encodedToken := []byte(base64.URLEncoding.DecodeString(token))
+	encodedToken, _ := base64.URLEncoding.DecodeString(token)
 
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
