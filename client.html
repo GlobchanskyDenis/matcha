@@ -1,0 +1,298 @@
+<html>
+	<head>
+		<title>Client to test</title>
+		<script>
+			// function setNewItem(id, login) {
+			// 	var wrapper = document.getElementById("wrap");
+			// 	var newItem = document.createElement("div");
+
+			// 	newItem.setAttribute("class", "item");
+			// 	newItem.innerHTML = id + " : " + login;
+
+			// 	wrapper.appendChild(newItem);
+			// }
+
+			// function getUsers() {
+			// 	let xhr = new XMLHttpRequest();
+			// 	xhr.open("GET", "http://localhost:3000/users/");
+			// 	xhr.responseType = 'json';
+			// 	xhr.send();
+			// 	xhr.onload = function() {
+			// 		if (xhr.status != 200) {
+			// 			console.log(`Ошибка ${xhr.status}: ${xhr.statusText}`);
+			// 		} else {
+			// 			var requestAsync = xhr.response;
+			// 			if (!requestAsync) {
+			// 				console.log("Empty request");
+			// 			} else {
+			// 				console.log(requestAsync);
+			// 				for (i=1; requestAsync[i]; i++) {
+			// 					setNewItem(requestAsync[i].id, requestAsync[i].login)
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
+
+			function AuthUser() {
+
+				var login = document.forms['auth']['login'].value
+				var passwd = document.forms['auth']['passwd'].value
+				var request = JSON.stringify({ "login": login, "passwd": passwd })
+
+				let xhr = new XMLHttpRequest();
+				xhr.open("POST", "http://localhost:3000/auth/");
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+				console.log("tx: " + request)
+
+				xhr.send(request)
+
+				xhr.onload = function() {
+					if (xhr.response) {
+						var requestAsync = JSON.parse(xhr.response);
+					} else {
+						var requestAsync = "";
+					}
+					console.log("rx: " + xhr.status + " : " + xhr.response);
+
+					if (!requestAsync) {
+						document.getElementById("errorField").innerHTML = "Empty request. Its not a valid case";
+						document.getElementById("responseField").innerHTML = "";
+						return
+					}
+
+					if (xhr.status != 200 && xhr.status != 201) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+						document.getElementById("responseField").innerHTML = "";
+						return
+					}
+
+					if (requestAsync.error) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
+					} else {
+						document.getElementById("errorField").innerHTML = ""
+					}
+
+					if (!requestAsync.login || !requestAsync.token) {
+						document.getElementById("errorField").innerHTML += "login or token is empty. Its not a valid case";
+						return
+					}
+
+					document.getElementById("responseField").innerHTML = "login=" + requestAsync.login + "  token=" + requestAsync.token
+					document.forms['auth']['login'].value = "";
+					document.forms['auth']['passwd'].value = "";
+					document.token = requestAsync.token
+				}
+
+				xhr.onerror = function() {
+					console.log("onError event")
+				}
+			}
+
+
+
+
+			function RegUser() {
+
+				var login = document.forms['reg']['login'].value
+				var passwd = document.forms['reg']['passwd'].value
+				var mail = document.forms['reg']['mail'].value
+				var phone = document.forms['reg']['phone'].value
+				var request = JSON.stringify({ "login": login, "passwd": passwd, "mail": mail, "phone": phone })
+
+				let xhr = new XMLHttpRequest();
+				xhr.open("POST", "http://localhost:3000/user/");
+
+				let formData = new FormData();
+				formData.append("login", login);
+				formData.append("mail", mail);
+				formData.append("passwd", passwd);
+				formData.append("phone", phone);
+
+				console.log("tx: " + request)
+
+				xhr.send(request);
+
+				xhr.onload = function() {
+
+					if (xhr.response) {
+						var requestAsync = JSON.parse(xhr.response);
+					} else {
+						var requestAsync = "";
+					}
+					console.log("rx: " + xhr.status + " : " + xhr.response);
+
+					if (xhr.status != 200 && xhr.status != 201) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+						document.getElementById("responseField").innerHTML = "";
+					}
+
+					if (requestAsync.error) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
+					} else {
+						document.getElementById("errorField").innerHTML = ""
+					}
+
+					document.getElementById("responseField").innerHTML = "registration was done. Check your email"
+					document.forms['reg']['login'].value = "";
+					document.forms['reg']['passwd'].value = "";
+					document.forms['reg']['mail'].value = "";
+					document.forms['reg']['phone'].value = "";
+				}
+
+				xhr.onerror = function() {
+					console.log("onError event")
+				}
+			}
+
+
+
+
+			function UpdateUser() {
+				var login = document.forms['upd']['login'].value
+				var passwd = document.forms['upd']['passwd'].value
+				var mail = document.forms['upd']['mail'].value
+				var phone = document.forms['upd']['phone'].value
+				var request = ""
+
+				if (login == "" && passwd == "" && mail == "" && phone == "") {
+					console.log("update: all fields are empty")
+					return
+				}
+
+				if (login != "") {
+					request = "\"login\":"+JSON.stringify(login)
+				}
+				if (passwd != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"passwd\":"+JSON.stringify(passwd)
+				}
+				if (mail != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"mail\":"+JSON.stringify(mail)
+				}
+				if (phone != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"phone\":"+JSON.stringify(phone)
+				}
+
+				request = "{"+request+"}"
+
+				let xhr = new XMLHttpRequest();
+				xhr.open("PATCH", "http://localhost:3000/user/");
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				xhr.setRequestHeader("x-auth-token", document.token);
+
+				console.log("tx: " + request)
+
+				xhr.send(request);
+
+				xhr.onload = function() {
+
+					if (xhr.response) {
+						var requestAsync = JSON.parse(xhr.response);
+					} else {
+						var requestAsync = "";
+					}
+					console.log("rx: " + xhr.status + " : " + xhr.response);
+
+					if (xhr.status != 200 && xhr.status != 201) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+						document.getElementById("responseField").innerHTML = "";
+						return
+					}
+
+					if (requestAsync.error) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
+					} else {
+						document.getElementById("errorField").innerHTML = ""
+					}
+
+					document.getElementById("responseField").innerHTML = "Update was done successfully"
+					document.forms['upd']['login'].value = "";
+					document.forms['upd']['passwd'].value = "";
+					document.forms['upd']['mail'].value = "";
+					document.forms['upd']['phone'].value = "";
+				}
+
+				xhr.onerror = function() {
+					console.log("onError event")
+				}
+			}
+
+			var token = ""
+
+		</script>
+		<style>
+			.wrap {
+				border:		1px solid black;
+				width:		500px;
+			}
+			.item {
+				border:		1px solid red;
+				width:		450px;
+				margin:		2px auto 2px auto;
+			}
+			#responseField	{
+				width:		600px;
+				text-align: center;
+				height:		22px;
+				border:		3px solid green;
+				margin:		10px auto 10px 10px;
+			}
+			#errorField {
+				width:		600px;
+				text-align: center;
+				height:		22px;
+				border:		3px solid red;
+				margin:		10px auto 10px 10px;
+			}
+			input {
+				display: block;
+				margin:		10px;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="errorField">error Field</div>
+		<div id="responseField">response will be here</div>
+		<form name="auth">
+			<input type="text" name="login" placeholder="login">
+			<input type="password" name="passwd" placeholder="password">
+		</form>
+		<input type="submit" value="Авторизация" onclick="AuthUser()">
+
+		<form name="reg">
+			<input type="text" name="login" placeholder="login">
+			<input type="password" name="passwd" placeholder="password">
+			<input type="text" name="mail" placeholder="mail">
+			<input type="text" name="phone" placeholder="phone">
+		</form>
+		<input type="submit" value="Регистрация" onclick="RegUser()">
+
+		<form name="upd">
+			<input type="text" name="login" placeholder="login">
+			<input type="password" name="passwd" placeholder="password">
+			<input type="text" name="mail" placeholder="mail">
+			<input type="text" name="phone" placeholder="phone">
+		</form>
+		<input type="submit" value="Изменить данные" onclick="UpdateUser()">
+
+		<!-- <input type="submit" value="Get" onclick="getUsers()"> -->
+		
+		<div class="wrap" id="wrap">
+		</div>
+
+	</body>
+</html>

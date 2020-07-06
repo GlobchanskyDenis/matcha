@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script>
+		let socket = new WebSocket("ws://localhost:3000/ws/")
+		console.log("attempting websocket connection")
+
+		socket.onopen = function() {
+			console.log("Successfully connected")
+			socket.send("This is my chat with myself")
+		}
+
+		socket.onclose = function(event) {
+			console.log("Socket was closed: ", event)
+		}
+
+		socket.onerror = function(error) {
+			console.log("socket error: ", error)
+		}
+
+		socket.onmessage = function(message) {
+			console.log("message: ", message.data)
+			addNewItem(message.data)
+		}
+
+		function sendMessage() {
+			message = document.forms["message"]["message"].value
+			console.log("tx: " + message)
+			socket.send(message)
+			document.forms["message"]["message"].value = ""
+		}
+
+		function addNewItem(newMessage) {
+			chat = document.getElementById("chat")
+			newItem = document.createElement("div")
+
+			newItem.setAttribute("class", "item")
+			newItem.innerHTML = newMessage
+
+			chat.appendChild(newItem)
+		}
+
+		// setTimeout(sendMessage, 5000)
+	</script>
+	<style>
+		#chat {
+			width: 500px;
+			border: 2px solid brown;
+			min-height: 25px;
+		}
+		.item {
+			width: 480px;
+			border: 1px solid green;
+			height: 22px;
+			margin: 2px auto 2px auto;
+		}
+	</style>
+</head>
+<body>
+
+	<form name="message">
+		<input type="text" name="message">
+	</form>
+		<input type="submit" value="Отправить" onclick="sendMessage()">
+	
+
+	<div id="chat"></div>
+	
+</body>
+</html>
