@@ -2,37 +2,62 @@
 	<head>
 		<title>Client to test</title>
 		<script>
-			// function setNewItem(id, login) {
-			// 	var wrapper = document.getElementById("wrap");
-			// 	var newItem = document.createElement("div");
 
-			// 	newItem.setAttribute("class", "item");
-			// 	newItem.innerHTML = id + " : " + login;
+			function clearUserList() {
+				var list = document.getElementById("userList");
 
-			// 	wrapper.appendChild(newItem);
-			// }
+				while (list.firstChild) {
+					list.removeChild(list.firstChild);
+				}
 
-			// function getUsers() {
-			// 	let xhr = new XMLHttpRequest();
-			// 	xhr.open("GET", "http://localhost:3000/users/");
-			// 	xhr.responseType = 'json';
-			// 	xhr.send();
-			// 	xhr.onload = function() {
-			// 		if (xhr.status != 200) {
-			// 			console.log(`Ошибка ${xhr.status}: ${xhr.statusText}`);
-			// 		} else {
-			// 			var requestAsync = xhr.response;
-			// 			if (!requestAsync) {
-			// 				console.log("Empty request");
-			// 			} else {
-			// 				console.log(requestAsync);
-			// 				for (i=1; requestAsync[i]; i++) {
-			// 					setNewItem(requestAsync[i].id, requestAsync[i].login)
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
+			}
+
+			function setNewItem(id, login) {
+				var list = document.getElementById("userList");
+				var newItem = document.createElement("div");
+
+				newItem.setAttribute("class", "item");
+				newItem.innerHTML = id + " : " + login;
+
+				list.appendChild(newItem);
+			}
+
+			function getUsers() {
+				let xhr = new XMLHttpRequest();
+				var n = document.getElementById("filter1").options.selectedIndex;
+				var filter = document.getElementById("filter1").options[n].value;
+				xhr.open("GET", "http://localhost:3000/users/?filter=" + filter);
+				// xhr.responseType = 'json';
+				console.log("tx: get users, filter = " + filter)
+				xhr.send();
+				xhr.onload = function() {
+					if (xhr.response) {
+						var requestAsync = JSON.parse(xhr.response);
+					} else {
+						var requestAsync = "";
+					}
+					console.log("rx: " + xhr.status + " : " + xhr.response);
+
+					if (xhr.status != 200 && xhr.status != 201) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+						document.getElementById("responseField").innerHTML = "";
+						return
+					}
+
+					if (requestAsync.error) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
+					} else {
+						document.getElementById("errorField").innerHTML = ""
+					}
+
+					clearUserList();
+
+					for (i=0; requestAsync[i]; i++) {
+						setNewItem(requestAsync[i].id, requestAsync[i].login)
+					}
+				}
+			}
 
 			function AuthUser() {
 
@@ -234,7 +259,7 @@
 
 		</script>
 		<style>
-			.wrap {
+			.userList {
 				border:		1px solid black;
 				width:		500px;
 			}
@@ -289,9 +314,16 @@
 		</form>
 		<input type="submit" value="Изменить данные" onclick="UpdateUser()">
 
-		<!-- <input type="submit" value="Get" onclick="getUsers()"> -->
+		<p>
+		<select size="1" id="filter1">
+			<option selected value="all">Всех пользователей</option>
+			<option value="logged">Только онлайн пользователей</option>
+		</select>
+		</p>
+
+		<input type="submit" value="Показать всех в БД" onclick="getUsers()">
 		
-		<div class="wrap" id="wrap">
+		<div class="userList" id="userList">
 		</div>
 
 	</body>

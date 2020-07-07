@@ -17,7 +17,7 @@ sudo ./setup.sh
 
 выполнить команды
 sudo -i -u postgres
-psql -d matcha_db
+psql -d matcha_db    // Последние две команды на маке выполняются как psql postgres
 SELECT * FROM pg_database;
 SELECT * FROM pg_shadow;
 

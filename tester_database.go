@@ -37,7 +37,7 @@ func main() {
 
 	wg.Add(1)
 	go func(conn myDatabase.ConnDB, mu *sync.Mutex, wg *sync.WaitGroup) {
-		err := conn.SetNewUser("bsabre", handlers.PasswdHash("Den23@"))
+		err := conn.SetNewUser("bsabre", handlers.PasswdHash("Den23@"), "adminMail@gmail.com", "+7(999)888-77-66")
 		if err != nil {
 			mu.Lock()
 			mainErr = err
@@ -48,7 +48,7 @@ func main() {
 
 	wg.Add(1)
 	go func(conn myDatabase.ConnDB, mu *sync.Mutex, wg *sync.WaitGroup) {
-		err := conn.SetNewUser("admin", handlers.PasswdHash("admin"))
+		err := conn.SetNewUser("admin", handlers.PasswdHash("admin"), "adminMail@gmail.com", "+7(999)888-77-66")
 		if err != nil {
 			mu.Lock()
 			mainErr = err
@@ -59,7 +59,7 @@ func main() {
 
 	wg.Add(1)
 	go func(conn myDatabase.ConnDB, mu *sync.Mutex, wg *sync.WaitGroup) {
-		err := conn.SetNewUser("bsabre-c", handlers.PasswdHash("Den23@"))
+		err := conn.SetNewUser("bsabre-c", handlers.PasswdHash("Den23@"), "adminMail@gmail.com", "+7(999)888-77-66")
 		if err != nil {
 			mu.Lock()
 			mainErr = err

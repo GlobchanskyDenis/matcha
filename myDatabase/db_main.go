@@ -29,15 +29,17 @@ type ConnDB struct {
 	session session.Session
 }
 
-func (db *ConnDB) Connect() error {
+func (conn *ConnDB) Connect() error {
 	var dsn string
 
-	dsn = "user= " + config.DB_USER + " password= " + config.DB_PASSWD + " dbname= " + config.DB_NAME + " host= " + config.DB_HOST
-	conn, err := sql.Open(config.DB_TYPE, dsn)
-	db.db = conn
-	db.session = session.CreateSession()
+	dsn = "user=" + config.DB_USER + " password=" + config.DB_PASSWD + " dbname=" + config.DB_NAME + " host=" + config.DB_HOST + " sslmode=disable"
+	db, err := sql.Open(config.DB_TYPE, dsn)
+	conn.db = db
+	conn.session = session.CreateSession()
 	return err
 }
+
+///////////// SETUP FUNCTIONS //////////////////
 
 func (Conn ConnDB) TruncateUsersTable() error {
 	db := Conn.db
@@ -101,8 +103,10 @@ func (conn ConnDB) CreateUsersTable() error {
 	return err
 }
 
-func (db ConnDB) SetNewUser(login string, passwd string, mail string, phone string) error {
-	stmt, err := db.db.Prepare("INSERT INTO users (login, passwd, mail, phone) VALUES ($1, $2, $3, $4)")
+/////////////// MOST NEEDED FUNCTIONS ////////////////////////////
+
+func (conn ConnDB) SetNewUser(login string, passwd string, mail string, phone string) error {
+	stmt, err := conn.db.Prepare("INSERT INTO users (login, passwd, mail, phone) VALUES ($1, $2, $3, $4)")
 	if err != nil {
 		return fmt.Errorf("%s in preparing", err)
 	}
@@ -114,8 +118,8 @@ func (db ConnDB) SetNewUser(login string, passwd string, mail string, phone stri
 	return nil
 }
 
-func (db ConnDB) IsUserExists(login string) (bool, error) {
-	stmt, err := db.db.Prepare("SELECT id, login FROM users WHERE login=$1")
+func (conn ConnDB) IsUserExists(login string) (bool, error) {
+	stmt, err := conn.db.Prepare("SELECT id, login FROM users WHERE login=$1")
 	if err != nil {
 		return false, err
 	}
@@ -130,78 +134,15 @@ func (db ConnDB) IsUserExists(login string) (bool, error) {
 	return false, nil
 }
 
-func (db ConnDB) GetUsers() ([]UserStruct, error) {
-	var (
-		users []UserStruct
-		user  UserStruct
-		err   error
-		rows  *sql.Rows
-	)
-
-	rows, err = db.db.Query("SELECT id, login, passwd, phone, gender FROM users")
+func (conn *ConnDB) DeleteUser(userId int) error {
+	stmt, err := conn.db.Prepare("DELETE FROM users WHERE id=$1")
 	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		err = rows.Scan(&(user.Id), &(user.Login), &(user.Passwd), &(user.Phone), &(user.Gender))
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-	}
-	return users, err
-}
-
-func (conn *ConnDB) GetUser(userId int) (UserStruct, error) {
-	var (
-		user UserStruct
-		err error
-		row *sql.Rows
-	)
-
-	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE id=$1")
-	if err != nil {
-		return user, fmt.Errorf("%s in preparing", err)
+		return fmt.Errorf("%s in preparing", err)
 	}
 	defer stmt.Close()
-	row, err = stmt.Query(userId)
+	_, err = stmt.Exec(userId)
 	if err != nil {
-		return user, fmt.Errorf("%s in query", err)
+		return fmt.Errorf("%s in executing", err)
 	}
-	if row.Next() {
-		err = row.Scan(&(user.Id), &(user.Login), &(user.Passwd), &(user.Mail),
-			&(user.Phone), &(user.Age), &(user.Gender), &(user.Orientation),
-			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
-		if err != nil {
-			return UserStruct{}, fmt.Errorf("%s", err)
-		}
-	}
-	return user, nil
-}
-
-func (db *ConnDB) GetUserDataForAuth(login string, passwd string) (UserStruct, error) {
-	var (
-		user UserStruct
-		err  error
-		row  *sql.Rows
-	)
-
-	stmt, err := db.db.Prepare("SELECT * FROM users WHERE (login=$1 OR mail=$1 OR phone=$1) AND passwd=$2")
-	if err != nil {
-		return user, fmt.Errorf("%s in preparing", err)
-	}
-	defer stmt.Close()
-	row, err = stmt.Query(login, passwd)
-	if err != nil {
-		return user, fmt.Errorf("%s in query", err)
-	}
-	if row.Next() {
-		err = row.Scan(&(user.Id), &(user.Login), &(user.Passwd), &(user.Mail),
-			&(user.Phone), &(user.Age), &(user.Gender), &(user.Orientation),
-			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
-		if err != nil {
-			return UserStruct{}, fmt.Errorf("%s", err)
-		}
-	}
-	return user, nil
+	return nil
 }

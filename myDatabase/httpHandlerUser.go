@@ -7,105 +7,20 @@ import (
 	"MatchaServer/handlers"
 	"MatchaServer/session"
 	"log"
-	// "sync"
-	// "time"
 )
 
 func consoleLog(r *http.Request, section string, message string) {
-	// h, m, s := time.Now().Clock()
-	// fmt.Printf("%02d:%02d:%02d %s %7s %6s %s\n", h, m, s, r.RemoteAddr, r.Method, section, "\033[32m"+message+"\033[m")
-	log.Printf("%s %7s %6s %s\n", r.RemoteAddr, r.Method, section, "\033[32m"+message+"\033[m")
+	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, "\033[32m"+message+"\033[m")
 }
 
 func consoleLogWarning(r *http.Request, section string, message string) {
-	// h, m, s := time.Now().Clock()
-	// fmt.Printf("%02d:%02d:%02d %s %7s %6s %s\n", h, m, s, r.RemoteAddr, r.Method, section, "\033[33m"+message+"\033[m")
-	log.Printf("%s %7s %6s %s\n", r.RemoteAddr, r.Method, section, "\033[33m"+message+"\033[m")
+	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, "\033[33m"+message+"\033[m")
 }
 
 func consoleLogError(r *http.Request, section string, message string) {
-	// h, m, s := time.Now().Clock()
-	// fmt.Printf("%02d:%02d:%02d %s %7s %6s %s\n", h, m, s, r.RemoteAddr, r.Method, section, "\033[31m"+message+"\033[m")
-	log.Printf("%s %7s %6s %s\n", r.RemoteAddr, r.Method, section, "\033[31m"+message+"\033[m")
+	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, "\033[31m"+message+"\033[m")
 }
 
-// USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
-	var (
-		message, login, passwd, token, response string
-		user UserStruct
-		err error
-		request map[string]interface{}
-		isExist bool
-	)
-
-	// All errors will be send to panic. This is recovery function
-	defer func(w http.ResponseWriter) {
-		if err := recover(); err != nil {
-			fmt.Fprintf(w, `{"error":"%s"}`, fmt.Sprintf("%s", err))
-		}
-	}(w)
-
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		consoleLogError(r, "/auth/", "Error: request decode error")
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("decode error")
-	}
-
-	arg, isExist := request["login"]
-	if !isExist {
-		consoleLogWarning(r, "/auth/", "Warning: login not exist")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("login not exist")
-	}
-
-	login = arg.(string)
-	arg, isExist = request["passwd"]
-	if !isExist {
-		consoleLogWarning(r, "/auth/", "Warning: password not exist")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("password not exist")
-	}
-
-	passwd = arg.(string)
-	message = "request was recieved, login: \033[34m" + login + "\033[32m password: hidden "
-	consoleLog(r, "/auth/", message)
-
-	// Simple validation
-	if login == "" || passwd == "" {
-		consoleLogWarning(r, "/auth/", "Warning: login or password is empty")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("login or password is empty")
-	}
-
-	// Look for user in database
-	user, err = conn.GetUserDataForAuth(login, handlers.PasswdHash(passwd))
-	if err != nil {
-		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error " + fmt.Sprintf("%s", err))
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("wrong request in database")
-	}
-
-	if (user == UserStruct{}) {
-		consoleLogWarning(r, "/auth/", "Warning: wrong login or password")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		// w.WriteHeader(http.StatusNoContent) // 204 - With this status my json data will not add to response
-		panic("wrong login or password")
-	} else {
-		token = conn.session.AddUserToSession(user.Login, user.Id)
-		consoleLog(r, "/auth/", "User \033[34m" + login + "\033[32m was found successfully. Token is \033[34m" + token)
-		jsonUser, err := json.Marshal(user)
-		if err != nil {
-			consoleLogWarning(r, "/auth/", "Marshal returned error " + fmt.Sprintf("%s", err))
-			w.WriteHeader(http.StatusInternalServerError) // 500
-			panic("cannot convert to json")
-		}
-		// This is my valid case. Response status will be set automaticly to 200.
-		response = "{\"token\":\"" + token + "\"," + string(jsonUser[1:])
-		fmt.Fprintf(w, response)
-	}
-}
 
 // USER REGISTRATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
@@ -162,9 +77,9 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	}
 	phone = arg.(string)
 
-	message = "request was recieved, login: \033[33m" + login +
-		"\033[32m mail: \033[33m" + mail +
-		"\033[32m phone: \033[33m" + phone +
+	message = "request was recieved, login: \033[34m" + login +
+		"\033[32m mail: \033[34m" + mail +
+		"\033[32m phone: \033[34m" + phone +
 		"\033[32m password: hidden"
 	consoleLog(r, "/user/", message)
 
@@ -231,8 +146,8 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// USER REGISTRATION BY PATCH METHOD. REQUEST AND RESPONSE DATA IS JSON.
-// IN REQUEST SHOULD BE 'x-auth-token' HEADER
+// USER UPDATE BY PATCH METHOD. REQUEST AND RESPONSE DATA IS JSON.
+// REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		message string
@@ -260,12 +175,12 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		panic("decode error")
 	}
 
-	message = "request for UPDATE was recieved: token=" + token
+	message = "request for UPDATE was recieved: token=\033[34m" + token + "\033[32m"
 
 	arg, isExist := request["login"]
 	if isExist {
 		update["login"] =  arg.(string)
-		message += " login=\033[33m" + update["login"] + "\033[32m"
+		message += " login=\033[34m" + update["login"] + "\033[32m"
 	}
 
 	arg, isExist = request["passwd"]
@@ -277,13 +192,13 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	arg, isExist = request["mail"]
 	if isExist {
 		update["mail"] =  arg.(string)
-		message += " mail=\033[33m" + update["mail"] + "\033[32m"
+		message += " mail=\033[34m" + update["mail"] + "\033[32m"
 	}
 
 	arg, isExist = request["phone"]
 	if isExist {
 		update["phone"] =  arg.(string)
-		message += " phone=\033[33m" + update["phone"] + "\033[32m"
+		message += " phone=\033[34m" + update["phone"] + "\033[32m"
 	}
 
 	consoleLog(r, "/user/", message)
@@ -295,7 +210,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	if (sessionUser == session.SessionItem{}) {
+	if (sessionUser.UserInfo.Login == "" && sessionUser.UserInfo.Id == 0) {
 		consoleLogWarning(r, "/user/", "Warning: FindUserByToken returned empty struct - " + fmt.Sprintf("%s", err))
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		panic(err)
@@ -351,7 +266,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		panic("token is empty")
 	}
 
-	user, err = conn.GetUser(sessionUser.Id)
+	user, err = conn.GetUserById(sessionUser.UserInfo.Id)
 	if err != nil {
 		consoleLogError(r, "/user/", "Error: GetUser returned error - " + fmt.Sprintf("%s", err))
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -386,6 +301,47 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// USER REMOVE BY DELETE METHOD. NO REQUEST DATA. RESPONSE DATA IS JSON ONLY IN CASE OF ERROR.
+// REQUEST SHOULD HAVE 'x-auth-token' HEADER
+func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
+	var (
+		message string
+		err error
+		token = r.Header.Get("x-auth-token")
+		sessionUser session.SessionItem
+	)
+
+	// all errors will be send to panic. This is recovery function
+	defer func(w http.ResponseWriter) {
+		if err := recover(); err != nil {
+			fmt.Fprintf(w, "{\"error\":\"%s\"}", err)
+		}
+	}(w)
+
+	message = "request for DELETE was recieved: token=\033[34m" + token
+	consoleLog(r, "/user/", message)
+
+	sessionUser, err = conn.session.FindUserByToken(token)
+	if err != nil {
+		consoleLogWarning(r, "/user/", "Warning: FindUserByToken returned error - " + fmt.Sprintf("%s", err))
+		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		panic(err)
+	}
+
+	message = "removing user \033[34m" + sessionUser.UserInfo.Login + "\033[32m token=\033[34m" + token
+	consoleLog(r, "/user/", message)
+
+	conn.session.DeleteUserSessionByLogin(sessionUser.UserInfo.Login)
+
+	err = conn.DeleteUser(sessionUser.UserInfo.Id)
+	if err != nil {
+		consoleLogError(r, "/user/", "Error: DeleteUser returned error - " + fmt.Sprintf("%s", err))
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		panic("database request returned error")
+	}
+
+}
+
 // HTTP HANDLER FOR DOMAIN /user/ . IT HANDLES:
 // REGISTRATE USER BY POST METHOD
 // UPDATE USER BY PATCH METHOD
@@ -393,42 +349,32 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 func (conn *ConnDB) HttpHandlerUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
+	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
 
 	if r.Method == "POST" {
+
 		conn.regUser(w, r)
+
 	} else if r.Method == "OPTIONS" {
 	// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
+
 		consoleLog(r, "/user/", "OPTIONS: client wants to know what methods are allowed")
+
 	} else if r.Method == "PATCH" {
+
 		conn.updateUser(w, r)
+
+	} else if r.Method == "DELETE" {
+
+		conn.deleteUser(w, r)
+
 	} else {
 	// ALL OTHERS METHODS
+
 		consoleLogWarning(r, "/user/", "Warning: wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-		// fmt.Fprintf(w, `{"error":"wrong request method"}`)
-	}
-}
 
-// HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
-// AUTHENTICATE USER BY POST METHOD
-// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnDB) HttpHandlerAuth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
-
-	if r.Method == "POST" {
-		conn.authUser(w, r)
-	} else if r.Method == "OPTIONS" {
-	// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-		consoleLog(r, "/auth/", "OPTIONS: client wants to know what methods are allowed")
-	} else {
-	// ALL OTHERS METHODS
-		consoleLogWarning(r, "/auth/", "Warning: wrong request method")
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-		// fmt.Fprintf(w, `{"error":"wrong request method"}`)
 	}
 }
 

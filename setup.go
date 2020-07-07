@@ -4,7 +4,7 @@ import (
 	"MatchaServer/myDatabase"
 	"MatchaServer/handlers"
 	"fmt"
-	"encoding/json"
+	// "encoding/json"
 )
 
 func main() {
@@ -60,8 +60,8 @@ func main() {
 		fmt.Println("\033[32m", "- done", "\033[m")
 	}
 
-	fmt.Print("Add new user\t\t")
-	err = conn.SetNewUser("admin", handlers.PasswdHash("admin"))
+	fmt.Print("Add admin user\t\t")
+	err = conn.SetNewUser("admin", handlers.PasswdHash("admin"), "adminMail@gmail.com", "+7(999)888-77-66")
 	if err != nil {
 		fmt.Println("\033[31m", "- error:", err, "\033[m")
 		panic(err)
@@ -69,29 +69,28 @@ func main() {
 		fmt.Println("\033[32m", "- done", "\033[m")
 	}
 
-	fmt.Print("Get all users\t\t")
-	_, err = conn.GetUsers()
-	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
-	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
-	}
+	// fmt.Print("Get all users\t\t")
+	// _, err = conn.GetUsers()
+	// if err != nil {
+	// 	fmt.Println("\033[31m", "- error:", err, "\033[m")
+	// 	panic(err)
+	// } else {
+	// 	fmt.Println("\033[32m", "- done", "\033[m")
+	// }
 
-	fmt.Print("Get user data for auth\t")
-	user, err := conn.GetUserDataForAuth("admin", handlers.PasswdHash("admin"))
-	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
-	} else {
-		user.Passwd = ""
-		// fmt.Println("\033[32m", "- done", "\033[m")
-		jsonUser, err := json.Marshal(user)
-		if err != nil {
-			fmt.Println("\033[31m", "- error:", err, "\033[m")
-		} else {
-			fmt.Println("\033[32m", "- done", "\033[m")
-			fmt.Println(string(jsonUser))
-		}
-	}
+	// fmt.Print("Get user data for auth\t")
+	// user, err := conn.GetUserDataForAuth("admin", handlers.PasswdHash("admin"))
+	// if err != nil {
+	// 	fmt.Println("\033[31m", "- error:", err, "\033[m")
+	// 	panic(err)
+	// } else {
+	// 	user.Passwd = ""
+	// 	jsonUser, err := json.Marshal(user)
+	// 	if err != nil {
+	// 		fmt.Println("\033[31m", "- error:", err, "\033[m")
+	// 	} else {
+	// 		fmt.Println("\033[32m", "- done", "\033[m")
+	// 		fmt.Println(string(jsonUser))
+	// 	}
+	// }
 }
