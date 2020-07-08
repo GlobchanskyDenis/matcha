@@ -29,8 +29,6 @@ type SessionUserInfo struct {
 }
 
 type SessionItem struct {
-	// Id          int
-	// Login       string
 	UserInfo	SessionUserInfo
 	Expires     time.Time
 	LastVisited time.Time
@@ -49,7 +47,7 @@ func CreateSession() Session {
 	return NewSession
 }
 
-func (T *Session) AddUserToSession(login string, id int) (string, error) {
+func (T *Session) AddUserToSession(id int, login string, passwd string, mail string) (string, error) {
 	var newItem SessionItem
 	var ch = make(chan tokenChanItem)
 	var ret tokenChanItem
@@ -61,6 +59,8 @@ func (T *Session) AddUserToSession(login string, id int) (string, error) {
 
 	newItem.UserInfo.Id = id
 	newItem.UserInfo.Login = login
+	newItem.UserInfo.Passwd = passwd
+	newItem.UserInfo.Mail = mail
 	newItem.LastVisited = time.Now()
 	newItem.ws = []*websocket.Conn{}
 	newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
@@ -75,6 +75,23 @@ func (T *Session) AddUserToSession(login string, id int) (string, error) {
 	T.mu.Unlock()
 
 	return ret.token, ret.err
+}
+
+func (T *Session) UpdateSessionUser(token string, newUserInfo SessionUserInfo) error {
+	var oldLogin string
+	var err error
+
+	oldLogin, err = handlers.TokenDecode(token)
+	if err != nil {
+		return err
+	}
+
+	T.mu.Lock()
+	item := T.session[oldLogin]
+	item.UserInfo = newUserInfo
+	T.session[oldLogin] = item
+	T.mu.Unlock()
+	return nil
 }
 
 func (T Session) IsUserLogged(token string) (bool, error) {

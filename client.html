@@ -100,15 +100,15 @@
 						document.getElementById("errorField").innerHTML = ""
 					}
 
-					if (!requestAsync.login || !requestAsync.token) {
+					if (!requestAsync.login || !requestAsync["x-auth-token"]) {
 						document.getElementById("errorField").innerHTML += "login or token is empty. Its not a valid case";
 						return
 					}
 
-					document.getElementById("responseField").innerHTML = "login=" + requestAsync.login + "  token=" + requestAsync.token
+					document.getElementById("responseField").innerHTML = "login=" + requestAsync.login + "  token=" + requestAsync["x-auth-token"]
 					document.forms['auth']['login'].value = "";
 					document.forms['auth']['passwd'].value = "";
-					document.token = requestAsync.token
+					document.token = requestAsync["x-auth-token"]
 				}
 
 				xhr.onerror = function() {
@@ -321,7 +321,7 @@
 		</select>
 		</p>
 
-		<input type="submit" value="Показать всех в БД" onclick="getUsers()">
+		<input type="submit" value="Показать пользователей" onclick="getUsers()">
 		
 		<div class="userList" id="userList">
 		</div>

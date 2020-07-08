@@ -218,6 +218,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	_, isExist = update["login"]
 	if isExist {
+		sessionUser.UserInfo.Login = update["login"]
 		err = handlers.CheckLogin(update["login"])
 		if err != nil {
 			consoleLogWarning(r, "/user/", "Warning: login - " + fmt.Sprintf("%s", err))
@@ -229,6 +230,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	_, isExist = update["passwd"]
 	if isExist {
+		sessionUser.UserInfo.Passwd = handlers.PasswdHash(update["passwd"])
 		err = handlers.CheckPasswd(update["passwd"])
 		if err != nil {
 			consoleLogWarning(r, "/user/", "Warning: password - " + fmt.Sprintf("%s", err))
@@ -240,6 +242,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	_, isExist = update["mail"]
 	if isExist {
+		sessionUser.UserInfo.Mail = update["mail"]
 		err = handlers.CheckMail(update["mail"])
 		if err != nil {
 			consoleLogWarning(r, "/user/", "Warning: mail - " + fmt.Sprintf("%s", err))
@@ -251,6 +254,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	_, isExist = update["phone"]
 	if isExist {
+		sessionUser.UserInfo.Phone = update["phone"]
 		err = handlers.CheckPhone(update["phone"])
 		if err != nil {
 			consoleLogWarning(r, "/user/", "Warning: phone number - " + fmt.Sprintf("%s", err))
@@ -293,6 +297,13 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		user.Phone = update["phone"]
 	}
 
+	err = conn.session.UpdateSessionUser(token, sessionUser.UserInfo)
+	if err != nil {
+		consoleLogError(r, "/user/", "Error: UpdateSessionUser returned error - " + fmt.Sprintf("%s", err))
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		panic("token decode error")
+	}
+
 	err = conn.UpdateUser(user)
 	if err != nil {
 		consoleLogError(r, "/user/", "Error: UpdateUser returned error - " + fmt.Sprintf("%s", err))
@@ -309,6 +320,8 @@ func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 		err error
 		token = r.Header.Get("x-auth-token")
 		sessionUser session.SessionItem
+		request map[string]interface{}
+		passwd string
 	)
 
 	// all errors will be send to panic. This is recovery function
@@ -321,11 +334,33 @@ func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 	message = "request for DELETE was recieved: token=\033[34m" + token
 	consoleLog(r, "/user/", message)
 
+	err = json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		consoleLogError(r, "/user/", "Error: request decode error - " + fmt.Sprintf("%s", err))
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		panic("decode error")
+	}
+
+	arg, isExist := request["passwd"]
+	if !isExist {
+		consoleLogWarning(r, "/user/", "Warning: password not exist")
+		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		panic("password not exist")
+	}
+	passwd = handlers.PasswdHash(arg.(string))
+	// passwd = arg.(string)
+
 	sessionUser, err = conn.session.FindUserByToken(token)
 	if err != nil {
 		consoleLogWarning(r, "/user/", "Warning: FindUserByToken returned error - " + fmt.Sprintf("%s", err))
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		panic(err)
+	}
+
+	if passwd != sessionUser.UserInfo.Passwd {
+		consoleLogWarning(r, "/user/", "Warning: password is incorrect "  + passwd + " " + sessionUser.UserInfo.Passwd)
+		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		panic("wrong password")
 	}
 
 	message = "removing user \033[34m" + sessionUser.UserInfo.Login + "\033[32m token=\033[34m" + token

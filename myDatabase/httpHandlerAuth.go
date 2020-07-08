@@ -71,7 +71,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 		// w.WriteHeader(http.StatusNoContent) // 204 - With this status my json data will not add to response
 		panic("wrong login or password")
 	} else {
-		token, err = conn.session.AddUserToSession(user.Login, user.Id)
+		token, err = conn.session.AddUserToSession(user.Id, user.Login, user.Passwd, user.Mail)
 		if err != nil {
 			consoleLogError(r, "/auth/", "SetNewUser returned error " + fmt.Sprintf("%s", err))
 			w.WriteHeader(http.StatusInternalServerError) // 500
@@ -85,7 +85,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 			panic("cannot convert to json")
 		}
 		// This is my valid case. Response status will be set automaticly to 200.
-		response = "{\"token\":\"" + token + "\"," + string(jsonUser[1:])
+		response = "{\"x-auth-token\":\"" + token + "\"," + string(jsonUser[1:])
 		fmt.Fprintf(w, response)
 	}
 }
