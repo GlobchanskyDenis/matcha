@@ -150,7 +150,7 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		message string
+		message, newToken string
 		err error
 		request map[string]interface{}
 		update = map[string]string{}
@@ -309,6 +309,17 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		consoleLogError(r, "/user/", "Error: UpdateUser returned error - " + fmt.Sprintf("%s", err))
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("database request returned error")
+	}
+
+	_, isExist = update["login"]
+	if isExist {
+		newToken, err = handlers.TokenEncode(update["login"])
+		if err != nil {
+			consoleLogError(r, "/user/", "Error: Token encode returned error - " + fmt.Sprintf("%s", err))
+			w.WriteHeader(http.StatusInternalServerError) // 500
+			panic("error in token encoding")
+		}
+		fmt.Fprintf(w, "{\"x-auth-token\":\"%s\"}", newToken)
 	}
 }
 

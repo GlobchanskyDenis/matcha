@@ -243,6 +243,10 @@
 						document.getElementById("errorField").innerHTML = ""
 					}
 
+					if (requestAsync["x-auth-token"]) {
+						document.token = requestAsync["x-auth-token"]
+					}
+
 					document.getElementById("responseField").innerHTML = "Update was done successfully"
 					document.forms['upd']['login'].value = "";
 					document.forms['upd']['passwd'].value = "";

@@ -88,8 +88,9 @@ func (T *Session) UpdateSessionUser(token string, newUserInfo SessionUserInfo) e
 
 	T.mu.Lock()
 	item := T.session[oldLogin]
+	delete(T.session, oldLogin)
 	item.UserInfo = newUserInfo
-	T.session[oldLogin] = item
+	T.session[newUserInfo.Login] = item
 	T.mu.Unlock()
 	return nil
 }
