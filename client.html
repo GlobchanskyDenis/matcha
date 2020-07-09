@@ -59,8 +59,8 @@
 				}
 			}
 
-			function wsConnect(login, passwd) {
-				let socket = new WebSocket("ws://localhost:3000/ws/?login="+login+"&tempPasswd="+passwd)
+			function wsConnect(login, token) {
+				let socket = new WebSocket("ws://localhost:3000/ws/?login="+login+"&ws-auth-token="+token)
 				console.log("attempting websocket connection")
 
 				socket.onopen = function() {
@@ -122,17 +122,17 @@
 						document.getElementById("errorField").innerHTML = ""
 					}
 
-					if (!requestAsync.login || !requestAsync["x-auth-token"] || !requestAsync["x-ws-token"]) {
+					if (!requestAsync.login || !requestAsync["x-auth-token"] || !requestAsync["ws-auth-token"]) {
 						document.getElementById("errorField").innerHTML += "login or token is empty. Its not a valid case";
 						return
 					}
 
-					document.getElementById("responseField").innerHTML = "login=" + requestAsync.login + "  token=" + requestAsync["x-auth-token"]
+					document.getElementById("responseField").innerHTML = "login=" + requestAsync.login + " token=" + requestAsync["x-auth-token"]
 					document.forms['auth']['login'].value = "";
 					document.forms['auth']['passwd'].value = "";
 					document.token = requestAsync["x-auth-token"]
 
-					wsConnect(requestAsync.login, requestAsync["x-ws-token"])
+					wsConnect(requestAsync.login, requestAsync["ws-auth-token"])
 				}
 
 				xhr.onerror = function() {

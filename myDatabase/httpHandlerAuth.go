@@ -89,7 +89,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 			
 		}
 		// This is my valid case. Response status will be set automaticly to 200.
-		response = `{"x-auth-token":"` + token + `","x-ws-token":"`+tokenWS+`",` + string(jsonUser[1:])
+		response = `{"x-auth-token":"` + token + `","ws-auth-token":"`+tokenWS+`",` + string(jsonUser[1:])
 		fmt.Fprintf(w, response)
 	}
 }
