@@ -32,6 +32,7 @@ type SessionItem struct {
 	UserInfo	SessionUserInfo
 	Expires     time.Time
 	LastVisited time.Time
+	TokenWS		string
 	ws			[](*websocket.Conn)
 }
 
@@ -121,33 +122,29 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 	if err != nil {
 		return SessionItem{}, err
 	}
-
 	T.mu.Lock()
 	item, isExists = T.session[login]
 	T.mu.Unlock()
 	if !isExists {
 		///// DEBUG START //////
-		T.mu.Lock()
-		for tempLogin := range T.session {
-			fmt.Println("\033[36m", "user", tempLogin, "logged", "\033[m")
-		}
-		T.mu.Unlock()
+		// T.mu.Lock()
+		// for tempLogin := range T.session {
+		// 	fmt.Println("\033[36m", "user", tempLogin, "logged", "\033[m")
+		// }
+		// T.mu.Unlock()
 		///// DEBUG END //////
 		return SessionItem{}, fmt.Errorf("hmm... looks like user %s isnt logged", login)
 	}
-
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, login)
 		T.mu.Unlock()
 		return SessionItem{}, fmt.Errorf("this session is expired")
 	}
-
 	item.LastVisited = time.Now()
 	T.mu.Lock()
 	T.session[login] = item
 	T.mu.Unlock()
-
 	return item, nil
 }
 
@@ -158,13 +155,59 @@ func (T SessionItem) expiresDate() bool {
 	if now.After(T.Expires) {
 		return true
 	}
-
 	lastVisited = T.LastVisited.Add(1000000000 * 60 * 15) // 15 min after LastVisited
 	if now.After(lastVisited) {
 		return true
 	}
-
 	return false
+}
+
+func (T *Session) CreateTokenWS(login string) (string, error) {
+	var ch = make(chan string)
+	var item SessionItem
+	var isExists bool
+
+	go func(ch chan string, login string) {
+		ch <- handlers.TokenWebSocketAuth(login)
+	}(ch, login)
+
+	T.mu.Lock()
+	item, isExists = T.session[login]
+	T.mu.Unlock()
+	if !isExists {
+		return "", fmt.Errorf("hmm... looks like user %s isnt logged", login)
+	}
+	if item.expiresDate() {
+		T.mu.Lock()
+		delete(T.session, login)
+		T.mu.Unlock()
+		return "", fmt.Errorf("this session is expired")
+	}
+	item.LastVisited = time.Now()
+	item.TokenWS = <- ch
+	T.mu.Lock()
+	T.session[login] = item
+	T.mu.Unlock()
+	return item.TokenWS, nil
+}
+
+func (T *Session) GetTokenWS(login string) (string, error) {
+	var item SessionItem
+	var isExists bool
+
+	T.mu.Lock()
+	item, isExists = T.session[login]
+	T.mu.Unlock()
+	if !isExists {
+		return "", fmt.Errorf("hmm... looks like user %s isnt logged", login)
+	}
+	if item.expiresDate() {
+		T.mu.Lock()
+		delete(T.session, login)
+		T.mu.Unlock()
+		return "", fmt.Errorf("this session is expired")
+	}
+	return item.TokenWS, nil
 }
 
 func (T *Session) AddWSConnection(token string, newWebSocket *websocket.Conn, wsMeta string) error {
@@ -243,7 +286,7 @@ func (T Session) GetLoggedUsersInfo() []SessionUserInfo {
 	for login = range T.session {
 		user = T.session[login].UserInfo
 		users = append(users, user)
-		fmt.Println("\033[36m", "user", user.Login, "is logged", "\033[m") //////////////////
+		// fmt.Println("\033[36m", "user", user.Login, "is logged", "\033[m") //////////////////
 	}
 	T.mu.Unlock()
 	return users

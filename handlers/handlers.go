@@ -261,14 +261,16 @@ func PasswdHash(passwd string) string {
 	return passwdHash
 }
 
-func TokenHash(login string, lastVisited time.Time) string {
+func TokenWebSocketAuth(login string) string {
 
-	dataToHash := fmt.Sprintf("%s%s", login, lastVisited)
+	curTime := time.Now()
+
+	dataToHash := fmt.Sprintf("%s%s", login, curTime)
 	tmpHash := crc32.ChecksumIEEE([]byte(dataToHash))
 	hash := strconv.FormatUint(uint64(tmpHash), 35)
 	token := string(hash[:])
 
-	dataToHash = fmt.Sprintf("%s", lastVisited)
+	dataToHash = fmt.Sprintf("%s", curTime)
 	tmpHash = crc32.ChecksumIEEE([]byte(dataToHash))
 	hash = strconv.FormatUint(uint64(tmpHash), 35)
 	token += string(hash[:])

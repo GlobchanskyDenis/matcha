@@ -59,6 +59,28 @@
 				}
 			}
 
+			function wsConnect(login, passwd) {
+				let socket = new WebSocket("ws://localhost:3000/ws/?login="+login+"&tempPasswd="+passwd)
+				console.log("attempting websocket connection")
+
+				socket.onopen = function() {
+					console.log("web socket successfully connected")
+					socket.send("hello from client")
+				}
+
+				socket.onclose = function(event) {
+					console.log("Socket was closed: ", event)
+				}
+
+				socket.onerror = function(error) {
+					console.log("socket error: ", error)
+				}
+
+				socket.onmessage = function(message) {
+					console.log("server said: ", message.data)
+				}
+			}
+
 			function AuthUser() {
 
 				var login = document.forms['auth']['login'].value
@@ -100,7 +122,7 @@
 						document.getElementById("errorField").innerHTML = ""
 					}
 
-					if (!requestAsync.login || !requestAsync["x-auth-token"]) {
+					if (!requestAsync.login || !requestAsync["x-auth-token"] || !requestAsync["x-ws-token"]) {
 						document.getElementById("errorField").innerHTML += "login or token is empty. Its not a valid case";
 						return
 					}
@@ -109,6 +131,8 @@
 					document.forms['auth']['login'].value = "";
 					document.forms['auth']['passwd'].value = "";
 					document.token = requestAsync["x-auth-token"]
+
+					wsConnect(requestAsync.login, requestAsync["x-ws-token"])
 				}
 
 				xhr.onerror = function() {

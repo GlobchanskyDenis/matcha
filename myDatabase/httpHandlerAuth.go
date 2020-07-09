@@ -10,7 +10,7 @@ import (
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, login, passwd, token, response string
+		message, login, passwd, token, tokenWS, response string
 		user UserStruct
 		err error
 		request map[string]interface{}
@@ -84,8 +84,12 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError) // 500
 			panic("cannot convert to json")
 		}
+		tokenWS, err = conn.session.CreateTokenWS(login) //handlers.TokenWebSocketAuth(login)
+		if err != nil {
+			
+		}
 		// This is my valid case. Response status will be set automaticly to 200.
-		response = "{\"x-auth-token\":\"" + token + "\"," + string(jsonUser[1:])
+		response = `{"x-auth-token":"` + token + `","x-ws-token":"`+tokenWS+`",` + string(jsonUser[1:])
 		fmt.Fprintf(w, response)
 	}
 }
