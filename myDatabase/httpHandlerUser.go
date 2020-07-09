@@ -154,7 +154,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		err error
 		request map[string]interface{}
 		update = map[string]string{}
-		isExist bool
+		isExist, usefullFieldsExists bool
 		token = r.Header.Get("x-auth-token")
 		sessionUser session.SessionItem
 		user	UserStruct
@@ -179,29 +179,45 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	arg, isExist := request["login"]
 	if isExist {
+		usefullFieldsExists = true
 		update["login"] =  arg.(string)
 		message += " login=\033[34m" + update["login"] + "\033[32m"
 	}
 
 	arg, isExist = request["passwd"]
 	if isExist {
+		usefullFieldsExists = true
 		update["passwd"] =  arg.(string)
 		message += " password=hidden"
 	}
 
 	arg, isExist = request["mail"]
 	if isExist {
+		usefullFieldsExists = true
 		update["mail"] =  arg.(string)
 		message += " mail=\033[34m" + update["mail"] + "\033[32m"
 	}
 
 	arg, isExist = request["phone"]
 	if isExist {
+		usefullFieldsExists = true
 		update["phone"] =  arg.(string)
 		message += " phone=\033[34m" + update["phone"] + "\033[32m"
 	}
 
 	consoleLog(r, "/user/", message)
+
+	if !usefullFieldsExists {
+		consoleLogWarning(r, "/user/", "Warning: no usefull fields found")
+		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		panic("no usefull fields")
+	}
+
+	if token == "" {
+		consoleLogWarning(r, "/user/", "Warning: token is empty")
+		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		panic("token is empty")
+	}
 
 	sessionUser, err = conn.session.FindUserByToken(token)
 	if err != nil {
@@ -210,11 +226,11 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	if (sessionUser.UserInfo.Login == "" && sessionUser.UserInfo.Id == 0) {
-		consoleLogWarning(r, "/user/", "Warning: FindUserByToken returned empty struct - " + fmt.Sprintf("%s", err))
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic(err)
-	}
+	// if (sessionUser.UserInfo.Login == "" && sessionUser.UserInfo.Id == 0) {
+	// 	consoleLogWarning(r, "/user/", "Warning: FindUserByToken returned empty struct - " + fmt.Sprintf("%s", err))
+	// 	w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+	// 	panic(err)
+	// }
 
 	_, isExist = update["login"]
 	if isExist {
@@ -262,12 +278,6 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 			// CheckLogin is my own function, so I can not afraid of invalid runes in error
 			panic( fmt.Errorf( "phone number error - %s", err ) )
 		}
-	}
-
-	if token == "" {
-		consoleLogWarning(r, "/user/", "Warning: token is empty")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("token is empty")
 	}
 
 	user, err = conn.GetUserById(sessionUser.UserInfo.Id)
@@ -359,7 +369,6 @@ func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 		panic("password not exist")
 	}
 	passwd = handlers.PasswdHash(arg.(string))
-	// passwd = arg.(string)
 
 	sessionUser, err = conn.session.FindUserByToken(token)
 	if err != nil {

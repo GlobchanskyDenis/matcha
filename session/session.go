@@ -126,6 +126,13 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 	item, isExists = T.session[login]
 	T.mu.Unlock()
 	if !isExists {
+		///// DEBUG START //////
+		T.mu.Lock()
+		for tempLogin := range T.session {
+			fmt.Println("\033[36m", "user", tempLogin, "logged", "\033[m")
+		}
+		T.mu.Unlock()
+		///// DEBUG END //////
 		return SessionItem{}, fmt.Errorf("hmm... looks like user %s isnt logged", login)
 	}
 
@@ -236,6 +243,7 @@ func (T Session) GetLoggedUsersInfo() []SessionUserInfo {
 	for login = range T.session {
 		user = T.session[login].UserInfo
 		users = append(users, user)
+		fmt.Println("\033[36m", "user", user.Login, "is logged", "\033[m") //////////////////
 	}
 	T.mu.Unlock()
 	return users
