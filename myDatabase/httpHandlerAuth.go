@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"MatchaServer/handlers"
+	. "MatchaServer/config"
 )
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
@@ -20,20 +21,25 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	// All errors will be send to panic. This is recovery function
 	defer func(w http.ResponseWriter) {
 		if err := recover(); err != nil {
-			fmt.Fprintf(w, `{"error":"%s"}`, fmt.Sprintf("%s", err))
+			switch err.(type) {
+			case error:
+				fmt.Fprintf(w, `{"error":"` + err.(error).Error() + `"}`)
+			case string:
+				fmt.Fprintf(w, `{"error":"` + err.(string) + `"}`)
+			}
 		}
 	}(w)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/auth/", "Error: request decode error")
+		consoleLogError(r, "/auth/", "request decode error")
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("decode error")
 	}
 
 	arg, isExist := request["login"]
 	if !isExist {
-		consoleLogWarning(r, "/auth/", "Warning: login not exist")
+		consoleLogWarning(r, "/auth/", "login not exist")
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		panic("login not exist")
 	}
@@ -41,18 +47,18 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	login = arg.(string)
 	arg, isExist = request["passwd"]
 	if !isExist {
-		consoleLogWarning(r, "/auth/", "Warning: password not exist")
+		consoleLogWarning(r, "/auth/", "password not exist")
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		panic("password not exist")
 	}
 
 	passwd = arg.(string)
-	message = "request was recieved, login: \033[34m" + login + "\033[32m password: hidden "
+	message = "request was recieved, login: " + BLUE + login + NO_COLOR + " password: hidden "
 	consoleLog(r, "/auth/", message)
 
 	// Simple validation
 	if login == "" || passwd == "" {
-		consoleLogWarning(r, "/auth/", "Warning: login or password is empty")
+		consoleLogWarning(r, "/auth/", "login or password is empty")
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		panic("login or password is empty")
 	}
@@ -60,37 +66,39 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	// Look for user in database
 	user, err = conn.GetUserDataForAuth(login, handlers.PasswdHash(passwd))
 	if err != nil {
-		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error " + fmt.Sprintf("%s", err))
+		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("wrong request in database")
 	}
 
 	if (user == UserStruct{}) {
-		consoleLogWarning(r, "/auth/", "Warning: wrong login or password")
+		consoleLogWarning(r, "/auth/", "wrong login or password")
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		// w.WriteHeader(http.StatusNoContent) // 204 - With this status my json data will not add to response
 		panic("wrong login or password")
 	} else {
 		token, err = conn.session.AddUserToSession(user.Id, user.Login, user.Passwd, user.Mail)
 		if err != nil {
-			consoleLogError(r, "/auth/", "SetNewUser returned error " + fmt.Sprintf("%s", err))
+			consoleLogError(r, "/auth/", "SetNewUser returned error " + err.Error())
 			w.WriteHeader(http.StatusInternalServerError) // 500
 			panic("Cannot authenticate this user")
 		}
-		consoleLog(r, "/auth/", "User \033[34m" + login + "\033[32m was found successfully. Token is \033[34m" + token)
 		jsonUser, err := json.Marshal(user)
 		if err != nil {
-			consoleLogWarning(r, "/auth/", "Marshal returned error " + fmt.Sprintf("%s", err))
+			consoleLogWarning(r, "/auth/", "Marshal returned error " + err.Error())
 			w.WriteHeader(http.StatusInternalServerError) // 500
 			panic("cannot convert to json")
 		}
 		tokenWS, err = conn.session.CreateTokenWS(login) //handlers.TokenWebSocketAuth(login)
 		if err != nil {
-			
+			consoleLogError(r, "/auth/", "cannot create web socket token - " + err.Error())
+			w.WriteHeader(http.StatusInternalServerError) // 500
+			panic("cannot create web socket token")
 		}
 		// This is my valid case. Response status will be set automaticly to 200.
-		response = `{"x-auth-token":"` + token + `","ws-auth-token":"`+tokenWS+`",` + string(jsonUser[1:])
+		response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 		fmt.Fprintf(w, response)
+		consoleLogSuccess(r, "/auth/", "User " + BLUE + login + NO_COLOR + " was authenticated successfully")
 	}
 }
 
@@ -106,10 +114,10 @@ func (conn *ConnDB) HttpHandlerAuth(w http.ResponseWriter, r *http.Request) {
 		conn.authUser(w, r)
 	} else if r.Method == "OPTIONS" {
 	// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-		consoleLog(r, "/auth/", "OPTIONS: client wants to know what methods are allowed")
+		consoleLog(r, "/auth/", "client wants to know what methods are allowed")
 	} else {
 	// ALL OTHERS METHODS
-		consoleLogWarning(r, "/auth/", "Warning: wrong request method")
+		consoleLogWarning(r, "/auth/", "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
 	}
 }

@@ -2,11 +2,8 @@ package myDatabase
 
 import (
 	"fmt"
-	// "MatchaServer/config"
-	// "MatchaServer/session"
 	"database/sql"
 	_ "github.com/lib/pq"
-	// "strconv"
 )
 
 func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]UserStruct, error) {
@@ -23,7 +20,7 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]UserStruct, error) {
 	}
 	for rows.Next() {
 		err = rows.Scan(&(user.Id), &(user.Login), &(user.Passwd), &(user.Mail),
-			&(user.Phone), &(user.Age), &(user.Gender), &(user.Orientation),
+			&(user.Age), &(user.Gender), &(user.Orientation),
 			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
 		if err != nil {
 			return nil, err
@@ -51,7 +48,7 @@ func (conn *ConnDB) GetUserById(userId int) (UserStruct, error) {
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Id), &(user.Login), &(user.Passwd), &(user.Mail),
-			&(user.Phone), &(user.Age), &(user.Gender), &(user.Orientation),
+			&(user.Age), &(user.Gender), &(user.Orientation),
 			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
 		if err != nil {
 			return UserStruct{}, fmt.Errorf("%s", err)
@@ -67,7 +64,7 @@ func (db *ConnDB) GetUserDataForAuth(login string, passwd string) (UserStruct, e
 		row  *sql.Rows
 	)
 
-	stmt, err := db.db.Prepare("SELECT * FROM users WHERE (login=$1 OR mail=$1 OR phone=$1) AND passwd=$2")
+	stmt, err := db.db.Prepare("SELECT * FROM users WHERE (login=$1 OR mail=$1) AND passwd=$2")
 	if err != nil {
 		return user, fmt.Errorf("%s in preparing", err)
 	}
@@ -78,7 +75,7 @@ func (db *ConnDB) GetUserDataForAuth(login string, passwd string) (UserStruct, e
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Id), &(user.Login), &(user.Passwd), &(user.Mail),
-			&(user.Phone), &(user.Age), &(user.Gender), &(user.Orientation),
+			&(user.Age), &(user.Gender), &(user.Orientation),
 			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
 		if err != nil {
 			return UserStruct{}, fmt.Errorf("%s", err)

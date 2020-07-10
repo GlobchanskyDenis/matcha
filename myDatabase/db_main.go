@@ -14,7 +14,6 @@ type UserStruct struct {
 	Login       string `json:"login,"`
 	Passwd      string `json:"-"`
 	Mail        string `json:"mail,,omitempty"`
-	Phone       string `json:"phone,,omitempty"`
 	Age         int    `json:"age,,omitempty"`
 	Gender      string `json:"gender,,omitempty"`
 	Orientation string `json:"orientation,,omitempty"`
@@ -89,10 +88,9 @@ func (conn ConnDB) CreateUsersTable() error {
 	db := conn.db
 	_, err := db.Exec("CREATE TABLE users (id SERIAL NOT NULL, " +
 		"login VARCHAR(" + strconv.Itoa(config.LOGIN_MAX_LEN) + ") NOT NULL, " +
+		"PRIMARY KEY (login), " +
 		"passwd VARCHAR(35) NOT NULL, " +
 		"mail VARCHAR(" + strconv.Itoa(config.MAIL_MAX_LEN) + ") NOT NULL DEFAULT '', " +
-		"PRIMARY KEY (login), " +
-		"phone VARCHAR(17) NOT NULL DEFAULT '', " +
 		"age INTEGER NOT NULL DEFAULT 0, " +
 		"gender enum_gender NOT NULL DEFAULT '', " +
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
@@ -105,13 +103,13 @@ func (conn ConnDB) CreateUsersTable() error {
 
 /////////////// MOST NEEDED FUNCTIONS ////////////////////////////
 
-func (conn ConnDB) SetNewUser(login string, passwd string, mail string, phone string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO users (login, passwd, mail, phone) VALUES ($1, $2, $3, $4)")
+func (conn ConnDB) SetNewUser(login string, passwd string, mail string) error {
+	stmt, err := conn.db.Prepare("INSERT INTO users (login, passwd, mail) VALUES ($1, $2, $3)")
 	if err != nil {
 		return fmt.Errorf("%s in preparing", err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(login, passwd, mail, phone)
+	_, err = stmt.Exec(login, passwd, mail)
 	if err != nil {
 		return fmt.Errorf("%s in executing", err)
 	}

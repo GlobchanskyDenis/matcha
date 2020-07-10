@@ -205,55 +205,6 @@ func CheckMail(mail string) error {
 	return nil
 }
 
-func CheckPhone(phone string) error {
-	var (
-		buf = []rune(phone)
-		length = len(buf)
-		startScope bool
-		endScope bool
-	)
-
-	if length < PHONE_MIN_LEN {
-		return fmt.Errorf("too short phone number")
-	}
-	if length > PHONE_MAX_LEN {
-		return fmt.Errorf("too long phone number")
-	}
-
-	if !(buf[0] >= '0' && buf[0] <= '9') && buf[0] != '+' {
-		return fmt.Errorf("first char of phone number must be digit or +")
-	}
-
-	if buf[length - 1] < '0' || buf[length - 1] > '9' {
-		return fmt.Errorf("last char of phone number must be digit")
-	}
-
-	for i:=1; i<length; i++ {
-		if !isPhoneRunePermitted(buf[i]) {
-			return fmt.Errorf("invalid phone number")
-		}
-		if (buf[i] < '0' || buf[i] > '9') && (buf[i - 1] < '0' || buf[i - 1] > '9') {
-			return fmt.Errorf("invalid phone number")
-		}
-		if buf[i] == '(' && startScope {
-			return fmt.Errorf("invalid phone number")
-		}
-		if buf[i] == ')' && endScope {
-			return fmt.Errorf("invalid phone number")
-		}
-		if buf[i] == '(' {
-			startScope = true
-		}
-		if buf[i] == ')' {
-			endScope = true
-		}
-	}
-	if startScope != endScope {
-		return fmt.Errorf("invalid phone number")
-	}
-	return nil
-}
-
 func PasswdHash(passwd string) string {
 	passwd += passwdSalt
 	crcH := crc32.ChecksumIEEE([]byte(passwd))
