@@ -7,16 +7,12 @@ const (
 	DB_HOST	= "localhost"
 	DB_NAME	= "matcha_db"
 	DB_USER	= "bsabre"
-	DB_PASSWD	= "23"
+	DB_PASSWD = "23"
 	DB_TYPE	= "postgres"
 
-	LOGIN_MIN_LEN = 3
-	LOGIN_MAX_LEN = 15
 	PASSWD_MIN_LEN = 6
 	MAIL_MAX_LEN = 30
 	MAIL_MIN_LEN = 6
-	// PHONE_MIN_LEN = 6
-	// PHONE_MAX_LEN = 18
 
 	RED		= "\033[31m"
 	GREEN	= "\033[32m"
@@ -28,3 +24,18 @@ const (
 	BLUE_BG		= "\033[44;30m"
 	NO_COLOR	= "\033[m"
 )
+
+type User struct {
+	Uid         int    `json:"uid"`
+	Mail        string `json:"mail,,omitempty"`
+	Passwd      string `json:"-"`
+	Fname		string `json:"fname,,omitempty"`
+	Lname		string `json:"lname,,omitempty"`
+	Age         int    `json:"age,,omitempty"`
+	Gender      string `json:"gender,,omitempty"`
+	Orientation string `json:"orientation,,omitempty"`
+	Biography   string `json:"biography,,omitempty"`
+	AvaPhotoID  int    `json:"avaPhotoID,,omitempty"`
+	AccType		string `json:"-"`
+	Rating      int    `json:"rating"`
+}

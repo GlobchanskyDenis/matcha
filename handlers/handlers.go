@@ -84,40 +84,40 @@ func isPhoneRunePermitted(c rune) bool {
 	return false
 }
 
-func CheckLogin(login string) error {
-	var (
-		runeSlice = []rune(login)
-		length	= len(runeSlice)
-		wasLetter bool
-	)
+// func CheckLogin(login string) error {
+// 	var (
+// 		runeSlice = []rune(login)
+// 		length	= len(runeSlice)
+// 		wasLetter bool
+// 	)
 
-	if utf8.RuneCountInString(login) < LOGIN_MIN_LEN {
-		return fmt.Errorf("too short login")
-	}
-	if utf8.RuneCountInString(login) > LOGIN_MAX_LEN {
-		return fmt.Errorf("too long login")
-	}
+// 	if utf8.RuneCountInString(login) < LOGIN_MIN_LEN {
+// 		return fmt.Errorf("too short login")
+// 	}
+// 	if utf8.RuneCountInString(login) > LOGIN_MAX_LEN {
+// 		return fmt.Errorf("too long login")
+// 	}
 
-	if runeSlice[0] == ' ' {
-		return fmt.Errorf("first symbol should not be space")
-	}
-	if runeSlice[length - 1] == ' ' {
-		return fmt.Errorf("last symbol should not be space")
-	}
+// 	if runeSlice[0] == ' ' {
+// 		return fmt.Errorf("first symbol should not be space")
+// 	}
+// 	if runeSlice[length - 1] == ' ' {
+// 		return fmt.Errorf("last symbol should not be space")
+// 	}
 
-	for i:=0; i<length; i++ {
-		if !isLoginRunePermitted(runeSlice[i]) {
-			return fmt.Errorf("forbidden symbol in login")
-		}
-		if isLetter(runeSlice[i]) {
-			wasLetter = true
-		}
-	}
-	if !wasLetter {
-		return fmt.Errorf("no letters in login")
-	}
-	return nil
-}
+// 	for i:=0; i<length; i++ {
+// 		if !isLoginRunePermitted(runeSlice[i]) {
+// 			return fmt.Errorf("forbidden symbol in login")
+// 		}
+// 		if isLetter(runeSlice[i]) {
+// 			wasLetter = true
+// 		}
+// 	}
+// 	if !wasLetter {
+// 		return fmt.Errorf("no letters in login")
+// 	}
+// 	return nil
+// }
 
 func CheckPasswd(passwd string) error {
 	var (
@@ -212,11 +212,12 @@ func PasswdHash(passwd string) string {
 	return passwdHash
 }
 
-func TokenWebSocketAuth(login string) string {
+func TokenWebSocketAuth(uid int) string {
 
+	str := strconv.Itoa(uid)
 	curTime := time.Now()
 
-	dataToHash := fmt.Sprintf("%s%s", login, curTime)
+	dataToHash := fmt.Sprintf("%s%s", str, curTime)
 	tmpHash := crc32.ChecksumIEEE([]byte(dataToHash))
 	hash := strconv.FormatUint(uint64(tmpHash), 35)
 	token := string(hash[:])
@@ -229,7 +230,7 @@ func TokenWebSocketAuth(login string) string {
 	return token
 }
 
-func TokenEncode(login string) (string, error) {
+func TokenEncode(uid int) (string, error) {
 
 	// Thanks to https://tutorialedge.net/golang/go-encrypt-decrypt-aes-tutorial/
 	// for good explanation of Encoding with masterKey
@@ -266,32 +267,36 @@ func TokenEncode(login string) (string, error) {
 	// additional data and appends the result to dst, returning the updated
 	// slice. The nonce must be NonceSize() bytes long and unique for all
 	// time, for a given key.
-	token := gcm.Seal(nonce, nonce, []byte(login), nil)
+	token := gcm.Seal(nonce, nonce, []byte(strconv.Itoa(uid)), nil)
 	return base64.URLEncoding.EncodeToString(token), nil
 }
 
-func TokenDecode(token string) (string, error) {
+func TokenDecode(token string) (int, error) {
 	encodedToken, _ := base64.URLEncoding.DecodeString(token)
 
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	nonceSize := gcm.NonceSize()
 	if len(encodedToken) < nonceSize {
-		return "", fmt.Errorf("size error in decoding")
+		return 0, fmt.Errorf("size error in decoding")
 	}
 
 	nonce, encodedToken := encodedToken[:nonceSize], encodedToken[nonceSize:]
-	login, err := gcm.Open(nil, nonce, encodedToken, nil)
+	desired, err := gcm.Open(nil, nonce, encodedToken, nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return string(login), nil
+	uid, err := strconv.Atoi(string(desired))
+	if err != nil {
+		return 0, err
+	}
+	return uid, nil
 }

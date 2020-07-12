@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	login = "TestUser"
-	loginNew = "newTestUser"
+	// login = "TestUser"
+	// loginNew = "newTestUser"
 	passwd = "AsdVar34!A"
 	passwdNew = "DFe2*FDsd"
 	mail = "user_mail@gmail.com"
@@ -20,7 +20,7 @@ var (
 	conn = ConnDB{}
 	token string
 
-	loginFail = " AAAA   "
+	// loginFail = " AAAA   "
 	passwdFail = "12345678"
 	mailFail = "mail@gmail@yandex.ru"
 )
@@ -29,7 +29,7 @@ func TestRegUser(t *testing.T) {
 
 	conn.Connect()
 
-	requestData := strings.NewReader(`{"login":"`+login+`","passwd":"`+passwd+`","mail":"`+mail+`"}`)
+	requestData := strings.NewReader(`{"mail":"`+mail+`","passwd":"`+passwd+`"}`)
 	url := "http://localhost:3000/user/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
@@ -47,7 +47,7 @@ func TestAuthUser(t *testing.T) {
 	fmt.Print(NO_COLOR)
 
 	////////////// AUTHENTICATE //////////////////
-	requestData := strings.NewReader(`{"login":"`+login+`","passwd":"`+passwd+`"}`)
+	requestData := strings.NewReader(`{"mail":"`+mail+`","passwd":"`+passwd+`"}`)
 	url := "http://localhost:3000/auth/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
@@ -92,29 +92,29 @@ func TestUpdUser(t *testing.T) {
 	t.Logf(GREEN_BG + "SUCCESS: user was updated" + NO_COLOR + "\n")
 
 	////////////// UPDATE //////////////////
-	requestData = strings.NewReader(`{"login":"`+loginNew+`"}`)
-	url = "http://localhost:3000/user/"
-	r = httptest.NewRequest("PATCH", url, requestData)
-	r.Header.Add("x-auth-token", token)
-	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
-	if w.Code != http.StatusOK {
-		t.Errorf(RED_BG + "ERROR: wrong StatusCode: got %d, expected %d" + NO_COLOR + "\n", w.Code, http.StatusOK)
-		return
-	}
-	var response map[string]interface{}
-	err := json.NewDecoder(w.Body).Decode(&response)
-	if err != nil {
-		t.Errorf(RED_BG + "ERROR: error in decoding response body: %s" + NO_COLOR + "\n", err)
-		return
-	}
-	item, isExist := response["x-auth-token"]
-	if !isExist {
-		t.Errorf(RED_BG + "ERROR: token not found in response" + NO_COLOR + "\n")
-		return
-	}
-	token = item.(string)
-	t.Logf(GREEN_BG + "SUCCESS: user was updated" + NO_COLOR + "\n")
+	// requestData = strings.NewReader(`{"login":"`+loginNew+`"}`)
+	// url = "http://localhost:3000/user/"
+	// r = httptest.NewRequest("PATCH", url, requestData)
+	// r.Header.Add("x-auth-token", token)
+	// w = httptest.NewRecorder()
+	// conn.HttpHandlerUser(w, r)
+	// if w.Code != http.StatusOK {
+	// 	t.Errorf(RED_BG + "ERROR: wrong StatusCode: got %d, expected %d" + NO_COLOR + "\n", w.Code, http.StatusOK)
+	// 	return
+	// }
+	// var response map[string]interface{}
+	// err := json.NewDecoder(w.Body).Decode(&response)
+	// if err != nil {
+	// 	t.Errorf(RED_BG + "ERROR: error in decoding response body: %s" + NO_COLOR + "\n", err)
+	// 	return
+	// }
+	// item, isExist := response["x-auth-token"]
+	// if !isExist {
+	// 	t.Errorf(RED_BG + "ERROR: token not found in response" + NO_COLOR + "\n")
+	// 	return
+	// }
+	// token = item.(string)
+	// t.Logf(GREEN_BG + "SUCCESS: user was updated" + NO_COLOR + "\n")
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"passwd":"`+passwdNew+`"}`)
@@ -159,7 +159,7 @@ func TestCreateUserForFailTests(t *testing.T) {
 	fmt.Print(NO_COLOR)
 
 	////////////// USER CREATE //////////////////
-	requestData := strings.NewReader(`{"login":"`+loginNew+`","passwd":"`+passwd+`","mail":"`+mail+`"}`)
+	requestData := strings.NewReader(`{"passwd":"`+passwd+`","mail":"`+mail+`"}`)
 	url := "http://localhost:3000/user/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
@@ -171,7 +171,7 @@ func TestCreateUserForFailTests(t *testing.T) {
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 
 	////////////// USER AUTH //////////////////
-	requestData = strings.NewReader(`{"login":"`+loginNew+`","passwd":"`+passwd+`"}`)
+	requestData = strings.NewReader(`{"mail":"`+mail+`","passwd":"`+passwd+`"}`)
 	url = "http://localhost:3000/auth/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
@@ -204,7 +204,7 @@ func TestFailRegUser_InvalidData(t *testing.T) {
 	fmt.Print("TESTS FOR FAIL. IF YOU SEE RED COLOR IN LOGS - ITS ALL RIGHT!!!\n\n" + NO_COLOR)
 
 	////////////// FAIL REGISTRATION //////////////////
-	requestData := strings.NewReader(`{"login":"`+loginFail+`","passwd":"`+passwd+`","mail":"`+mail+`"}`)
+	requestData := strings.NewReader(`{"mail":"`+mailFail+`","passwd":"`+passwd+`"}`)
 	url := "http://localhost:3000/user/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
@@ -215,7 +215,7 @@ func TestFailRegUser_InvalidData(t *testing.T) {
 	}
 
 	////////////// FAIL REGISTRATION //////////////////
-	requestData = strings.NewReader(`{"login":"`+login+`","passwd":"`+passwdFail+`","mail":"`+mail+`"}`)
+	requestData := strings.NewReader(`{"mail":"`+mailFail+`","passwd":"`+passwdFail+`"}`)
 	url = "http://localhost:3000/user/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
@@ -226,18 +226,7 @@ func TestFailRegUser_InvalidData(t *testing.T) {
 	}
 
 	////////////// FAIL REGISTRATION //////////////////
-	requestData = strings.NewReader(`{"login":"`+login+`","passwd":"`+passwd+`","mail":"`+mailFail+`"}`)
-	url = "http://localhost:3000/user/"
-	r = httptest.NewRequest("POST", url, requestData)
-	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
-	if w.Code == http.StatusCreated {
-		t.Errorf(RED_BG + "ERROR: user should not be created - its an error" + NO_COLOR + "\n")
-		return
-	}
-
-	////////////// FAIL REGISTRATION //////////////////
-	requestData = strings.NewReader(`{"login":"`+loginNew+`","passwd":"`+passwd+`","mail":"`+mail+`"}`)
+	requestData = strings.NewReader(`{"mail":"`+mail+`","passwd":"`+passwd+`"}`)
 	url = "http://localhost:3000/user/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
@@ -259,7 +248,7 @@ func TestFailRegUser_NotCompleteForms(t *testing.T) {
 	fmt.Print(NO_COLOR)
 
 	////////////// FAIL REGISTRATION //////////////////
-	requestData := strings.NewReader(`{"passwd":"`+passwd+`","mail":"`+mail+`"}`)
+	requestData := strings.NewReader(`{"passwd":"`+passwd+`"}`)
 	url := "http://localhost:3000/user/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()

@@ -40,8 +40,9 @@ func TestPasswdHash_2(t *testing.T) {
 }
 
 func TestTokenWebSocketAuth_1(t *testing.T) {
-	var login = "admin"
-	var hash = TokenWebSocketAuth(login)
+	// var login = "admin"
+	var uid = 1
+	var hash = TokenWebSocketAuth(uid)
 	var wasError bool
 
 	for i:=0; i<len(hash); i++ {
@@ -62,9 +63,10 @@ func TestTokenWebSocketAuth_1(t *testing.T) {
 }
 
 func TestTokenHash_2(t *testing.T) {
-	var login = "admin"
-	var hash1 = TokenWebSocketAuth(login)
-	var hash2 = TokenWebSocketAuth(login)
+	// var login = "admin"
+	var uid = 1
+	var hash1 = TokenWebSocketAuth(uid)
+	var hash2 = TokenWebSocketAuth(uid)
 	if hash1 == hash2 {
 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", hash1, hash2)
 		return
@@ -73,13 +75,13 @@ func TestTokenHash_2(t *testing.T) {
 }
 
 func TestTokenEnkoder(t *testing.T) {
-	var login = "admin"
+	var uid = 1
 	var encodedToken string
 	var newEncodedToken string
 	var err error
 	var wasError bool
 	
-	encodedToken, err = TokenEncode(login)
+	encodedToken, err = TokenEncode(uid)
 	if err != nil {
 		t.Errorf(RED_BG + "FAILED: error was returned at encoding - %s" + NO_COLOR + "\n", err.Error())
 		return
@@ -90,7 +92,7 @@ func TestTokenEnkoder(t *testing.T) {
 		(encodedToken[i] < 'A' || encodedToken[i] > 'Z') &&
 		encodedToken[i] != '-' && encodedToken[i] != '_' && encodedToken[i] != '.' &&
 		encodedToken[i] != '!' && encodedToken[i] != '~' && encodedToken[i] != '*' &&
-		encodedToken[i] != '\'' && encodedToken[i] != '(' && encodedToken[i] != ')' {
+		encodedToken[i] != '\'' && encodedToken[i] != '(' && encodedToken[i] != ')' &&  encodedToken[i] != '='{
 			t.Errorf(RED_BG + "FAILED - wrong char '%c' %s" + NO_COLOR + "\n", encodedToken[i], encodedToken)
 			wasError = true
 		}
@@ -100,7 +102,7 @@ func TestTokenEnkoder(t *testing.T) {
 		wasError = true
 	}
 
-	newEncodedToken, err = TokenEncode(login)
+	newEncodedToken, err = TokenEncode(uid)
 	if err != nil {
 		t.Errorf(RED_BG + "FAILED: error was returned at encoding - %s" + NO_COLOR + "\n", err.Error())
 		return
@@ -120,13 +122,13 @@ func TestTokenEnkoder(t *testing.T) {
 }
 
 func TestTokenDecoder(t *testing.T) {
-	var login = "admin"
+	var uid = 1
 	var encodedToken string
-	var expectedLogin string = login
+	var expectedUid = uid
 	var err error
 	var wasError bool
 	
-	encodedToken, err = TokenEncode(login)
+	encodedToken, err = TokenEncode(uid)
 	if err != nil {
 		t.Errorf(RED_BG + "FAILED: error was returned at encoding - %s" + NO_COLOR + "\n", err.Error())
 		return
@@ -136,16 +138,16 @@ func TestTokenDecoder(t *testing.T) {
 		wasError = true
 	}
 
-	login, err = TokenDecode(encodedToken)
+	uid, err = TokenDecode(encodedToken)
 	if err != nil {
 		t.Errorf(RED_BG + "FAILED: error was returned at decoding - %s" + NO_COLOR + "\n", err.Error())
 		return
 	}
-	if login != expectedLogin {
-		t.Errorf(RED_BG + "FAILED: login after encoding/decoding is spoiled. Expected %s Received %s" + NO_COLOR + "\n", expectedLogin, login)
+	if uid != expectedUid {
+		t.Errorf(RED_BG + "FAILED: uid after encoding/decoding is spoiled. Expected %d Received %d" + NO_COLOR + "\n", expectedUid, uid)
 		wasError = true
 	}
 	if !wasError {
-		t.Logf(GREEN_BG + "SUCCESS: %s %s" + NO_COLOR + "\n", login, expectedLogin)
+		t.Logf(GREEN_BG + "SUCCESS: %d %d" + NO_COLOR + "\n", uid, expectedUid)
 	}
 }

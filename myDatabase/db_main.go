@@ -9,20 +9,6 @@ import (
 	"strconv"
 )
 
-type UserStruct struct {
-	Id          int    `json:"id,"`
-	Login       string `json:"login,"`
-	Passwd      string `json:"-"`
-	Mail        string `json:"mail,,omitempty"`
-	Age         int    `json:"age,,omitempty"`
-	Gender      string `json:"gender,,omitempty"`
-	Orientation string `json:"orientation,,omitempty"`
-	Biography   string `json:"orientation,,omitempty"`
-	AvaPhotoID  int    `json:"avaPhotoID,,omitempty"`
-	AccType		string `json:"-"`
-	Rating      int    `json:"rating,"`
-}
-
 type ConnDB struct {
 	db      *sql.DB
 	session session.Session
@@ -86,11 +72,12 @@ func (conn ConnDB) CreateEnumTypes() error {
 
 func (conn ConnDB) CreateUsersTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE users (id SERIAL NOT NULL, " +
-		"login VARCHAR(" + strconv.Itoa(config.LOGIN_MAX_LEN) + ") NOT NULL, " +
-		"PRIMARY KEY (login), " +
-		"passwd VARCHAR(35) NOT NULL, " +
+	_, err := db.Exec("CREATE TABLE users (uid SERIAL NOT NULL, " +
 		"mail VARCHAR(" + strconv.Itoa(config.MAIL_MAX_LEN) + ") NOT NULL DEFAULT '', " +
+		"PRIMARY KEY (mail), " +
+		"passwd VARCHAR(35) NOT NULL, " +
+		"fname VARCHAR(30) NOT NULL DEFAULT '', " +
+		"lname VARCHAR(30) NOT NULL DEFAULT '', " +
 		"age INTEGER NOT NULL DEFAULT 0, " +
 		"gender enum_gender NOT NULL DEFAULT '', " +
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
@@ -103,26 +90,26 @@ func (conn ConnDB) CreateUsersTable() error {
 
 /////////////// MOST NEEDED FUNCTIONS ////////////////////////////
 
-func (conn ConnDB) SetNewUser(login string, passwd string, mail string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO users (login, passwd, mail) VALUES ($1, $2, $3)")
+func (conn ConnDB) SetNewUser(mail string, passwd string) error {
+	stmt, err := conn.db.Prepare("INSERT INTO users (mail, passwd) VALUES ($1, $2)")
 	if err != nil {
 		return fmt.Errorf("%s in preparing", err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(login, passwd, mail)
+	_, err = stmt.Exec(mail, passwd)
 	if err != nil {
 		return fmt.Errorf("%s in executing", err)
 	}
 	return nil
 }
 
-func (conn ConnDB) IsUserExists(login string) (bool, error) {
-	stmt, err := conn.db.Prepare("SELECT id, login FROM users WHERE login=$1")
+func (conn ConnDB) IsUserExists(mail string) (bool, error) {
+	stmt, err := conn.db.Prepare("SELECT id FROM users WHERE mail=$1")
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
-	row, err := stmt.Query(login)
+	row, err := stmt.Query(mail)
 	if err != nil {
 		return false, err
 	}
@@ -132,13 +119,13 @@ func (conn ConnDB) IsUserExists(login string) (bool, error) {
 	return false, nil
 }
 
-func (conn *ConnDB) DeleteUser(userId int) error {
-	stmt, err := conn.db.Prepare("DELETE FROM users WHERE id=$1")
+func (conn *ConnDB) DeleteUser(uid int) error {
+	stmt, err := conn.db.Prepare("DELETE FROM users WHERE uid=$1")
 	if err != nil {
 		return fmt.Errorf("%s in preparing", err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(userId)
+	_, err = stmt.Exec(uid)
 	if err != nil {
 		return fmt.Errorf("%s in executing", err)
 	}

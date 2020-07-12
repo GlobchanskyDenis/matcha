@@ -7,137 +7,137 @@ import (
 
 // ------------- LOGIN TESTING OF VALID CASES --------------------------
 
-func TestLoginOK_1(t *testing.T) {
-	var login = "admin"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_1(t *testing.T) {
+// 	var login = "admin"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-func TestLoginOK_2(t *testing.T) {
-	var login = "bsabre-c"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_2(t *testing.T) {
+// 	var login = "bsabre-c"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-func TestLoginOK_3(t *testing.T) {
-	var login = "0dsaas99sdsdad"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_3(t *testing.T) {
+// 	var login = "0dsaas99sdsdad"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-func TestLoginOK_4(t *testing.T) {
-	var login = "Денис Г"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_4(t *testing.T) {
+// 	var login = "Денис Г"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-func TestLoginOK_5(t *testing.T) {
-	var login = "new User89"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_5(t *testing.T) {
+// 	var login = "new User89"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-func TestLoginOK_6(t *testing.T) {
-	var login = "__USER___"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_6(t *testing.T) {
+// 	var login = "__USER___"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-func TestLoginOK_7(t *testing.T) {
-	var login = "Денис skinny"
-	err := CheckLogin(login)
-	if err != nil {
-		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
-	}
-}
+// func TestLoginOK_7(t *testing.T) {
+// 	var login = "Денис skinny"
+// 	err := CheckLogin(login)
+// 	if err != nil {
+// 		t.Errorf(RED_BG + "FAILED: %s %s" + NO_COLOR + "\n", login, err.Error())
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: %s" + NO_COLOR + "\n", login)
+// 	}
+// }
 
-// ------------- LOGIN TESTING OF INVALID CASES --------------------------
+// // ------------- LOGIN TESTING OF INVALID CASES --------------------------
 
-func TestLoginInvalid_1(t *testing.T) {
-	var login = " Денис"
-	err := CheckLogin(login)
-	if err == nil {
-		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
-	}
-}
+// func TestLoginInvalid_1(t *testing.T) {
+// 	var login = " Денис"
+// 	err := CheckLogin(login)
+// 	if err == nil {
+// 		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
+// 	}
+// }
 
-func TestLoginInvalid_2(t *testing.T) {
-	var login = "Денис "
-	err := CheckLogin(login)
-	if err == nil {
-		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
-	}
-}
+// func TestLoginInvalid_2(t *testing.T) {
+// 	var login = "Денис "
+// 	err := CheckLogin(login)
+// 	if err == nil {
+// 		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
+// 	}
+// }
 
-func TestLoginInvalid_3(t *testing.T) {
-	var login = "Денис *"
-	err := CheckLogin(login)
-	if err == nil {
-		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
-	}
-}
+// func TestLoginInvalid_3(t *testing.T) {
+// 	var login = "Денис *"
+// 	err := CheckLogin(login)
+// 	if err == nil {
+// 		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
+// 	}
+// }
 
-func TestLoginInvalid_4(t *testing.T) {
-	var login = "________"
-	err := CheckLogin(login)
-	if err == nil {
-		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
-	}
-}
+// func TestLoginInvalid_4(t *testing.T) {
+// 	var login = "________"
+// 	err := CheckLogin(login)
+// 	if err == nil {
+// 		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
+// 	}
+// }
 
-func TestLoginInvalid_5(t *testing.T) {
-	var login = "A"
-	err := CheckLogin(login)
-	if err == nil {
-		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
-	}
-}
+// func TestLoginInvalid_5(t *testing.T) {
+// 	var login = "A"
+// 	err := CheckLogin(login)
+// 	if err == nil {
+// 		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
+// 	}
+// }
 
-func TestLoginInvalid_6(t *testing.T) {
-	var login = "Денис Глобчанский"
-	err := CheckLogin(login)
-	if err == nil {
-		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
-	} else {
-		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
-	}
-}
+// func TestLoginInvalid_6(t *testing.T) {
+// 	var login = "Денис Глобчанский"
+// 	err := CheckLogin(login)
+// 	if err == nil {
+// 		t.Errorf(RED_BG + "FAILED: '%s' should be error" + NO_COLOR + "\n", login)
+// 	} else {
+// 		t.Logf(GREEN_BG + "SUCCESS: '%s' %s -- as it expected" + NO_COLOR + "\n", login, err.Error())
+// 	}
+// }
 
 // ------------- PASSWORD TESTING OF VALID CASES --------------------------
 

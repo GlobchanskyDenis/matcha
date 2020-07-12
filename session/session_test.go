@@ -15,13 +15,10 @@ func TestCreateSession(t *testing.T) {
 }
 
 func TestAddUser_1(t *testing.T) {
-	var login = "admin"
-	var passwd = "adsdasdsadsad"
-	var mail = "mail@gmail.com"
-	var id = 1
+	var uid = 1
 
 	sess := CreateSession()
-	token, err := sess.AddUserToSession(id, login, passwd, mail)
+	token, err := sess.AddUserToSession(uid)
 	if err!= nil {
 		t.Errorf(RED_BG + "FAILED: %s" + NO_COLOR + "\n", err.Error())
 		return
@@ -31,42 +28,24 @@ func TestAddUser_1(t *testing.T) {
 		t.Errorf(RED_BG + "FAILED: %s" + NO_COLOR + "\n", err.Error())
 		return
 	}
-	if user.UserInfo.Id != id {
-		t.Errorf(RED_BG + "FAILED: not equal id %d %d" + NO_COLOR + "\n", id, user.UserInfo.Id)
-		return
-	}
-	if user.UserInfo.Login != login {
-		t.Errorf(RED_BG + "FAILED: not equal login %s %s" + NO_COLOR + "\n", login, user.UserInfo.Login)
-		return
-	}
-	if user.UserInfo.Passwd != passwd {
-		t.Errorf(RED_BG + "FAILED: not equal passwd %s %s" + NO_COLOR + "\n", passwd, user.UserInfo.Passwd)
-		return
-	}
-	if user.UserInfo.Mail != mail {
-		t.Errorf(RED_BG + "FAILED: not equal mail %s %s" + NO_COLOR + "\n", mail, user.UserInfo.Mail)
+	if user.Uid != uid {
+		t.Errorf(RED_BG + "FAILED: not equal id %d %d" + NO_COLOR + "\n", uid, user.Uid)
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS" + NO_COLOR + "\n")
 }
 
 func TestAddUser_2(t *testing.T) {
-	var login1 = "admin"
-	var login2 = "bsabre"
-	var passwd1 = "asdassrsda"
-	var mail1 = "mail1@gmail.com"
-	var passwd2 = "aasddasw3wwv"
-	var mail2 = "mail2@gmail.com"
-	var id1 = 1
-	var id2 = 23
+	var uid1 = 1
+	var uid2 = 5
 
 	sess := CreateSession()
-	token1, err := sess.AddUserToSession(id1, login1, passwd1, mail1)
+	token1, err := sess.AddUserToSession(uid1)
 	if err!= nil {
 		t.Errorf(RED_BG + "FAILED: %s" + NO_COLOR + "\n", err.Error())
 		return
 	}
-	token2, err := sess.AddUserToSession(id2, login2, passwd2, mail2)
+	token2, err := sess.AddUserToSession(uid2)
 	if err!= nil {
 		t.Errorf(RED_BG + "FAILED: %s" + NO_COLOR + "\n", err.Error())
 		return
@@ -82,36 +61,12 @@ func TestAddUser_2(t *testing.T) {
 		return
 	}
 
-	if user1.UserInfo.Id != id1 {
-		t.Errorf(RED_BG + "FAILED: not equal id1 %d %d" + NO_COLOR + "\n", id1, user1.UserInfo.Id)
+	if user1.Uid != uid1 {
+		t.Errorf(RED_BG + "FAILED: not equal id1 %d %d" + NO_COLOR + "\n", uid1, user1.Uid)
 		return
 	}
-	if user1.UserInfo.Login != login1 {
-		t.Errorf(RED_BG + "FAILED: not equal login1 %s %s" + NO_COLOR + "\n", login1, user1.UserInfo.Login)
-		return
-	}
-	if user1.UserInfo.Passwd != passwd1 {
-		t.Errorf(RED_BG + "FAILED: not equal passwd1 %s %s" + NO_COLOR + "\n", passwd1, user1.UserInfo.Passwd)
-		return
-	}
-	if user1.UserInfo.Mail != mail1 {
-		t.Errorf(RED_BG + "FAILED: not equal mail1 %s %s" + NO_COLOR + "\n", mail1, user1.UserInfo.Mail)
-		return
-	}
-	if user2.UserInfo.Id != id2 {
-		t.Errorf(RED_BG + "FAILED: not equal id %d %d" + NO_COLOR + "\n", id2, user2.UserInfo.Id)
-		return
-	}
-	if user2.UserInfo.Login != login2 {
-		t.Errorf(RED_BG + "FAILED: not equal login %s %s" + NO_COLOR + "\n", login2, user2.UserInfo.Login)
-		return
-	}
-	if user2.UserInfo.Passwd != passwd2 {
-		t.Errorf(RED_BG + "FAILED: not equal passwd %s %s" + NO_COLOR + "\n", passwd2, user2.UserInfo.Passwd)
-		return
-	}
-	if user2.UserInfo.Mail != mail2 {
-		t.Errorf(RED_BG + "FAILED: not equal mail %s %s" + NO_COLOR + "\n", mail2, user2.UserInfo.Mail)
+	if user2.Uid != uid2 {
+		t.Errorf(RED_BG + "FAILED: not equal id %d %d" + NO_COLOR + "\n", uid2, user2.Uid)
 		return
 	}
 

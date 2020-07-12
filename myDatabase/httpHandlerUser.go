@@ -8,6 +8,7 @@ import (
 	"MatchaServer/session"
 	"log"
 	. "MatchaServer/config"
+	"strconv"
 )
 
 func consoleLog(r *http.Request, section string, message string) {
@@ -26,10 +27,140 @@ func consoleLogError(r *http.Request, section string, message string) {
 	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, RED_BG + "ERROR: " + NO_COLOR + message)
 }
 
+func fillUserStruct(request map[string]interface, user User) (User, error) {
+	var usefullFieldsExists, ok, isExist bool
+	var ok bool
+	var message string
+
+	message = "request for UPDATE was recieved: "
+
+	arg, isExist := request["mail"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Mail, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckMail(user.Mail)
+		if err != nil {
+			return user, err
+		}
+		message += " mail=" + BLUE + arg.string + NO_COLOR
+	}
+	arg, isExist = request["passwd"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Passwd, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckPasswd(user.Passwd)
+		if err != nil {
+			return user, err
+		}
+		message += " password=hidden"
+	}
+	arg, isExist = request["fname"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Fname, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckName(user.Fname)
+		if err != nil {
+			return user, err
+		}
+		message += " fname=" + BLUE + arg.string + NO_COLOR
+	}
+	arg, isExist = request["lname"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Lname, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckName(user.Lname)
+		if err != nil {
+			return user, err
+		}
+		message += " lname=" + BLUE + arg.string + NO_COLOR
+	}
+	arg, isExist = request["age"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Age, ok = arg.int
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		if user.Age > 80 || user.Age < 14 {
+			return user, fmt.Errorf("this age is forbidden")
+		}
+		message += " age=" + BLUE + strconv.Itoa(arg.int) + NO_COLOR
+	}
+	arg, isExist = request["gender"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Gender, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckGender(user.Gender)
+		if err != nil {
+			return user, err
+		}
+		message += " gender=" + BLUE + arg.string + NO_COLOR
+	}
+	arg, isExist = request["orientation"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Orientation, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckOrientation(user.Orientation)
+		if err != nil {
+			return user, err
+		}
+		message += " orientation=" + BLUE + arg.string + NO_COLOR
+	}
+	arg, isExist = request["biography"]
+	if isExist {
+		usefullFieldsExists = true
+		user.Biography, ok = arg.string
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		err = handlers.CheckBiography(user.Biography)
+		if err != nil {
+			return user, err
+		}
+		message += " biography=" + BLUE + arg.string + NO_COLOR
+	}
+	arg, isExist = request["avaPhotoID"]
+	if isExist {
+		usefullFieldsExists = true
+		user.AvaPhotoID, ok = arg.int
+		if !ok {
+			return user, fmt.Errorf("wrong type of param")
+		}
+		if user.AvaPhotoID < 0 {
+			return user, fmt.Errorf("this age is forbidden")
+		}
+		message += " avaPhotoID=" + BLUE + strconv.Itoa(arg.int) + NO_COLOR
+	}
+
+	if !usefullFieldsExists {
+		return user, fmt.Errorf("no usefull fields found")
+	}
+	consoleLog(r, "/user/", message)
+	return user, nil
+}
+
 // USER REGISTRATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, login, passwd, mail string
+		message, mail, passwd string
 		err error
 		request map[string]interface{}
 		isExist bool
@@ -54,13 +185,13 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 		panic("decode error")
 	}
 	
-	arg, isExist := request["login"]
+	arg, isExist = request["mail"]
 	if !isExist {
-		consoleLogWarning(r, "/user/", "login not exist")
+		consoleLogWarning(r, "/user/", "mail not exist")
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("login not exist")
+		panic("mail not exist")
 	}
-	login = arg.(string)
+	mail = arg.(string)
 
 	arg, isExist = request["passwd"]
 	if !isExist {
@@ -70,40 +201,15 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	}
 	passwd = arg.(string)
 
-	arg, isExist = request["mail"]
-	if !isExist {
-		consoleLogWarning(r, "/user/", "mail not exist")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("mail not exist")
-	}
-	mail = arg.(string)
-
-	message = "request was recieved, login: " + BLUE + login + NO_COLOR +
-		" mail: " + BLUE + mail + NO_COLOR +
+	message = "request was recieved, mail: " + BLUE + mail + NO_COLOR +
 		" password: hidden"
 	consoleLog(r, "/user/", message)
 
 	// Simple validation
-	if login == "" || mail == "" || passwd == "" {
-		consoleLogWarning(r, "/user/", "login or password or mail is empty")
+	if mail == "" || passwd == "" {
+		consoleLogWarning(r, "/user/", "mail or password is empty")
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("login or password or mail is empty")
-	}
-
-	err = handlers.CheckLogin(login)
-	if err != nil {
-		consoleLogWarning(r, "/user/", "login - " + err.Error())
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		// CheckLogin is my own function, so I can not afraid of invalid runes in error
-		panic("login error - " + err.Error())
-	}
-
-	err = handlers.CheckPasswd(passwd)
-	if err != nil {
-		consoleLogWarning(r, "/user/", "password - " + err.Error())
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		// CheckLogin is my own function, so I can not afraid of invalid runes in error
-		panic("password error - " + err.Error())
+		panic("mail or password is empty")
 	}
 
 	err = handlers.CheckMail(mail)
@@ -114,40 +220,46 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 		panic("mail error - " + err.Error())
 	}
 
-	isUserExists, err := conn.IsUserExists(login)
+	err = handlers.CheckPasswd(passwd)
+	if err != nil {
+		consoleLogWarning(r, "/user/", "password - " + err.Error())
+		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		// CheckLogin is my own function, so I can not afraid of invalid runes in error
+		panic("password error - " + err.Error())
+	}
+
+	isUserExists, err := conn.IsUserExists(mail)
 	if err != nil {
 		consoleLogError(r, "/user/", "IsUserExists returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("wrong request in database")
 	}
 	if isUserExists {
-		consoleLogWarning(r, "/user/", "user " + BLUE + login + NO_COLOR + " alredy exists")
-		w.WriteHeader(http.StatusAlreadyReported) // 208
+		consoleLogWarning(r, "/user/", "user " + BLUE + mail + NO_COLOR + " alredy exists")
+		w.WriteHeader(http.StatusIMUsed) // 226
 		panic("user " + login + " already exists")
 	}
 
-	err = conn.SetNewUser(login, handlers.PasswdHash(passwd), mail)
+	err = conn.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		consoleLogError(r, "/user/", "SetNewUser returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("Cannot register this user")
 	}
 	w.WriteHeader(201)
-	consoleLogSuccess(r, "/user/", "user " + BLUE + login + NO_COLOR + " was created successfully. No response body")
+	consoleLogSuccess(r, "/user/", "user " + BLUE + mail + NO_COLOR + " was created successfully. No response body")
 }
 
 // USER UPDATE BY PATCH METHOD. REQUEST AND RESPONSE DATA IS JSON.
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, newToken string
+		uid int
 		err error
+		isExist bool
+		user	User
 		request map[string]interface{}
-		update = map[string]string{}
-		isExist, usefullFieldsExists bool
 		token = r.Header.Get("x-auth-token")
-		sessionUser session.SessionItem
-		user	UserStruct
 	)
 
 	// all errors will be send to panic. This is recovery function
@@ -162,120 +274,44 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}(w)
 
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		consoleLogError(r, "/user/", "request decode error - " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("decode error")
-	}
-
-	message = "request for UPDATE was recieved: "
-
-	arg, isExist := request["login"]
-	if isExist {
-		usefullFieldsExists = true
-		update["login"] =  arg.(string)
-		message += " login=" + BLUE + update["login"] + NO_COLOR
-	}
-
-	arg, isExist = request["passwd"]
-	if isExist {
-		usefullFieldsExists = true
-		update["passwd"] =  arg.(string)
-		message += " password=hidden"
-	}
-
-	arg, isExist = request["mail"]
-	if isExist {
-		usefullFieldsExists = true
-		update["mail"] =  arg.(string)
-		message += " mail=" + BLUE + update["mail"] + NO_COLOR
-	}
-
-	consoleLog(r, "/user/", message)
-
-	if !usefullFieldsExists {
-		consoleLogWarning(r, "/user/", "no usefull fields found")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic("no usefull fields")
-	}
-
 	if token == "" {
 		consoleLogWarning(r, "/user/", "token is empty")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		w.WriteHeader(http.StatusBadRequest) // 400
 		panic("token is empty")
 	}
 
-	sessionUser, err = conn.session.FindUserByToken(token)
+	uid, err = handlers.TokenDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/", "FindUserByToken returned error - " + err.Error())
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		panic(err)
+		consoleLogWarning(r, "/user/", "token is empty")
+		w.WriteHeader(http.StatusBadRequest) // 400
+		panic("token is empty")
 	}
 
-	_, isExist = update["login"]
-	if isExist {
-		sessionUser.UserInfo.Login = update["login"]
-		err = handlers.CheckLogin(update["login"])
-		if err != nil {
-			consoleLogWarning(r, "/user/", "login - " + err.Error())
-			w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-			// CheckLogin is my own function, so I can not afraid of invalid runes in error
-			panic("login error - " + err.Error())
-		}
+	if !conn.session.IsUserLoggedByUid(uid) {
+		consoleLogWarning(r, "/user/", "user #" + BLUE + strconv.Itoa(uid) + NO_COLOR + " is not logged")
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		panic("user is not logged")
 	}
 
-	_, isExist = update["passwd"]
-	if isExist {
-		sessionUser.UserInfo.Passwd = handlers.PasswdHash(update["passwd"])
-		err = handlers.CheckPasswd(update["passwd"])
-		if err != nil {
-			consoleLogWarning(r, "/user/", "password - " + err.Error())
-			w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-			// CheckLogin is my own function, so I can not afraid of invalid runes in error
-			panic("password error - " + err.Error())
-		}
-	}
-
-	_, isExist = update["mail"]
-	if isExist {
-		sessionUser.UserInfo.Mail = update["mail"]
-		err = handlers.CheckMail(update["mail"])
-		if err != nil {
-			consoleLogWarning(r, "/user/", "mail - " + err.Error())
-			w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-			// CheckLogin is my own function, so I can not afraid of invalid runes in error
-			panic("mail error - " + err.Error())
-		}
-	}
-
-	user, err = conn.GetUserById(sessionUser.UserInfo.Id)
+	user, err = conn.GetUserByUid(uid)
 	if err != nil {
 		consoleLogError(r, "/user/", "GetUser returned error - " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("database request returned error")
 	}
 
-	_, isExist = update["login"]
-	if isExist {
-		user.Login = update["login"]
-	}
-
-	_, isExist = update["passwd"]
-	if isExist {
-		user.Passwd = handlers.PasswdHash(update["passwd"])
-	}
-
-	_, isExist = update["mail"]
-	if isExist {
-		user.Mail = update["mail"]
-	}
-
-	err = conn.session.UpdateSessionUser(token, sessionUser.UserInfo)
+	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/", "UpdateSessionUser returned error - " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("token decode error")
+		consoleLogError(r, "/user/", "request json decode failed - " + err.Error())
+		w.WriteHeader(http.StatusBadRequest) // 400
+		panic("json decode failed")
+	}
+
+	user, err = fillUserStruct(request, user)
+	if err != nil {
+		consoleLogWarning(r, "/user/", err.Error())
+		w.WriteHeader(http.StatusBadRequest) // 400
+		panic(err)
 	}
 
 	err = conn.UpdateUser(user)
@@ -285,19 +321,12 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 		panic("database request returned error")
 	}
 
-	_, isExist = update["login"]
-	if isExist {
-		newToken, err = handlers.TokenEncode(update["login"])
-		if err != nil {
-			consoleLogError(r, "/user/", "Token encode returned error - " + err.Error())
-			w.WriteHeader(http.StatusInternalServerError) // 500
-			panic("error in token encoding")
-		}
-		fmt.Fprintf(w, `{"x-auth-token":"` + newToken + `"}`)
-		consoleLogSuccess(r, "/user/", "user " + BLUE + user.Login + NO_COLOR + " was updated successfully. x-auth-token in response body")
-	} else {
-		consoleLogSuccess(r, "/user/", "user " + BLUE + user.Login + NO_COLOR + " was updated successfully. No response body")
-	}
+	// Проверить - принадлежит ли фото юзеру
+
+	w.WriteHeader(http.StatusOK) // 200
+	// Теперь не нужно обновлять токен аутентификации при изменении логина / почты
+	consoleLogSuccess(r, "/user/", "user " + BLUE + user.Login + NO_COLOR + " was updated successfully. No response body")
+
 }
 
 // USER REMOVE BY DELETE METHOD. NO REQUEST DATA. RESPONSE DATA IS JSON ONLY IN CASE OF ERROR.
@@ -349,21 +378,21 @@ func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	if passwd != sessionUser.UserInfo.Passwd {
-		consoleLogWarning(r, "/user/", "password is incorrect " + BLUE + passwd + " " + sessionUser.UserInfo.Passwd + NO_COLOR)
+	if passwd != sessionUser.User.Passwd {
+		consoleLogWarning(r, "/user/", "password is incorrect")// + BLUE + passwd + " " + sessionUser.UserInfo.Passwd + NO_COLOR)
 		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
 		panic("wrong password")
 	}
 
-	conn.session.DeleteUserSessionByLogin(sessionUser.UserInfo.Login)
+	conn.session.DeleteUserSessionByUid(sessionUser.User.Uid)
 
-	err = conn.DeleteUser(sessionUser.UserInfo.Id)
+	err = conn.DeleteUser(sessionUser.User.Uid)
 	if err != nil {
 		consoleLogError(r, "/user/", "DeleteUser returned error - " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		panic("database request returned error")
 	}
-	consoleLogSuccess(r, "/user/", "user " + BLUE + sessionUser.UserInfo.Login + NO_COLOR + " was removed successfully. No response body")
+	consoleLogSuccess(r, "/user/", "user " + BLUE + sessionUser.UserInfo.Mail + NO_COLOR + " was removed successfully. No response body")
 }
 
 // HTTP HANDLER FOR DOMAIN /user/ . IT HANDLES:
