@@ -33,14 +33,14 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/auth/", "request decode error")
-		w.WriteHeader(http.StatusInternalServerError) // 500
+		w.WriteHeader(http.StatusBadRequest) // 400
 		panic("decode error")
 	}
 
 	arg, isExist := request["mail"]
 	if !isExist {
 		consoleLogWarning(r, "/auth/", "mail not exist")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		w.WriteHeader(http.StatusBadRequest) // 400
 		panic("mail not exist")
 	}
 	mail = arg.(string)
@@ -48,7 +48,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	arg, isExist = request["passwd"]
 	if !isExist {
 		consoleLogWarning(r, "/auth/", "password not exist")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		w.WriteHeader(http.StatusBadRequest) // 400
 		panic("password not exist")
 	}
 	passwd = arg.(string)
@@ -59,7 +59,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	// Simple validation
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/auth/", "mail or password is empty")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
+		w.WriteHeader(http.StatusBadRequest) // 400
 		panic("mail or password is empty")
 	}
 
@@ -72,12 +72,11 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if (user == User{}) {
 		consoleLogWarning(r, "/auth/", "wrong mail or password")
-		w.WriteHeader(http.StatusNonAuthoritativeInfo) // 203
-		// w.WriteHeader(http.StatusNoContent) // 204 - With this status my json data will not add to response
+		w.WriteHeader(http.StatusBadRequest) // 400
 		panic("wrong mail or password")
 	}
 
-	token, err = conn.session.AddUserToSession(user)
+	token, err = conn.session.AddUserToSession(user.Uid)
 	if err != nil {
 		consoleLogError(r, "/auth/", "SetNewUser returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -92,7 +91,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 		panic("cannot convert to json")
 	}
 
-	tokenWS, err = conn.session.CreateTokenWS(mail) //handlers.TokenWebSocketAuth(mail)
+	tokenWS, err = conn.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		consoleLogError(r, "/auth/", "cannot create web socket token - " + err.Error())

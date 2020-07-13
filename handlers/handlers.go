@@ -205,6 +205,22 @@ func CheckMail(mail string) error {
 	return nil
 }
 
+func CheckName(name string) error {
+	return nil
+}
+
+func CheckGender(gender string) error {
+	return nil
+}
+
+func CheckOrientation(orientation string) error {
+	return nil
+}
+
+func CheckBiography(biography string) error {
+	return nil
+}
+
 func PasswdHash(passwd string) string {
 	passwd += passwdSalt
 	crcH := crc32.ChecksumIEEE([]byte(passwd))

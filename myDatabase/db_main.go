@@ -83,7 +83,7 @@ func (conn ConnDB) CreateUsersTable() error {
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
 		"biography VARCHAR(300) NOT NULL DEFAULT '', " +
 		"avaPhotoID INTEGER NOT NULL DEFAULT 0," +
-		"account_type acc_type NOT NULL DEFAULT 'not confirmed'," +
+		"accType acc_type NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")
 	return err
 }
@@ -101,22 +101,6 @@ func (conn ConnDB) SetNewUser(mail string, passwd string) error {
 		return fmt.Errorf("%s in executing", err)
 	}
 	return nil
-}
-
-func (conn ConnDB) IsUserExists(mail string) (bool, error) {
-	stmt, err := conn.db.Prepare("SELECT id FROM users WHERE mail=$1")
-	if err != nil {
-		return false, err
-	}
-	defer stmt.Close()
-	row, err := stmt.Query(mail)
-	if err != nil {
-		return false, err
-	}
-	if row.Next() {
-		return true, nil
-	}
-	return false, nil
 }
 
 func (conn *ConnDB) DeleteUser(uid int) error {

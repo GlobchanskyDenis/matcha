@@ -269,7 +269,6 @@ func (T Session) GetLoggedUsersUidSlice() []int {
 	T.mu.Lock()
 	for uid = range T.session {
 		result = append(result, uid)
-		// fmt.Println("\033[36m", "user", user.Login, "is logged", "\033[m") //////////////////
 	}
 	T.mu.Unlock()
 	return result

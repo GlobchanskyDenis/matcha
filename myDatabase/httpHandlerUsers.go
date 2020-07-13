@@ -54,7 +54,12 @@ func (conn *ConnDB) getUsersLogged(w http.ResponseWriter, r *http.Request) {
 		}
 	}(w)
 
-	users := conn.session.GetLoggedUsersInfo()
+	users, err := conn.GetLoggedUsers(conn.session.GetLoggedUsersUidSlice())
+	if err != nil {
+		consoleLogError(r, "/users/", "GetLoggedUsers returned error" + err.Error())
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		panic("database returned error")
+	}
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
 		consoleLogError(r, "/users/", "Marshal returned error" + err.Error())
@@ -82,7 +87,7 @@ func (conn *ConnDB) getUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}(w)
 
-	consoleLog(r, "/users/", "request was recieved with filter \033[34m" + filter)
+	consoleLog(r, "/users/", "request was recieved with filter " + BLUE + filter + NO_COLOR)
 
 	if filter != "all" && filter != "logged" {
 		consoleLogWarning(r, "/users/", "filter " + BLUE + filter + NO_COLOR + " not exist")

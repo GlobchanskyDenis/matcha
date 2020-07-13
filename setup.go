@@ -59,8 +59,8 @@ func main() {
 		fmt.Println("\033[32m", "- done", "\033[m")
 	}
 
-	fmt.Print("Add admin user\t\t")
-	err = conn.SetNewUser("admin", handlers.PasswdHash("admin"), "adminMail@gmail.com")
+	fmt.Print("Add admin@gmail.com user")
+	err = conn.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
 	if err != nil {
 		fmt.Println("\033[31m", "- error:", err, "\033[m")
 		panic(err)
