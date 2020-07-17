@@ -18,30 +18,20 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 		isExist bool
 	)
 
-	// All errors will be send to panic. This is recovery function
-	defer func(w http.ResponseWriter) {
-		if err := recover(); err != nil {
-			switch err.(type) {
-			case error:
-				fmt.Fprintf(w, `{"error":"` + err.(error).Error() + `"}`)
-			case string:
-				fmt.Fprintf(w, `{"error":"` + err.(string) + `"}`)
-			}
-		}
-	}(w)
-
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/auth/", "request decode error")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		panic("decode error")
+		fmt.Fprintf(w, `{"error":"` + "decode error" + `"}`)
+		return
 	}
 
 	arg, isExist := request["mail"]
 	if !isExist {
 		consoleLogWarning(r, "/auth/", "mail not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		panic("mail not exist")
+		fmt.Fprintf(w, `{"error":"` + "mail not exist" + `"}`)
+		return
 	}
 	mail = arg.(string)
 
@@ -49,7 +39,8 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/auth/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		panic("password not exist")
+		fmt.Fprintf(w, `{"error":"` + "password not exist" + `"}`)
+		return
 	}
 	passwd = arg.(string)
 
@@ -60,27 +51,30 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/auth/", "mail or password is empty")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		panic("mail or password is empty")
+		fmt.Fprintf(w, `{"error":"` + "mail or password is empty" + `"}`)
+		return
 	}
 
-	// Look for user in database
 	user, err = conn.GetUserDataForAuth(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("wrong request in database")
+		fmt.Fprintf(w, `{"error":"` + "database request failed" + `"}`)
+		return
 	}
 	if (user == User{}) {
 		consoleLogWarning(r, "/auth/", "wrong mail or password")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		panic("wrong mail or password")
+		fmt.Fprintf(w, `{"error":"` + "wrong mail or password" + `"}`)
+		return
 	}
 
 	token, err = conn.session.AddUserToSession(user.Uid)
 	if err != nil {
 		consoleLogError(r, "/auth/", "SetNewUser returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("Cannot authenticate this user")
+		fmt.Fprintf(w, `{"error":"` + "Cannot authenticate this user" + `"}`)
+		return
 	}
 
 	jsonUser, err := json.Marshal(user)
@@ -88,7 +82,8 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		consoleLogWarning(r, "/auth/", "Marshal returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("cannot convert to json")
+		fmt.Fprintf(w, `{"error":"` + "cannot convert to json" + `"}`)
+		return
 	}
 
 	tokenWS, err = conn.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
@@ -96,12 +91,14 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		consoleLogError(r, "/auth/", "cannot create web socket token - " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("cannot create web socket token")
+		fmt.Fprintf(w, `{"error":"` + "cannot create web socket token" + `"}`)
+		return
 	}
 
 	// This is my valid case. Response status will be set automaticly to 200.
 	response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 	fmt.Fprintf(w, response)
+	w.WriteHeader(http.StatusOK) // 200
 	consoleLogSuccess(r, "/auth/", "User " + BLUE + mail + NO_COLOR + " was authenticated successfully")
 }
 

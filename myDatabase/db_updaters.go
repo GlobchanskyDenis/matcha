@@ -1,7 +1,8 @@
 package myDatabase
 
 import (
-	"fmt"
+	// "fmt"
+	"errors"
 	"MatchaServer/config"
 )
 
@@ -11,14 +12,14 @@ func (conn *ConnDB) UpdateUser(user config.User) error {
 				"orientation=$8, biography=$9, avaPhotoID=$10, accType=$11, rating=$12  " +
 				"WHERE uid=$1")
 	if err != nil {
-		return fmt.Errorf("%s in preparing", err)
+		return errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(user.Uid, user.Mail, user.Passwd, user.Fname,
 					user.Lname, user.Age, user.Gender, user.Orientation,
 					user.Biography, user.AvaPhotoID, user.AccType, user.Rating)
 	if err != nil {
-		return fmt.Errorf("%s in executing", err)
+		return errors.New(err.Error() + " in executing")
 	}
 	return nil
 }

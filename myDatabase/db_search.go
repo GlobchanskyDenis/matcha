@@ -1,7 +1,8 @@
 package myDatabase
 
 import (
-	"fmt"
+	// "fmt"
+	"errors"
 	"database/sql"
 	_ "github.com/lib/pq"
 	"MatchaServer/config"
@@ -42,19 +43,19 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
 	if err != nil {
-		return user, fmt.Errorf("%s in preparing", err)
+		return user, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(uid)
 	if err != nil {
-		return user, fmt.Errorf("%s in query", err)
+		return user, errors.New(err.Error() + " in query")
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.Passwd), &(user.Fname),
 			&(user.Lname), &(user.Age), &(user.Gender), &(user.Orientation),
 			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
 		if err != nil {
-			return user, fmt.Errorf("%s", err)
+			return user, err
 		}
 	}
 	return user, nil
@@ -69,19 +70,19 @@ func (db *ConnDB) GetUserDataForAuth(mail string, passwd string) (config.User, e
 
 	stmt, err := db.db.Prepare("SELECT * FROM users WHERE mail=$1 AND passwd=$2")
 	if err != nil {
-		return user, fmt.Errorf("%s in preparing", err)
+		return user, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(mail, passwd)
 	if err != nil {
-		return user, fmt.Errorf("%s in query", err)
+		return user, errors.New(err.Error() + " in query")
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.Passwd), &(user.Fname),
 			&(user.Lname), &(user.Age), &(user.Gender), &(user.Orientation),
 			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
 		if err != nil {
-			return user, fmt.Errorf("%s", err)
+			return user, err
 		}
 	}
 	return user, nil
@@ -103,11 +104,11 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 	tmp := []byte(query)
 	tmp = tmp[:(len(tmp) - 2)]
 	query = string(tmp) + ")"
-	fmt.Println(query)
+	// fmt.Println(query)
 
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
-		return users, fmt.Errorf("%s in preparing", err)
+		return users, errors.New(err.Error() + " in preparing")
 	}
 
 	interfaceSlice := make([]interface{}, len(uid))

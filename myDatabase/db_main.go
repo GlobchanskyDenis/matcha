@@ -1,7 +1,8 @@
 package myDatabase
 
 import (
-	"fmt"
+	// "fmt"
+	"errors"
 	"MatchaServer/config"
 	"MatchaServer/session"
 	"database/sql"
@@ -93,12 +94,12 @@ func (conn ConnDB) CreateUsersTable() error {
 func (conn ConnDB) SetNewUser(mail string, passwd string) error {
 	stmt, err := conn.db.Prepare("INSERT INTO users (mail, passwd) VALUES ($1, $2)")
 	if err != nil {
-		return fmt.Errorf("%s in preparing", err)
+		return errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(mail, passwd)
 	if err != nil {
-		return fmt.Errorf("%s in executing", err)
+		return errors.New(err.Error() + " in executing")
 	}
 	return nil
 }
@@ -106,12 +107,12 @@ func (conn ConnDB) SetNewUser(mail string, passwd string) error {
 func (conn *ConnDB) DeleteUser(uid int) error {
 	stmt, err := conn.db.Prepare("DELETE FROM users WHERE uid=$1")
 	if err != nil {
-		return fmt.Errorf("%s in preparing", err)
+		return errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uid)
 	if err != nil {
-		return fmt.Errorf("%s in executing", err)
+		return errors.New(err.Error() + " in executing")
 	}
 	return nil
 }

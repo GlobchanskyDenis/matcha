@@ -29,8 +29,8 @@ type User struct {
 	Uid         int    `json:"uid"`
 	Mail        string `json:"mail,,omitempty"`
 	Passwd      string `json:"-"`
-	Fname		string `json:"fname,,omitempty"`
-	Lname		string `json:"lname,,omitempty"`
+	Fname		string `json:"fname"`
+	Lname		string `json:"lname"`
 	Age         int    `json:"age,,omitempty"`
 	Gender      string `json:"gender,,omitempty"`
 	Orientation string `json:"orientation,,omitempty"`

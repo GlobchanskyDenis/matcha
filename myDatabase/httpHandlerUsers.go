@@ -9,90 +9,59 @@ import (
 )
 
 func (conn *ConnDB) getUsersAll(w http.ResponseWriter, r *http.Request) {
-	var (
-		filter = r.URL.Query().Get("filter")
-	)
-
-	// all errors will be send to panic. This is recovery function
-	defer func(w http.ResponseWriter) {
-		if err := recover(); err != nil {
-			switch err.(type) {
-			case error:
-				fmt.Fprintf(w, `{"error":"` + err.(error).Error() + `"}`)
-			case string:
-				fmt.Fprintf(w, `{"error":"` + err.(string) + `"}`)
-			}
-		}
-	}(w)
+	var filter = r.URL.Query().Get("filter")
 
 	users, err := conn.SearchUsersByOneFilter(filter)
 	if err != nil {
 		consoleLogError(r, "/users/", "SearchUsersByOneFilter returned error " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("database request returned error")
+		fmt.Fprintf(w, `{"error":"` + "database request returned error" + `"}`)
+		return
 	}
+
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
 		consoleLogError(r, "/users/", "Marshal returned error" + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("json convert error")
+		fmt.Fprintf(w, `{"error":"` + "json convert error" + `"}`)
+		return
 	}
+	w.WriteHeader(http.StatusOK) // 200
 	w.Write([]byte(jsonUsers))
 	consoleLogSuccess(r, "/users/", "array of all users was transmitted. Users amount " +  strconv.Itoa(len(users)))
 }
 
 func (conn *ConnDB) getUsersLogged(w http.ResponseWriter, r *http.Request) {
-	// all errors will be send to panic. This is recovery function
-	defer func(w http.ResponseWriter) {
-		if err := recover(); err != nil {
-			switch err.(type) {
-			case error:
-				fmt.Fprintf(w, `{"error":"` + err.(error).Error() + `"}`)
-			case string:
-				fmt.Fprintf(w, `{"error":"` + err.(string) + `"}`)
-			}
-		}
-	}(w)
 
 	users, err := conn.GetLoggedUsers(conn.session.GetLoggedUsersUidSlice())
 	if err != nil {
 		consoleLogError(r, "/users/", "GetLoggedUsers returned error" + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("database returned error")
+		fmt.Fprintf(w, `{"error":"` + "database request failed" + `"}`)
+		return
 	}
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
 		consoleLogError(r, "/users/", "Marshal returned error" + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		panic("json convert error")
+		fmt.Fprintf(w, `{"error":"` + "json convert error" + `"}`)
+		return
 	}
+	w.WriteHeader(http.StatusOK) // 200
 	w.Write([]byte(jsonUsers))
 	consoleLogSuccess(r, "/users/", "array of logged users was transmitted. Users amount " +  strconv.Itoa(len(users)))
 }
 
 func (conn *ConnDB) getUsers(w http.ResponseWriter, r *http.Request) {
-	var (
-		filter = r.URL.Query().Get("filter")
-	)
-
-	// all errors will be send to panic. This is recovery function
-	defer func(w http.ResponseWriter) {
-		if err := recover(); err != nil {
-			switch err.(type) {
-			case error:
-				fmt.Fprintf(w, `{"error":"` + err.(error).Error() + `"}`)
-			case string:
-				fmt.Fprintf(w, `{"error":"` + err.(string) + `"}`)
-			}
-		}
-	}(w)
+	var filter = r.URL.Query().Get("filter")
 
 	consoleLog(r, "/users/", "request was recieved with filter " + BLUE + filter + NO_COLOR)
 
 	if filter != "all" && filter != "logged" {
 		consoleLogWarning(r, "/users/", "filter " + BLUE + filter + NO_COLOR + " not exist")
 		w.WriteHeader(http.StatusResetContent) // 205
-		panic("no such filter - " + filter)
+		fmt.Fprintf(w, `{"error":"` + "no such filter - " + filter + `"}`)
+		return
 	}
 
 	if filter == "all" { conn.getUsersAll(w, r) }

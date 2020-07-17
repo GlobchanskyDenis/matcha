@@ -179,10 +179,14 @@
 			function UpdateUser() {
 				var mail = document.forms['upd']['mail'].value
 				var passwd = document.forms['upd']['passwd'].value
-				// var phone = document.forms['upd']['phone'].value
+				var fname = document.forms['upd']['fname'].value
+				var lname = document.forms['upd']['lname'].value
+				var age = document.forms['upd']['age'].value
+				var gender = document.forms['upd']['gender'].value
 				var request = ""
 
-				if (mail == "" && passwd == "") {
+				if (mail == "" && passwd == "" && fname == "" && lname == "" &&
+						age == "" && gender == "") {
 					console.log("update: all fields are empty")
 					return
 				}
@@ -196,12 +200,31 @@
 					}
 					request += "\"passwd\":"+JSON.stringify(passwd)
 				}
-				// if (phone != "") {
-				// 	if (request != "") {
-				// 		request += ","
-				// 	}
-				// 	request += "\"phone\":"+JSON.stringify(phone)
-				// }
+				if (fname != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"fname\":"+JSON.stringify(fname)
+				}
+				if (lname != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"lname\":"+JSON.stringify(lname)
+				}
+				if (age != "") {
+					if (request != "") {
+						request += ","
+					}
+					var validAge = Number(age)
+					request += "\"age\":"+JSON.stringify(validAge)
+				}
+				if (gender != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"gender\":"+JSON.stringify(gender)
+				}
 				request = "{"+request+"}"
 
 				let xhr = new XMLHttpRequest();
@@ -232,7 +255,10 @@
 					document.getElementById("responseField").innerHTML = "Update was done successfully"
 					document.forms['upd']['mail'].value = "";
 					document.forms['upd']['passwd'].value = "";
-					// document.forms['upd']['phone'].value = "";
+					document.forms['upd']['fname'].value = "";
+					document.forms['upd']['lname'].value = "";
+					document.forms['upd']['age'].value = "";
+					document.forms['upd']['gender'].value = "";
 				}
 
 				xhr.onerror = function() {
@@ -292,8 +318,10 @@
 		<form name="upd">
 			<input type="text" name="mail" placeholder="mail">
 			<input type="password" name="passwd" placeholder="password">
-			<!-- <input type="text" name="mail" placeholder="mail">
-			<input type="text" name="phone" placeholder="phone"> -->
+			<input type="text" name="fname" placeholder="first name">
+			<input type="text" name="lname" placeholder="last name">
+			<input type="text" name="age" placeholder="age">
+			<input type="text" name="gender" placeholder="gender">
 		</form>
 		<input type="submit" value="Изменить данные" onclick="UpdateUser()">
 
