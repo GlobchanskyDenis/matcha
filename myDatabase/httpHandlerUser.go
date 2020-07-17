@@ -1,13 +1,13 @@
 package myDatabase
 
 import (
-	"fmt"
-	"errors"
-	"net/http"
-	"encoding/json"
-	"MatchaServer/handlers"
-	"log"
 	. "MatchaServer/config"
+	"MatchaServer/handlers"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
 	"strconv"
 )
 
@@ -16,15 +16,15 @@ func consoleLog(r *http.Request, section string, message string) {
 }
 
 func consoleLogSuccess(r *http.Request, section string, message string) {
-	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, GREEN_BG + "SUCCESS: " + NO_COLOR + message)
+	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, GREEN_BG+"SUCCESS: "+NO_COLOR+message)
 }
 
 func consoleLogWarning(r *http.Request, section string, message string) {
-	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, YELLOW_BG + "WARNING: " + NO_COLOR + message)
+	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, YELLOW_BG+"WARNING: "+NO_COLOR+message)
 }
 
 func consoleLogError(r *http.Request, section string, message string) {
-	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, RED_BG + "ERROR: " + NO_COLOR + message)
+	log.Printf("%s %7s %7s %s\n", r.RemoteAddr, r.Method, section, RED_BG+"ERROR: "+NO_COLOR+message)
 }
 
 func fillUserStruct(request map[string]interface{}, user User) (User, string, error) {
@@ -164,24 +164,24 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd string
-		err error
-		request map[string]interface{}
-		isExist bool
+		err                   error
+		request               map[string]interface{}
+		isExist               bool
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/", "request json decode failed - " + err.Error())
+		consoleLogError(r, "/user/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "json decode failed" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"json decode failed"+`"}`)
 		return
 	}
-	
+
 	arg, isExist := request["mail"]
 	if !isExist {
 		consoleLogWarning(r, "/user/", "mail not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "mail not exist" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"mail not exist"+`"}`)
 		return
 	}
 	mail = arg.(string)
@@ -190,7 +190,7 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "password not exist" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"password not exist"+`"}`)
 		return
 	}
 	passwd = arg.(string)
@@ -202,100 +202,100 @@ func (conn *ConnDB) regUser(w http.ResponseWriter, r *http.Request) {
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/user/", "mail or password is empty")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "mail or password is empty" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"mail or password is empty"+`"}`)
 		return
 	}
 
 	err = handlers.CheckMail(mail)
 	if err != nil {
-		consoleLogWarning(r, "/user/", "mail - " + err.Error())
+		consoleLogWarning(r, "/user/", "mail - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
 		// CheckMail is my own function, so I can not afraid of invalid runes in error
-		fmt.Fprintf(w, `{"error":"` + "mail error - " + err.Error() + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"mail error - "+err.Error()+`"}`)
 		return
 	}
 
 	err = handlers.CheckPasswd(passwd)
 	if err != nil {
-		consoleLogWarning(r, "/user/", "password - " + err.Error())
+		consoleLogWarning(r, "/user/", "password - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
 		// CheckPasswd is my own function, so I can not afraid of invalid runes in error
-		fmt.Fprintf(w, `{"error":"` + "password error - " + err.Error() + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"password error - "+err.Error()+`"}`)
 		return
 	}
 
 	isUserExists, err := conn.IsUserExists(mail)
 	if err != nil {
-		consoleLogError(r, "/user/", "IsUserExists returned error " + err.Error())
+		consoleLogError(r, "/user/", "IsUserExists returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "database request returned error" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
 		return
 	}
 	if isUserExists {
-		consoleLogWarning(r, "/user/", "user " + BLUE + mail + NO_COLOR + " alredy exists")
+		consoleLogWarning(r, "/user/", "user "+BLUE+mail+NO_COLOR+" alredy exists")
 		w.WriteHeader(http.StatusNotAcceptable) // 406
-		fmt.Fprintf(w, `{"error":"` + "user " + mail + " already exists" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"user "+mail+" already exists"+`"}`)
 		return
 	}
 
 	err = conn.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
-		consoleLogError(r, "/user/", "SetNewUser returned error " + err.Error())
+		consoleLogError(r, "/user/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "Cannot register this user" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"Cannot register this user"+`"}`)
 		return
 	}
 	w.WriteHeader(201)
-	consoleLogSuccess(r, "/user/", "user " + BLUE + mail + NO_COLOR + " was created successfully. No response body")
+	consoleLogSuccess(r, "/user/", "user "+BLUE+mail+NO_COLOR+" was created successfully. No response body")
 }
 
 // USER UPDATE BY PATCH METHOD. REQUEST AND RESPONSE DATA IS JSON.
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid int
-		err error
-		user	User
+		uid     int
+		err     error
+		user    User
 		message string
 		request map[string]interface{}
-		token = r.Header.Get("x-auth-token")
+		token   = r.Header.Get("x-auth-token")
 	)
 
 	if token == "" {
 		consoleLogWarning(r, "/user/", "token is empty")
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"` + "token is empty" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"token is empty"+`"}`)
 		return
 	}
 
 	uid, err = handlers.TokenDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/", "TokenDecode returned error - " + err.Error())
+		consoleLogWarning(r, "/user/", "TokenDecode returned error - "+err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"` + "token decoding error" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"token decoding error"+`"}`)
 		return
 	}
 
 	if !conn.session.IsUserLoggedByUid(uid) {
-		consoleLogWarning(r, "/user/", "user #" + BLUE + strconv.Itoa(uid) + NO_COLOR + " is not logged")
+		consoleLogWarning(r, "/user/", "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"` + "user is not logged" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"user is not logged"+`"}`)
 		return
 	}
 
 	user, err = conn.GetUserByUid(uid)
 	if err != nil {
-		consoleLogError(r, "/user/", "GetUser returned error - " + err.Error())
+		consoleLogError(r, "/user/", "GetUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "database request returned error" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
 		return
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/", "request json decode failed - " + err.Error())
+		consoleLogError(r, "/user/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "json decode failed" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"json decode failed"+`"}`)
 		return
 	}
 
@@ -303,7 +303,7 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogWarning(r, "/user/", err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + err.Error() + `"}`)
+		fmt.Fprintf(w, `{"error":"`+err.Error()+`"}`)
 		return
 	}
 
@@ -311,16 +311,16 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = conn.UpdateUser(user)
 	if err != nil {
-		consoleLogError(r, "/user/", "UpdateUser returned error - " + err.Error())
+		consoleLogError(r, "/user/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "database request returned error" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
 		return
 	}
 
 	// Проверить - принадлежит ли фото юзеру
 
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/user/", "user #" + BLUE + strconv.Itoa(user.Uid) + NO_COLOR + " was updated successfully. No response body")
+	consoleLogSuccess(r, "/user/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+" was updated successfully. No response body")
 }
 
 // USER REMOVE BY DELETE METHOD. NO REQUEST DATA. RESPONSE DATA IS JSON ONLY IN CASE OF ERROR.
@@ -328,30 +328,30 @@ func (conn *ConnDB) updateUser(w http.ResponseWriter, r *http.Request) {
 func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		message string
-		err error
-		token = r.Header.Get("x-auth-token")
-		user User
+		err     error
+		token   = r.Header.Get("x-auth-token")
+		user    User
 		request map[string]interface{}
-		passwd string
-		uid int
+		passwd  string
+		uid     int
 	)
 
-	message = "request for DELETE was recieved"//: token=" + BLUE + token + NO_COLOR
+	message = "request for DELETE was recieved" //: token=" + BLUE + token + NO_COLOR
 	consoleLog(r, "/user/", message)
 
 	uid, err = handlers.TokenDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/", "TokenDecode returned error - " + err.Error())
+		consoleLogWarning(r, "/user/", "TokenDecode returned error - "+err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"` + err.Error() + `"}`)
+		fmt.Fprintf(w, `{"error":"`+err.Error()+`"}`)
 		return
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/", "request json decode failed - " + err.Error())
+		consoleLogError(r, "/user/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "json decode failed" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"json decode failed"+`"}`)
 		return
 	}
 
@@ -359,23 +359,23 @@ func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "password not exist" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"password not exist"+`"}`)
 		return
 	}
 	passwd = handlers.PasswdHash(arg.(string))
 
 	user, err = conn.GetUserByUid(uid)
 	if err != nil {
-		consoleLogError(r, "/user/", "GetUserByUid returned error - " + err.Error())
+		consoleLogError(r, "/user/", "GetUserByUid returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + err.Error() + `"}`)
+		fmt.Fprintf(w, `{"error":"`+err.Error()+`"}`)
 		return
 	}
 
 	if passwd != user.Passwd {
-		consoleLogWarning(r, "/user/", "password is incorrect")// + BLUE + passwd + " " + sessionUser.UserInfo.Passwd + NO_COLOR)
-		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "wrong password" + `"}`)
+		consoleLogWarning(r, "/user/", "password is incorrect") // + BLUE + passwd + " " + sessionUser.UserInfo.Passwd + NO_COLOR)
+		w.WriteHeader(http.StatusBadRequest)                    // 400
+		fmt.Fprintf(w, `{"error":"`+"wrong password"+`"}`)
 		return
 	}
 
@@ -383,14 +383,14 @@ func (conn *ConnDB) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	err = conn.DeleteUser(user.Uid)
 	if err != nil {
-		consoleLogError(r, "/user/", "DeleteUser returned error - " + err.Error())
+		consoleLogError(r, "/user/", "DeleteUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "database request returned error" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
 		return
 	}
-	
+
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/user/", "user #" + BLUE + strconv.Itoa(user.Uid) + NO_COLOR + " was removed successfully. No response body")
+	consoleLogSuccess(r, "/user/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+" was removed successfully. No response body")
 }
 
 // HTTP HANDLER FOR DOMAIN /user/ . IT HANDLES:
@@ -408,7 +408,7 @@ func (conn *ConnDB) HttpHandlerUser(w http.ResponseWriter, r *http.Request) {
 		conn.regUser(w, r)
 
 	} else if r.Method == "OPTIONS" {
-	// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
+		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 
 		consoleLog(r, "/user/", "client wants to know what methods are allowed")
 
@@ -421,7 +421,7 @@ func (conn *ConnDB) HttpHandlerUser(w http.ResponseWriter, r *http.Request) {
 		conn.deleteUser(w, r)
 
 	} else {
-	// ALL OTHERS METHODS
+		// ALL OTHERS METHODS
 
 		consoleLogWarning(r, "/user/", "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405

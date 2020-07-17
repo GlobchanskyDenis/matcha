@@ -2,10 +2,10 @@ package myDatabase
 
 import (
 	// "fmt"
-	"errors"
 	"MatchaServer/config"
 	"MatchaServer/session"
 	"database/sql"
+	"errors"
 	_ "github.com/lib/pq"
 	"strconv"
 )
@@ -29,7 +29,7 @@ func (conn *ConnDB) Connect() error {
 
 func (Conn ConnDB) TruncateUsersTable() error {
 	db := Conn.db
-	_, err := db.Exec("TRUNCATE TABLE users")//IF EXISTS 
+	_, err := db.Exec("TRUNCATE TABLE users") //IF EXISTS
 	return err
 }
 

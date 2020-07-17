@@ -1,24 +1,25 @@
 package session
 
 import (
-	"fmt"
+	"MatchaServer/handlers"
+	"errors"
+	"github.com/gorilla/websocket"
+	"strconv"
 	"sync"
 	"time"
-	"MatchaServer/handlers"
-	"github.com/gorilla/websocket"
 )
 
 type tokenChanItem struct {
 	token string
-	err	  error
+	err   error
 }
 
 type SessionItem struct {
-	Uid			int
+	Uid         int
 	Expires     time.Time
 	LastVisited time.Time
-	TokenWS		string
-	ws			[](*websocket.Conn)
+	TokenWS     string
+	ws          [](*websocket.Conn)
 }
 
 type Session struct {
@@ -48,7 +49,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 	newItem.ws = []*websocket.Conn{}
 	newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
 
-	ret = <- ch
+	ret = <-ch
 	if ret.err != nil {
 		return ret.token, ret.err
 	}
@@ -118,13 +119,13 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return SessionItem{}, fmt.Errorf("hmm... looks like user #%d isnt logged", uid)
+		return SessionItem{}, errors.New("hmm... looks like user #" + strconv.Itoa(uid) + " isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return SessionItem{}, fmt.Errorf("this session is expired")
+		return SessionItem{}, errors.New("this session is expired")
 	}
 	item.LastVisited = time.Now()
 	T.mu.Lock()
@@ -160,16 +161,16 @@ func (T *Session) CreateTokenWS(uid int) (string, error) {
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return "", fmt.Errorf("hmm... looks like user #%d isnt logged", uid)
+		return "", errors.New("hmm... looks like user #" + strconv.Itoa(uid) + " isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return "", fmt.Errorf("this session is expired")
+		return "", errors.New("this session is expired")
 	}
 	item.LastVisited = time.Now()
-	item.TokenWS = <- ch
+	item.TokenWS = <-ch
 	T.mu.Lock()
 	T.session[uid] = item
 	T.mu.Unlock()
@@ -184,13 +185,13 @@ func (T *Session) GetTokenWS(uid int) (string, error) {
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return "", fmt.Errorf("hmm... looks like user #%d isnt logged", uid)
+		return "", errors.New("hmm... looks like user #" + strconv.Itoa(uid) + " isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return "", fmt.Errorf("this session is expired")
+		return "", errors.New("this session is expired")
 	}
 	return item.TokenWS, nil
 }
@@ -206,8 +207,8 @@ func (T *Session) AddWSConnection(token string, newWebSocket *websocket.Conn, ws
 	}
 	uid = item.Uid
 	// if len(item.ws) != 0 {
-		// Предупредить все остальные соединения о соединении с новым устройством
-		// используя в качестве информации о новом устройстве wsMeta
+	// Предупредить все остальные соединения о соединении с новым устройством
+	// используя в качестве информации о новом устройстве wsMeta
 	// }
 	item.ws = append(item.ws, newWebSocket)
 	T.mu.Lock()
@@ -229,7 +230,7 @@ func (T *Session) RemoveWSConnection(token string, webSocketToRemove *websocket.
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return true, fmt.Errorf("hmm... looks like this user has no ws connections")
+		return true, errors.New("hmm... looks like this user has no ws connections")
 	}
 	if len(item.ws) == 1 {
 		T.mu.Lock()
@@ -237,14 +238,14 @@ func (T *Session) RemoveWSConnection(token string, webSocketToRemove *websocket.
 		T.mu.Unlock()
 		return true, nil
 	}
-	for i:=0; i<len(item.ws); i++ {
+	for i := 0; i < len(item.ws); i++ {
 		if item.ws[i] == webSocketToRemove {
 			if i == 0 {
 				item.ws = item.ws[1:]
 			} else if i == len(item.ws) {
 				item.ws = item.ws[:i]
 			} else {
-				item.ws = append(item.ws[:i], item.ws[(i + 1):]...)
+				item.ws = append(item.ws[:i], item.ws[(i+1):]...)
 			}
 			T.mu.Lock()
 			T.session[uid] = item
@@ -252,7 +253,7 @@ func (T *Session) RemoveWSConnection(token string, webSocketToRemove *websocket.
 			return false, nil
 		}
 	}
-	return false, fmt.Errorf("hmm... looks like this websocket isnt belong to this user")
+	return false, errors.New("hmm... looks like this websocket isnt belong to this user")
 }
 
 func (T *Session) DeleteUserSessionByUid(uid int) {
@@ -263,8 +264,8 @@ func (T *Session) DeleteUserSessionByUid(uid int) {
 
 func (T Session) GetLoggedUsersUidSlice() []int {
 	var (
-		uid		int
-		result	= []int{}
+		uid    int
+		result = []int{}
 	)
 	T.mu.Lock()
 	for uid = range T.session {

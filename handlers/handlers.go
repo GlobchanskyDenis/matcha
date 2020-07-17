@@ -1,24 +1,23 @@
 package handlers
 
 import (
+	"MatchaServer/config"
+	"errors"
 	"hash/crc32"
 	"strconv"
 	"time"
-	"fmt"
-	"errors"
 	"unicode/utf8"
-	"MatchaServer/config"
 
-	"encoding/base64"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"io"
 )
 
 const (
 	passwdSalt = "+++"
-	masterKey = "passphrasewhichneedstobe32bytes!"
+	masterKey  = "passphrasewhichneedstobe32bytes!"
 )
 
 func isLetter(c rune) bool {
@@ -72,16 +71,16 @@ func isMailRunePermitted(c rune) bool {
 
 func CheckPasswd(passwd string) error {
 	var (
-		wasLetter bool
-		wasDigit bool
+		wasLetter      bool
+		wasDigit       bool
 		wasSpacialChar bool
-		buf = []rune(passwd)
+		buf            = []rune(passwd)
 	)
 	if utf8.RuneCountInString(passwd) < config.PASSWD_MIN_LEN {
-		return fmt.Errorf("too short password")
+		return errors.New("too short password")
 	}
 
-	for i:=0; i<len(buf); i++ {
+	for i := 0; i < len(buf); i++ {
 		if isLetter(buf[i]) {
 			wasLetter = true
 		}
@@ -89,69 +88,69 @@ func CheckPasswd(passwd string) error {
 			wasDigit = true
 		}
 		if buf[i] == '!' || buf[i] == '@' || buf[i] == '#' || buf[i] == '$' ||
-				buf[i] == '%' || buf[i] == '^' || buf[i] == '&' || buf[i] == '*' {
+			buf[i] == '%' || buf[i] == '^' || buf[i] == '&' || buf[i] == '*' {
 			wasSpacialChar = true
 		}
 	}
 	if !wasLetter {
-		return fmt.Errorf("Password should contain letters")
+		return errors.New("Password should contain letters")
 	}
 	if !wasDigit {
-		return fmt.Errorf("Password should contain digits")
+		return errors.New("Password should contain digits")
 	}
 	if !wasSpacialChar {
-		return fmt.Errorf("Password should contain special chars")
+		return errors.New("Password should contain special chars")
 	}
 	return nil
 }
 
 func CheckMail(mail string) error {
 	var (
-		buf = []rune(mail)
-		length = len(buf)
+		buf        = []rune(mail)
+		length     = len(buf)
 		doggyCount int
-		dots int
+		dots       int
 	)
 
 	if utf8.RuneCountInString(mail) < config.MAIL_MIN_LEN {
-		return fmt.Errorf("too short mail address")
+		return errors.New("too short mail address")
 	}
 	if utf8.RuneCountInString(mail) > config.MAIL_MAX_LEN {
-		return fmt.Errorf("too long mail address")
+		return errors.New("too long mail address")
 	}
 
 	if buf[0] == '_' || buf[0] == '-' || buf[0] == '@' ||
-			buf[0] == '.' || (buf[0] >= '0' && buf[0] <= '9') {
-				return fmt.Errorf("invalid first mail address symbol")
+		buf[0] == '.' || (buf[0] >= '0' && buf[0] <= '9') {
+		return errors.New("invalid first mail address symbol")
 	}
 
-	if buf[length - 1] == '_' || buf[length - 1] == '-' || buf[length - 1] == '@' ||
-			buf[length - 1] == '.' || (buf[length - 1] >= '0' && buf[length - 1] <= '9') {
-				return fmt.Errorf("invalid last mail address symbol")
+	if buf[length-1] == '_' || buf[length-1] == '-' || buf[length-1] == '@' ||
+		buf[length-1] == '.' || (buf[length-1] >= '0' && buf[length-1] <= '9') {
+		return errors.New("invalid last mail address symbol")
 	}
 
-	for i:=0; i<length; i++ {
+	for i := 0; i < length; i++ {
 		if !isMailRunePermitted(buf[i]) {
-			return fmt.Errorf("forbidden symbol in mail")
+			return errors.New("forbidden symbol in mail")
 		}
-		if (buf[i] == '@') {
+		if buf[i] == '@' {
 			doggyCount++
-			if i>0 && buf[i - 1] == '.' {
-				return fmt.Errorf("invalid mail address")
+			if i > 0 && buf[i-1] == '.' {
+				return errors.New("invalid mail address")
 			}
 		}
-		if (buf[i] == '.' && doggyCount > 0) {
+		if buf[i] == '.' && doggyCount > 0 {
 			dots++
-			if buf[i - 1] == '.' || buf[i - 1] == '@' {
-				return fmt.Errorf("invalid mail address")
+			if buf[i-1] == '.' || buf[i-1] == '@' {
+				return errors.New("invalid mail address")
 			}
 		}
 	}
 	if doggyCount != 1 {
-		return fmt.Errorf("invalid amount of '@' symbols in mail address")
+		return errors.New("invalid amount of '@' symbols in mail address")
 	}
 	if dots != 1 && dots != 2 {
-		return fmt.Errorf("invalid amount of '.' symbols in mail address")
+		return errors.New("invalid amount of '.' symbols in mail address")
 	}
 	return nil
 }
@@ -168,7 +167,7 @@ func CheckName(name string) error {
 	if !isLetter(runeSlice[0]) {
 		return errors.New("first name symbol should be letter")
 	}
-	if !isLetter(runeSlice[(len(runeSlice) - 1)]) && !isDigit(runeSlice[(len(runeSlice) - 1)]) {
+	if !isLetter(runeSlice[(len(runeSlice)-1)]) && !isDigit(runeSlice[(len(runeSlice)-1)]) {
 		return errors.New("last name symbol should be letter or digit")
 	}
 	for i := 0; i < len(runeSlice); i++ {
@@ -211,13 +210,12 @@ func TokenWebSocketAuth(uid int) string {
 
 	str := strconv.Itoa(uid)
 	curTime := time.Now()
-
-	dataToHash := fmt.Sprintf("%s%s", str, curTime)
+	dataToHash := str + curTime.Format(time.RFC3339Nano)
 	tmpHash := crc32.ChecksumIEEE([]byte(dataToHash))
 	hash := strconv.FormatUint(uint64(tmpHash), 35)
 	token := string(hash[:])
 
-	dataToHash = fmt.Sprintf("%s", curTime)
+	dataToHash = curTime.Format(time.RFC3339Nano)
 	tmpHash = crc32.ChecksumIEEE([]byte(dataToHash))
 	hash = strconv.FormatUint(uint64(tmpHash), 35)
 	token += string(hash[:])
@@ -281,7 +279,7 @@ func TokenDecode(token string) (int, error) {
 
 	nonceSize := gcm.NonceSize()
 	if len(encodedToken) < nonceSize {
-		return 0, fmt.Errorf("size error in decoding")
+		return 0, errors.New("size error in decoding")
 	}
 
 	nonce, encodedToken := encodedToken[:nonceSize], encodedToken[nonceSize:]

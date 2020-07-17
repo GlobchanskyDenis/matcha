@@ -1,28 +1,28 @@
 package myDatabase
 
 import (
+	. "MatchaServer/config"
+	"MatchaServer/handlers"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"encoding/json"
-	"MatchaServer/handlers"
-	. "MatchaServer/config"
 )
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token, tokenWS, response string
-		user User // config.User
-		err error
-		request map[string]interface{}
-		isExist bool
+		user                                            User // config.User
+		err                                             error
+		request                                         map[string]interface{}
+		isExist                                         bool
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/auth/", "request decode error")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "decode error" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"decode error"+`"}`)
 		return
 	}
 
@@ -30,7 +30,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/auth/", "mail not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "mail not exist" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"mail not exist"+`"}`)
 		return
 	}
 	mail = arg.(string)
@@ -39,7 +39,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/auth/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "password not exist" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"password not exist"+`"}`)
 		return
 	}
 	passwd = arg.(string)
@@ -51,47 +51,47 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/auth/", "mail or password is empty")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "mail or password is empty" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"mail or password is empty"+`"}`)
 		return
 	}
 
 	user, err = conn.GetUserDataForAuth(mail, handlers.PasswdHash(passwd))
 	if err != nil {
-		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error " + err.Error())
+		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "database request failed" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"database request failed"+`"}`)
 		return
 	}
 	if (user == User{}) {
 		consoleLogWarning(r, "/auth/", "wrong mail or password")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "wrong mail or password" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"wrong mail or password"+`"}`)
 		return
 	}
 
 	token, err = conn.session.AddUserToSession(user.Uid)
 	if err != nil {
-		consoleLogError(r, "/auth/", "SetNewUser returned error " + err.Error())
+		consoleLogError(r, "/auth/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "Cannot authenticate this user" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"Cannot authenticate this user"+`"}`)
 		return
 	}
 
 	jsonUser, err := json.Marshal(user)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
-		consoleLogWarning(r, "/auth/", "Marshal returned error " + err.Error())
+		consoleLogWarning(r, "/auth/", "Marshal returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "cannot convert to json" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"cannot convert to json"+`"}`)
 		return
 	}
 
 	tokenWS, err = conn.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
-		consoleLogError(r, "/auth/", "cannot create web socket token - " + err.Error())
+		consoleLogError(r, "/auth/", "cannot create web socket token - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "cannot create web socket token" + `"}`)
+		fmt.Fprintf(w, `{"error":"`+"cannot create web socket token"+`"}`)
 		return
 	}
 
@@ -99,7 +99,7 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 	fmt.Fprintf(w, response)
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/auth/", "User " + BLUE + mail + NO_COLOR + " was authenticated successfully")
+	consoleLogSuccess(r, "/auth/", "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
 }
 
 // HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
@@ -113,10 +113,10 @@ func (conn *ConnDB) HttpHandlerAuth(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		conn.authUser(w, r)
 	} else if r.Method == "OPTIONS" {
-	// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
+		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 		consoleLog(r, "/auth/", "client wants to know what methods are allowed")
 	} else {
-	// ALL OTHERS METHODS
+		// ALL OTHERS METHODS
 		consoleLogWarning(r, "/auth/", "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
 	}

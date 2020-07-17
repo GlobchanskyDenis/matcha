@@ -2,10 +2,10 @@ package myDatabase
 
 import (
 	// "fmt"
-	"errors"
-	"database/sql"
-	_ "github.com/lib/pq"
 	"MatchaServer/config"
+	"database/sql"
+	"errors"
+	_ "github.com/lib/pq"
 	"strconv"
 )
 
@@ -37,8 +37,8 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) 
 func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 	var (
 		user config.User
-		err error
-		row *sql.Rows
+		err  error
+		row  *sql.Rows
 	)
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
@@ -113,7 +113,7 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 
 	interfaceSlice := make([]interface{}, len(uid))
 	for i, val := range uid {
-    	interfaceSlice[i] = val
+		interfaceSlice[i] = val
 	}
 
 	rows, err := stmt.Query(interfaceSlice...)
