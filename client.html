@@ -183,10 +183,14 @@
 				var lname = document.forms['upd']['lname'].value
 				var age = document.forms['upd']['age'].value
 				var gender = document.forms['upd']['gender'].value
+				var orientation = document.forms['upd']['orientation'].value
+				var biography = document.forms['upd']['biography'].value
+				var avaPhotoID = document.forms['upd']['avaPhotoID'].value
 				var request = ""
 
 				if (mail == "" && passwd == "" && fname == "" && lname == "" &&
-						age == "" && gender == "") {
+						age == "" && gender == "" && orientation == "" &&
+						biography == "" && avaPhotoID == "") {
 					console.log("update: all fields are empty")
 					return
 				}
@@ -225,6 +229,25 @@
 					}
 					request += "\"gender\":"+JSON.stringify(gender)
 				}
+				if (orientation != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"orientation\":"+JSON.stringify(orientation)
+				}
+				if (biography != "") {
+					if (request != "") {
+						request += ","
+					}
+					request += "\"biography\":"+JSON.stringify(biography)
+				}
+				if (avaPhotoID != "") {
+					if (request != "") {
+						request += ","
+					}
+					var validAvaID = Number(avaPhotoID)
+					request += "\"avaPhotoID\":"+JSON.stringify(validAvaID)
+				}
 				request = "{"+request+"}"
 
 				let xhr = new XMLHttpRequest();
@@ -259,6 +282,9 @@
 					document.forms['upd']['lname'].value = "";
 					document.forms['upd']['age'].value = "";
 					document.forms['upd']['gender'].value = "";
+					document.forms['upd']['orientation'].value = "";
+					document.forms['upd']['biography'].value = "";
+					document.forms['upd']['avaPhotoID'].value = "";
 				}
 
 				xhr.onerror = function() {
@@ -322,6 +348,9 @@
 			<input type="text" name="lname" placeholder="last name">
 			<input type="text" name="age" placeholder="age">
 			<input type="text" name="gender" placeholder="gender">
+			<input type="text" name="orientation" placeholder="orientation">
+			<input type="text" name="biography" placeholder="biography">
+			<input type="text" name="avaPhotoID" placeholder="avaPhotoID">
 		</form>
 		<input type="submit" value="Изменить данные" onclick="UpdateUser()">
 

@@ -77,12 +77,12 @@ func (conn ConnDB) CreateUsersTable() error {
 		"mail VARCHAR(" + strconv.Itoa(config.MAIL_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"PRIMARY KEY (mail), " +
 		"passwd VARCHAR(35) NOT NULL, " +
-		"fname VARCHAR(30) NOT NULL DEFAULT '', " +
-		"lname VARCHAR(30) NOT NULL DEFAULT '', " +
+		"fname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
+		"lname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"age INTEGER NOT NULL DEFAULT 0, " +
 		"gender enum_gender NOT NULL DEFAULT '', " +
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
-		"biography VARCHAR(300) NOT NULL DEFAULT '', " +
+		"biography VARCHAR(" + strconv.Itoa(config.BIOGRAPHY_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"avaPhotoID INTEGER NOT NULL DEFAULT 0," +
 		"accType acc_type NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")

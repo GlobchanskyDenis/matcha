@@ -94,7 +94,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		tmpFloat, ok = arg.(float64)
 		user.Age = int(tmpFloat)
 		if !ok {
-			// fmt.Printf("%V %T", request["age"],request["age"])
 			return user, message, errors.New("wrong type of param")
 		}
 		if user.Age > 80 || user.Age < 14 {
@@ -144,14 +143,15 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	arg, isExist = request["avaPhotoID"]
 	if isExist {
 		usefullFieldsExists = true
-		user.AvaPhotoID, ok = arg.(int)
+		tmpFloat, ok = arg.(float64)
+		user.AvaPhotoID = int(tmpFloat)
 		if !ok {
 			return user, message, errors.New("wrong type of param")
 		}
 		if user.AvaPhotoID < 0 {
-			return user, message, errors.New("this age is forbidden")
+			return user, message, errors.New("this id is forbidden")
 		}
-		message += " avaPhotoID=" + BLUE + strconv.Itoa(arg.(int)) + NO_COLOR
+		message += " avaPhotoID=" + BLUE + strconv.Itoa(user.AvaPhotoID) + NO_COLOR
 	}
 
 	if !usefullFieldsExists {

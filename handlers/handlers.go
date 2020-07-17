@@ -5,13 +5,14 @@ import (
 	"strconv"
 	"time"
 	"fmt"
+	"errors"
 	"unicode/utf8"
-	. "MatchaServer/config"
+	"MatchaServer/config"
 
 	"encoding/base64"
 	"crypto/aes"
-	 "crypto/cipher"
-	 "crypto/rand"
+	"crypto/cipher"
+	"crypto/rand"
 	"io"
 )
 
@@ -36,20 +37,15 @@ func isLetter(c rune) bool {
 	return false
 }
 
-func isLoginRunePermitted(c rune) bool {
-	if c >= 'a' && c <= 'z' {
-		return true
-	}
-	if c >= 'A' && c <= 'Z' {
-		return true
-	}
+func isDigit(c rune) bool {
 	if c >= '0' && c <= '9' {
 		return true
 	}
-	if c >= 'а' && c <= 'я' {
-		return true
-	}
-	if c >= 'А' && c <= 'Я' {
+	return false
+}
+
+func isNameRunePermitted(c rune) bool {
+	if isLetter(c) || isDigit(c) {
 		return true
 	}
 	if c == '_' || c == '-' || c == ' ' {
@@ -65,7 +61,7 @@ func isMailRunePermitted(c rune) bool {
 	if c >= 'A' && c <= 'Z' {
 		return true
 	}
-	if c >= '0' && c <= '9' {
+	if isDigit(c) {
 		return true
 	}
 	if c == '_' || c == '-' || c == '.' || c == '@' {
@@ -74,51 +70,6 @@ func isMailRunePermitted(c rune) bool {
 	return false
 }
 
-func isPhoneRunePermitted(c rune) bool {
-	if c >= '0' && c <= '9' {
-		return true
-	}
-	if c == ' ' || c == '-' || c == '(' || c == ')' {
-		return true
-	}
-	return false
-}
-
-// func CheckLogin(login string) error {
-// 	var (
-// 		runeSlice = []rune(login)
-// 		length	= len(runeSlice)
-// 		wasLetter bool
-// 	)
-
-// 	if utf8.RuneCountInString(login) < LOGIN_MIN_LEN {
-// 		return fmt.Errorf("too short login")
-// 	}
-// 	if utf8.RuneCountInString(login) > LOGIN_MAX_LEN {
-// 		return fmt.Errorf("too long login")
-// 	}
-
-// 	if runeSlice[0] == ' ' {
-// 		return fmt.Errorf("first symbol should not be space")
-// 	}
-// 	if runeSlice[length - 1] == ' ' {
-// 		return fmt.Errorf("last symbol should not be space")
-// 	}
-
-// 	for i:=0; i<length; i++ {
-// 		if !isLoginRunePermitted(runeSlice[i]) {
-// 			return fmt.Errorf("forbidden symbol in login")
-// 		}
-// 		if isLetter(runeSlice[i]) {
-// 			wasLetter = true
-// 		}
-// 	}
-// 	if !wasLetter {
-// 		return fmt.Errorf("no letters in login")
-// 	}
-// 	return nil
-// }
-
 func CheckPasswd(passwd string) error {
 	var (
 		wasLetter bool
@@ -126,7 +77,7 @@ func CheckPasswd(passwd string) error {
 		wasSpacialChar bool
 		buf = []rune(passwd)
 	)
-	if utf8.RuneCountInString(passwd) < PASSWD_MIN_LEN {
+	if utf8.RuneCountInString(passwd) < config.PASSWD_MIN_LEN {
 		return fmt.Errorf("too short password")
 	}
 
@@ -162,10 +113,10 @@ func CheckMail(mail string) error {
 		dots int
 	)
 
-	if utf8.RuneCountInString(mail) < MAIL_MIN_LEN {
+	if utf8.RuneCountInString(mail) < config.MAIL_MIN_LEN {
 		return fmt.Errorf("too short mail address")
 	}
-	if utf8.RuneCountInString(mail) > MAIL_MAX_LEN {
+	if utf8.RuneCountInString(mail) > config.MAIL_MAX_LEN {
 		return fmt.Errorf("too long mail address")
 	}
 
@@ -206,18 +157,46 @@ func CheckMail(mail string) error {
 }
 
 func CheckName(name string) error {
+	var runeSlice = []rune(name)
+
+	if len(name) > config.NAME_MAX_LEN {
+		return errors.New("too long name length")
+	}
+	if utf8.RuneCountInString(name) < 1 {
+		return errors.New("name is empty")
+	}
+	if !isLetter(runeSlice[0]) {
+		return errors.New("first name symbol should be letter")
+	}
+	if !isLetter(runeSlice[(len(runeSlice) - 1)]) && !isDigit(runeSlice[(len(runeSlice) - 1)]) {
+		return errors.New("last name symbol should be letter or digit")
+	}
+	for i := 0; i < len(runeSlice); i++ {
+		if !isNameRunePermitted(runeSlice[i]) {
+			return errors.New("name letter '" + string(runeSlice[i]) + "' is not permitted")
+		}
+	}
 	return nil
 }
 
 func CheckGender(gender string) error {
+	if gender != "male" && gender != "female" {
+		return errors.New("gender '" + gender + "' not exist in database")
+	}
 	return nil
 }
 
 func CheckOrientation(orientation string) error {
+	if orientation != "getero" && orientation != "bi" && orientation != "gay" {
+		return errors.New("orientation '" + orientation + "' not exist in database")
+	}
 	return nil
 }
 
 func CheckBiography(biography string) error {
+	if len(biography) > config.BIOGRAPHY_MAX_LEN {
+		return errors.New("too long biography length")
+	}
 	return nil
 }
 
