@@ -40,7 +40,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 	var ret tokenChanItem
 
 	go func(ch chan tokenChanItem, uid int) {
-		token, err := handlers.TokenEncode(uid)
+		token, err := handlers.TokenAuthEncode(uid)
 		ch <- tokenChanItem{token, err}
 	}(ch, uid)
 
@@ -62,7 +62,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 }
 
 func (T *Session) IsUserLoggedByToken(token string) (bool, error) {
-	uid, err := handlers.TokenDecode(token)
+	uid, err := handlers.TokenAuthDecode(token)
 	if err != nil {
 		return false, err
 	}
@@ -111,7 +111,7 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 	var uid int
 	var err error
 
-	uid, err = handlers.TokenDecode(token)
+	uid, err = handlers.TokenAuthDecode(token)
 	if err != nil {
 		return SessionItem{}, err
 	}

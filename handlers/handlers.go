@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 	"unicode/utf8"
+	"net/smtp"
 
 	"crypto/aes"
 	"crypto/cipher"
@@ -223,7 +224,7 @@ func TokenWebSocketAuth(uid int) string {
 	return token
 }
 
-func TokenEncode(uid int) (string, error) {
+func TokenAuthEncode(uid int) (string, error) {
 
 	// Thanks to https://tutorialedge.net/golang/go-encrypt-decrypt-aes-tutorial/
 	// for good explanation of Encoding with masterKey
@@ -264,7 +265,24 @@ func TokenEncode(uid int) (string, error) {
 	return base64.URLEncoding.EncodeToString(token), nil
 }
 
-func TokenDecode(token string) (int, error) {
+func TokenConfirmEncode(mail string) (string, error) {
+	c, err := aes.NewCipher([]byte(masterKey))
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return "", err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+	token := gcm.Seal(nonce, nonce, []byte(mail), nil)
+	return base64.URLEncoding.EncodeToString(token), nil
+}
+
+func TokenAuthDecode(token string) (int, error) {
 	encodedToken, _ := base64.URLEncoding.DecodeString(token)
 
 	c, err := aes.NewCipher([]byte(masterKey))
@@ -292,4 +310,44 @@ func TokenDecode(token string) (int, error) {
 		return 0, err
 	}
 	return uid, nil
+}
+
+func TokenConfirmDecode(token string) (string, error) {
+	encodedToken, _ := base64.URLEncoding.DecodeString(token)
+	c, err := aes.NewCipher([]byte(masterKey))
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return "", err
+	}
+	nonceSize := gcm.NonceSize()
+	if len(encodedToken) < nonceSize {
+		return "", errors.New("size error in decoding")
+	}
+	nonce, encodedToken := encodedToken[:nonceSize], encodedToken[nonceSize:]
+	desired, err := gcm.Open(nil, nonce, encodedToken, nil)
+	if err != nil {
+		return "", err
+	}
+	mail := string(desired)
+	return mail, nil
+}
+
+func SendMail(to string, xRegToken string) error {
+	auth := smtp.PlainAuth("", config.MAIL_FROM, config.MAIL_PASSWD, config.MAIL_HOST)
+	message := `To: <` + to + `>
+From: "Matcha administration" <` + config.MAIL_FROM + `>
+Subject: Confirm registration in Matcha
+
+Hello, ` + to + `, I have registration code for you!
+` + xRegToken + `
+`
+
+	if err := smtp.SendMail(config.MAIL_HOST+":587",
+		auth, config.MAIL_FROM, []string{to}, []byte(message)); err != nil {
+		return err
+	}
+	return nil
 }

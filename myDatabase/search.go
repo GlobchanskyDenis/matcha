@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (conn *ConnDB) getUsersAll(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnDB) searchAll(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
 	users, err := conn.SearchUsersByOneFilter(filter)
@@ -28,10 +28,10 @@ func (conn *ConnDB) getUsersAll(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write([]byte(jsonUsers))
-	consoleLogSuccess(r, "/users/", "array of all users was transmitted. Users amount "+strconv.Itoa(len(users)))
+	consoleLogSuccess(r, "/users/", "array of " + BLUE + "all" + NO_COLOR + " users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
-func (conn *ConnDB) getUsersLogged(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnDB) searchLogged(w http.ResponseWriter, r *http.Request) {
 
 	users, err := conn.GetLoggedUsers(conn.session.GetLoggedUsersUidSlice())
 	if err != nil {
@@ -49,10 +49,10 @@ func (conn *ConnDB) getUsersLogged(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write([]byte(jsonUsers))
-	consoleLogSuccess(r, "/users/", "array of logged users was transmitted. Users amount "+strconv.Itoa(len(users)))
+	consoleLogSuccess(r, "/users/", "array of " + BLUE + "logged" + NO_COLOR + " users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
-func (conn *ConnDB) getUsers(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnDB) search(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
 	consoleLog(r, "/users/", "request was recieved with filter "+BLUE+filter+NO_COLOR)
@@ -65,14 +65,14 @@ func (conn *ConnDB) getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if filter == "all" {
-		conn.getUsersAll(w, r)
+		conn.searchAll(w, r)
 	}
 	if filter == "logged" {
-		conn.getUsersLogged(w, r)
+		conn.searchLogged(w, r)
 	}
 }
 
-func (conn *ConnDB) HttpHandlerUsers(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnDB) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,OPTIONS")
@@ -80,7 +80,7 @@ func (conn *ConnDB) HttpHandlerUsers(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 
-		conn.getUsers(w, r)
+		conn.search(w, r)
 
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)

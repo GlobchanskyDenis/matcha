@@ -61,6 +61,33 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 	return user, nil
 }
 
+func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
+	var (
+		user config.User
+		err  error
+		row  *sql.Rows
+	)
+
+	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
+	if err != nil {
+		return user, errors.New(err.Error() + " in preparing")
+	}
+	defer stmt.Close()
+	row, err = stmt.Query(mail)
+	if err != nil {
+		return user, errors.New(err.Error() + " in query")
+	}
+	if row.Next() {
+		err = row.Scan(&(user.Uid), &(user.Mail), &(user.Passwd), &(user.Fname),
+			&(user.Lname), &(user.Age), &(user.Gender), &(user.Orientation),
+			&(user.Biography), &(user.AvaPhotoID), &(user.AccType), &(user.Rating))
+		if err != nil {
+			return user, err
+		}
+	}
+	return user, nil
+}
+
 func (db *ConnDB) GetUserDataForAuth(mail string, passwd string) (config.User, error) {
 	var (
 		user config.User

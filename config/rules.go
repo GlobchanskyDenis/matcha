@@ -10,6 +10,10 @@ const (
 	DB_PASSWD = "23"
 	DB_TYPE	= "postgres"
 
+	MAIL_FROM = "bsabre.cat@gmail.com"
+	MAIL_HOST = "smtp.gmail.com"
+	MAIL_PASSWD = "den619392"
+
 	PASSWD_MIN_LEN = 6
 	MAIL_MAX_LEN = 30
 	MAIL_MIN_LEN = 6

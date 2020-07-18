@@ -2,6 +2,7 @@ package myDatabase
 
 import (
 	. "MatchaServer/config"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -13,11 +14,12 @@ import (
 var (
 	conn  = ConnDB{}
 	token string
+	// xRegToken string
 
-	mail   = "user_mail@gmail.com"
+	mail   = "test@gmail.com"
 	passwd = "AsdVar34!A"
 
-	mailNew        = "newUser@mail.com"
+	mailNew        = "test_new@gmail.com"
 	passwdNew      = "DFe2*FDsd"
 	fnameNew       = "Денис"
 	lnameNew       = "Глобчанский"
@@ -43,17 +45,47 @@ func TestRegUser(t *testing.T) {
 
 	conn.Connect()
 
-	requestData := strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
-	url := "http://localhost:3000/user/"
-	r := httptest.NewRequest("POST", url, requestData)
-	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
-	requiredStatus := http.StatusCreated
-	if w.Code != requiredStatus {
-		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
+	// requestData := strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
+	// url := "http://localhost:3000/user/reg/"
+	// r := httptest.NewRequest("POST", url, requestData)
+	// w := httptest.NewRecorder()
+	// conn.HttpHandlerUserReg(w, r)
+	// requiredStatus := http.StatusCreated
+	// if w.Code != requiredStatus {
+	// 	t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d" + NO_COLOR + "\n", w.Code, requiredStatus)
+	// 	return
+	// }
+	// t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
+
+	// fmt.Scanln(&xRegToken)
+
+	// requestData = strings.NewReader(`{"x-reg-token":"` + xRegToken + `"}`)
+	// url = "http://localhost:3000/user/update/status/"
+	// r = httptest.NewRequest("PATCH", url, requestData)
+	// w = httptest.NewRecorder()
+	// conn.HttpHandlerUserUpdateStatus(w, r)
+	// requiredStatus = http.StatusOK
+	// if w.Code != requiredStatus {
+	// 	t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d" + NO_COLOR + "\n", w.Code, requiredStatus)
+	// 	return
+	// }
+	// t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
+
+	err := conn.SetNewUser(mail, handlers.PasswdHash(passwd))
+	if err != nil {
+		t.Errorf(RED_BG+"ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
+
+	err = conn.UpdateUser(User{2, mail, handlers.PasswdHash(passwd),
+		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
+	if err != nil {
+		t.Errorf(RED_BG+"ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
+		return
+	}
+	t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
+	
 	print(YELLOW)
 }
 
@@ -62,10 +94,10 @@ func TestAuthUser(t *testing.T) {
 
 	////////////// AUTHENTICATE //////////////////
 	requestData := strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
-	url := "http://localhost:3000/auth/"
+	url := "http://localhost:3000/user/auth/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
+	conn.HttpHandlerUserAuth(w, r)
 	requiredStatus := http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -92,11 +124,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData := strings.NewReader(`{"mail":"` + mailNew + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/update/"
 	r := httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus := http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -106,11 +138,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"passwd":"` + passwdNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -120,11 +152,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"fname":"` + fnameNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -134,11 +166,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"lname":"` + lnameNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -148,11 +180,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"age":` + strconv.Itoa(ageNew) + `}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -162,11 +194,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"gender":"` + genderNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -176,11 +208,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"orientation":"` + orientationNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -190,11 +222,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"biography":"` + biographyNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -204,11 +236,11 @@ func TestUpdUser(t *testing.T) {
 
 	////////////// UPDATE //////////////////
 	requestData = strings.NewReader(`{"avaPhotoID":` + strconv.Itoa(avaPhotoIDNew) + `}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -223,11 +255,11 @@ func TestDelUser(t *testing.T) {
 
 	////////////// DELETE //////////////////
 	requestData := strings.NewReader(`{"passwd":"` + passwdNew + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/delete/"
 	r := httptest.NewRequest("DELETE", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus := http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -241,31 +273,61 @@ func TestCreateUserForFailTests(t *testing.T) {
 	print(NO_COLOR)
 
 	////////////// USER CREATE //////////////////
-	requestData := strings.NewReader(`{"passwd":"` + passwd + `","mail":"` + mail + `"}`)
-	url := "http://localhost:3000/user/"
-	r := httptest.NewRequest("POST", url, requestData)
-	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
-	requiredStatus := http.StatusCreated
-	if w.Code != requiredStatus {
-		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
+	// requestData := strings.NewReader(`{"passwd":"` + passwd + `","mail":"` + mail + `"}`)
+	// url := "http://localhost:3000/user/reg/"
+	// r := httptest.NewRequest("POST", url, requestData)
+	// w := httptest.NewRecorder()
+	// conn.HttpHandlerUserReg(w, r)
+	// requiredStatus := http.StatusCreated
+	// if w.Code != requiredStatus {
+	// 	t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
+	// 	return
+	// }
+	// t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
+
+	// fmt.Scanln(&xRegToken)
+
+	// ////////////// USER MAIL CONFIRM //////////////////
+	// requestData = strings.NewReader(`{"x-reg-token":"` + xRegToken + `"}`)
+	// url = "http://localhost:3000/user/update/status/"
+	// r = httptest.NewRequest("PATCH", url, requestData)
+	// w = httptest.NewRecorder()
+	// conn.HttpHandlerUserUpdateStatus(w, r)
+	// requiredStatus = http.StatusOK
+	// if w.Code != requiredStatus {
+	// 	t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d" + NO_COLOR + "\n", w.Code, requiredStatus)
+	// 	return
+	// }
+	// t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
+
+	err := conn.SetNewUser(mail, handlers.PasswdHash(passwd))
+	if err != nil {
+		t.Errorf(RED_BG+"ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 
+	err = conn.UpdateUser(User{3, mail, handlers.PasswdHash(passwd),
+		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
+	if err != nil {
+		t.Errorf(RED_BG+"ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
+		return
+	}
+	t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
+
 	////////////// USER AUTH //////////////////
-	requestData = strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/auth/"
-	r = httptest.NewRequest("POST", url, requestData)
-	w = httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
-	requiredStatus = http.StatusOK
+	requestData := strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
+	url := "http://localhost:3000/user/auth/"
+	r := httptest.NewRequest("POST", url, requestData)
+	w := httptest.NewRecorder()
+	conn.HttpHandlerUserAuth(w, r)
+	requiredStatus := http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
 		return
 	}
 	var response map[string]interface{}
-	err := json.NewDecoder(w.Body).Decode(&response)
+	err = json.NewDecoder(w.Body).Decode(&response)
 	if err != nil {
 		t.Errorf(RED_BG+"ERROR: decoding response body error: %s, response body %s"+NO_COLOR+"\n", err.Error(), w.Body)
 		return
@@ -285,10 +347,10 @@ func TestFailRegUser_InvalidData(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData := strings.NewReader(`{"mail":"` + mailFail + `","passwd":"` + passwd + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/reg/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -297,10 +359,10 @@ func TestFailRegUser_InvalidData(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mailFail + `","passwd":"` + passwdFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/reg/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -309,10 +371,10 @@ func TestFailRegUser_InvalidData(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/reg/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus = http.StatusNotAcceptable
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -328,10 +390,10 @@ func TestFailRegUser_NotCompleteForms(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData := strings.NewReader(`{"passwd":"` + passwd + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/reg/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -340,10 +402,10 @@ func TestFailRegUser_NotCompleteForms(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/reg/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -352,10 +414,10 @@ func TestFailRegUser_NotCompleteForms(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData = strings.NewReader(`{"mail":"","passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/reg/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -364,10 +426,10 @@ func TestFailRegUser_NotCompleteForms(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mail + `","passwd":""}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/reg/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -382,10 +444,10 @@ func TestFailReg_BrokenJson(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData := strings.NewReader(`[{"mail":"` + mailNew + `","passwd":"` + passwdNew + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/reg/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -394,10 +456,10 @@ func TestFailReg_BrokenJson(t *testing.T) {
 
 	////////////// FAIL REGISTRATION //////////////////
 	requestData = strings.NewReader(`{"mail":` + mailNew + `","passwd":"` + passwdNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/reg/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserReg(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -413,11 +475,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData := strings.NewReader(`{"passwd":"` + passwdFail + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/update/"
 	r := httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -426,11 +488,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mailFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -439,11 +501,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"fname":"` + fnameFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -452,11 +514,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"lname":"` + lnameFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -465,11 +527,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"age":` + strconv.Itoa(ageFail) + `}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -478,11 +540,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"gender":"` + genderFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -491,11 +553,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"orientation":"` + orientationFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -504,11 +566,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"biography":"` + biographyFail + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -517,11 +579,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"avaPhotoID":` + strconv.Itoa(avaPhotoIDFail) + `}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -530,11 +592,11 @@ func TestFailUpd_InvalidData(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mailNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", "BLAbla")
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusUnauthorized
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -550,11 +612,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData := strings.NewReader(`{"mail":"` + mailNew + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/update/"
 	r := httptest.NewRequest("PATCH", url, requestData)
 	// r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus := http.StatusUnauthorized
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -563,11 +625,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mailNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", "ATATAAGSFDKSALDJdssadfrSFASF")
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusUnauthorized
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -576,11 +638,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"fname":""}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -589,11 +651,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"lname":""}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -602,11 +664,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"gender":""}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -615,11 +677,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"orientation":""}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -628,11 +690,11 @@ func TestFailUpd_NotCompliteForms(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"asddd":"asdsaddsdds"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -648,11 +710,11 @@ func TestFailUpd_BrokenJson(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData := strings.NewReader(`[{"mail":"` + mailNew + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/update/"
 	r := httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -661,11 +723,11 @@ func TestFailUpd_BrokenJson(t *testing.T) {
 
 	////////////// FAIL UPDATE //////////////////
 	requestData = strings.NewReader(`{"mail":` + mailNew + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/update/"
 	r = httptest.NewRequest("PATCH", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserUpdate(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -681,11 +743,11 @@ func TestFailDelUser(t *testing.T) {
 
 	////////////// FAIL DELETE //////////////////
 	requestData := strings.NewReader(`{"passwd":"` + passwdFail + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/delete/"
 	r := httptest.NewRequest("DELETE", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -694,11 +756,11 @@ func TestFailDelUser(t *testing.T) {
 
 	////////////// FAIL DELETE //////////////////
 	requestData = strings.NewReader(`{"passwd":""}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/delete/"
 	r = httptest.NewRequest("DELETE", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -707,11 +769,11 @@ func TestFailDelUser(t *testing.T) {
 
 	////////////// FAIL DELETE //////////////////
 	requestData = strings.NewReader(`{"dasds":"ABA@DAKADAVR"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/delete/"
 	r = httptest.NewRequest("DELETE", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -720,11 +782,11 @@ func TestFailDelUser(t *testing.T) {
 
 	////////////// FAIL DELETE //////////////////
 	requestData = strings.NewReader(`{"passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/delete/"
 	r = httptest.NewRequest("DELETE", url, requestData)
 	// r.Header.Add("x-auth-token", token)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus = http.StatusUnauthorized
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -733,11 +795,11 @@ func TestFailDelUser(t *testing.T) {
 
 	////////////// FAIL DELETE //////////////////
 	requestData = strings.NewReader(`{"passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/user/"
+	url = "http://localhost:3000/user/delete/"
 	r = httptest.NewRequest("DELETE", url, requestData)
 	r.Header.Add("x-auth-token", "BLAbla")
 	w = httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus = http.StatusUnauthorized
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -753,10 +815,10 @@ func TestFailAuth(t *testing.T) {
 
 	////////////// FAIL AUTHENTICATE //////////////////
 	requestData := strings.NewReader(`{"mail":"` + mailFail + `","passwd":"` + passwd + `"}`)
-	url := "http://localhost:3000/auth/"
+	url := "http://localhost:3000/user/auth/"
 	r := httptest.NewRequest("POST", url, requestData)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
+	conn.HttpHandlerUserAuth(w, r)
 	requiredStatus := http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -765,10 +827,10 @@ func TestFailAuth(t *testing.T) {
 
 	////////////// FAIL AUTHENTICATE //////////////////
 	requestData = strings.NewReader(`{"mail":"","passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/auth/"
+	url = "http://localhost:3000/user/auth/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
+	conn.HttpHandlerUserAuth(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -777,10 +839,10 @@ func TestFailAuth(t *testing.T) {
 
 	////////////// FAIL AUTHENTICATE //////////////////
 	requestData = strings.NewReader(`{"passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/auth/"
+	url = "http://localhost:3000/user/auth/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
+	conn.HttpHandlerUserAuth(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -789,10 +851,10 @@ func TestFailAuth(t *testing.T) {
 
 	////////////// FAIL AUTHENTICATE //////////////////
 	requestData = strings.NewReader(`{"mail":"` + mail + `"}`)
-	url = "http://localhost:3000/auth/"
+	url = "http://localhost:3000/user/auth/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
+	conn.HttpHandlerUserAuth(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -801,10 +863,10 @@ func TestFailAuth(t *testing.T) {
 
 	////////////// FAIL AUTHENTICATE //////////////////
 	requestData = strings.NewReader(`[{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
-	url = "http://localhost:3000/auth/"
+	url = "http://localhost:3000/user/auth/"
 	r = httptest.NewRequest("POST", url, requestData)
 	w = httptest.NewRecorder()
-	conn.HttpHandlerAuth(w, r)
+	conn.HttpHandlerUserAuth(w, r)
 	requiredStatus = http.StatusBadRequest
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)
@@ -820,11 +882,11 @@ func TestDelUserAgain(t *testing.T) {
 
 	////////////// DELETE //////////////////
 	requestData := strings.NewReader(`{"passwd":"` + passwd + `"}`)
-	url := "http://localhost:3000/user/"
+	url := "http://localhost:3000/user/delete/"
 	r := httptest.NewRequest("DELETE", url, requestData)
 	r.Header.Add("x-auth-token", token)
 	w := httptest.NewRecorder()
-	conn.HttpHandlerUser(w, r)
+	conn.HttpHandlerUserDelete(w, r)
 	requiredStatus := http.StatusOK
 	if w.Code != requiredStatus {
 		t.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", w.Code, requiredStatus)

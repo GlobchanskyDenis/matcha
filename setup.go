@@ -3,68 +3,77 @@ package main
 import (
 	"MatchaServer/handlers"
 	"MatchaServer/myDatabase"
-	"fmt"
+	"MatchaServer/config"
 )
 
 func main() {
 	var conn myDatabase.ConnDB
 	var err error
 
-	defer func() {
-		_ = recover()
-	}()
-
-	fmt.Print("Connecting to database\t")
+	print("Connecting to database\t")
 	err = conn.Connect()
 	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
 	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
+		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
-	fmt.Print("Drop users table\t")
+	print("Drop users table\t")
 	err = conn.DropUsersTable()
 	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
 	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
+		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
-	fmt.Print("Drop ENUM types in db\t")
+	print("Drop ENUM types in db\t")
 	err = conn.DropEnumTypes()
 	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
 	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
+		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
-	fmt.Print("Create ENUM types in db\t")
+	print("Create ENUM types in db\t")
 	err = conn.CreateEnumTypes()
 	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
 	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
+		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
-	fmt.Print("Create users table\t")
+	print("Create users table\t")
 	err = conn.CreateUsersTable()
 	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
 	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
+		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
-	fmt.Print("Add admin@gmail.com user")
+	print("Add admin@gmail.com user")
 	err = conn.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
 	if err != nil {
-		fmt.Println("\033[31m", "- error:", err, "\033[m")
-		panic(err)
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
 	} else {
-		fmt.Println("\033[32m", "- done", "\033[m")
+		println(config.GREEN + " - done" + config.NO_COLOR)
+	}
+
+	print("Set all fields to user\t")
+	err = conn.UpdateUser(config.User{1, "admin@gmail.com",
+	handlers.PasswdHash("admin"),
+	"admin", "superUser",
+	30, "male", "getero", "", 0,
+	"confirmed", 0})
+	if err != nil {
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
+	} else {
+		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 }

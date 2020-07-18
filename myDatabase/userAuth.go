@@ -9,10 +9,10 @@ import (
 )
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnDB) userAuth(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token, tokenWS, response string
-		user                                            User // config.User
+		user                                            User
 		err                                             error
 		request                                         map[string]interface{}
 		isExist                                         bool
@@ -62,10 +62,18 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error":"`+"database request failed"+`"}`)
 		return
 	}
+
 	if (user == User{}) {
 		consoleLogWarning(r, "/auth/", "wrong mail or password")
 		w.WriteHeader(http.StatusBadRequest) // 400
 		fmt.Fprintf(w, `{"error":"`+"wrong mail or password"+`"}`)
+		return
+	}
+
+	if user.AccType == "not confirmed" {
+		consoleLogWarning(r, "/auth/", "user " + BLUE + user.Mail + NO_COLOR + " should confirm its email")
+		w.WriteHeader(http.StatusAccepted) // 202
+		fmt.Fprintf(w, `{"error":"`+"confirm email first"+`"}`)
 		return
 	}
 
@@ -89,29 +97,29 @@ func (conn *ConnDB) authUser(w http.ResponseWriter, r *http.Request) {
 	tokenWS, err = conn.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
-		consoleLogError(r, "/auth/", "cannot create web socket token - "+err.Error())
+		consoleLogError(r, "/auth/", "cannot create web socket token - " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"cannot create web socket token"+`"}`)
+		fmt.Fprintf(w, `{"error":"` + "cannot create web socket token" + `"}`)
 		return
 	}
 
 	// This is my valid case. Response status will be set automaticly to 200.
+	w.WriteHeader(http.StatusOK) // 200
 	response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 	fmt.Fprintf(w, response)
-	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/auth/", "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
+	consoleLogSuccess(r, "/auth/", "User " + BLUE + mail + NO_COLOR + " was authenticated successfully")
 }
 
 // HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
 // AUTHENTICATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnDB) HttpHandlerAuth(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnDB) HttpHandlerUserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
 
 	if r.Method == "POST" {
-		conn.authUser(w, r)
+		conn.userAuth(w, r)
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 		consoleLog(r, "/auth/", "client wants to know what methods are allowed")

@@ -26,7 +26,7 @@
 				let xhr = new XMLHttpRequest();
 				var n = document.getElementById("filter1").options.selectedIndex;
 				var filter = document.getElementById("filter1").options[n].value;
-				xhr.open("GET", "http://localhost:3000/users/?filter=" + filter);
+				xhr.open("GET", "http://localhost:3000/search/?filter=" + filter);
 				// xhr.responseType = 'json';
 				console.log("tx: get users, filter = " + filter)
 				xhr.send();
@@ -60,7 +60,7 @@
 			}
 
 			function wsConnect(uid, token) {
-				let socket = new WebSocket("ws://localhost:3000/ws/?uid="+uid+"&ws-auth-token="+token)
+				let socket = new WebSocket("ws://localhost:3000/ws/auth/?uid="+uid+"&ws-auth-token="+token)
 				console.log("attempting websocket connection")
 
 				socket.onopen = function() {
@@ -88,7 +88,7 @@
 				var request = JSON.stringify({ "mail": mail, "passwd": passwd })
 
 				let xhr = new XMLHttpRequest();
-				xhr.open("POST", "http://localhost:3000/auth/");
+				xhr.open("POST", "http://localhost:3000/user/auth/");
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
 				console.log("tx: " + request)
@@ -144,7 +144,7 @@
 				var request = JSON.stringify({ "mail": mail, "passwd": passwd })
 
 				let xhr = new XMLHttpRequest();
-				xhr.open("POST", "http://localhost:3000/user/");
+				xhr.open("POST", "http://localhost:3000/user/reg/");
 
 				console.log("tx: " + request)
 
@@ -169,6 +169,40 @@
 					document.getElementById("responseField").innerHTML = "registration was done. Check your email"
 					document.forms['reg']['mail'].value = "";
 					document.forms['reg']['passwd'].value = "";
+				}
+
+				xhr.onerror = function() {
+					console.log("onError event")
+				}
+			}
+
+			function UpdateUserStatus() {
+				var token = document.forms['updStatus']['x-reg-token'].value
+				var request = `{"x-reg-token":"`+token+`"}`
+				let xhr = new XMLHttpRequest();
+				xhr.open("PATCH", "http://localhost:3000/user/update/status/");
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				console.log("tx: " + request)
+				xhr.send(request);
+
+				xhr.onload = function() {
+
+					if (xhr.response) {
+						var requestAsync = JSON.parse(xhr.response);
+					} else {
+						var requestAsync = "";
+					}
+					console.log("rx: " + xhr.status + " : " + xhr.response);
+
+					if (xhr.status != 200) {
+						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+						document.getElementById("responseField").innerHTML = "";
+						return
+					}
+					document.getElementById("errorField").innerHTML = ""
+					document.getElementById("responseField").innerHTML = "Update was done successfully"
+					document.forms['updStatus']['x-reg-token'].value = "";
 				}
 
 				xhr.onerror = function() {
@@ -251,7 +285,7 @@
 				request = "{"+request+"}"
 
 				let xhr = new XMLHttpRequest();
-				xhr.open("PATCH", "http://localhost:3000/user/");
+				xhr.open("PATCH", "http://localhost:3000/user/update/");
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 				xhr.setRequestHeader("x-auth-token", document.token);
 
@@ -340,6 +374,11 @@
 			<input type="password" name="passwd" placeholder="password">
 		</form>
 		<input type="submit" value="Регистрация" onclick="RegUser()">
+
+		<form name="updStatus">
+			<input type="text" name="x-reg-token" placeholder="x-reg-token">
+		</form>
+		<input type="submit" value="Валидация почты" onclick="UpdateUserStatus()">
 
 		<form name="upd">
 			<input type="text" name="mail" placeholder="mail">
