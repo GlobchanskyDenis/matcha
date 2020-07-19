@@ -94,9 +94,9 @@ func (conn *ConnDB) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err = handlers.TokenConfirmEncode(mail)
+	token, err = handlers.TokenMailEncode(mail)
 	if err != nil {
-		consoleLogError(r, "/user/reg/", "TokenConfirmEncode returned error "+err.Error())
+		consoleLogError(r, "/user/reg/", "TokenMailEncode returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		fmt.Fprintf(w, `{"error":"`+"Cannot create token for this user"+`"}`)
 		return

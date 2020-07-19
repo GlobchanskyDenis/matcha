@@ -224,7 +224,7 @@ func TokenWebSocketAuth(uid int) string {
 	return token
 }
 
-func TokenAuthEncode(uid int) (string, error) {
+func TokenUidEncode(uid int) (string, error) {
 
 	// Thanks to https://tutorialedge.net/golang/go-encrypt-decrypt-aes-tutorial/
 	// for good explanation of Encoding with masterKey
@@ -265,7 +265,7 @@ func TokenAuthEncode(uid int) (string, error) {
 	return base64.URLEncoding.EncodeToString(token), nil
 }
 
-func TokenConfirmEncode(mail string) (string, error) {
+func TokenMailEncode(mail string) (string, error) {
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
 		return "", err
@@ -282,7 +282,7 @@ func TokenConfirmEncode(mail string) (string, error) {
 	return base64.URLEncoding.EncodeToString(token), nil
 }
 
-func TokenAuthDecode(token string) (int, error) {
+func TokenUidDecode(token string) (int, error) {
 	encodedToken, _ := base64.URLEncoding.DecodeString(token)
 
 	c, err := aes.NewCipher([]byte(masterKey))
@@ -312,7 +312,7 @@ func TokenAuthDecode(token string) (int, error) {
 	return uid, nil
 }
 
-func TokenConfirmDecode(token string) (string, error) {
+func TokenMailDecode(token string) (string, error) {
 	encodedToken, _ := base64.URLEncoding.DecodeString(token)
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {

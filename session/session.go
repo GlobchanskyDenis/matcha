@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	// "fmt"
 )
 
 type tokenChanItem struct {
@@ -19,7 +20,7 @@ type SessionItem struct {
 	Expires     time.Time
 	LastVisited time.Time
 	TokenWS     string
-	ws          [](*websocket.Conn)
+	ws          []*websocket.Conn
 }
 
 type Session struct {
@@ -40,15 +41,22 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 	var ret tokenChanItem
 
 	go func(ch chan tokenChanItem, uid int) {
-		token, err := handlers.TokenAuthEncode(uid)
+		token, err := handlers.TokenUidEncode(uid)
 		ch <- tokenChanItem{token, err}
 	}(ch, uid)
 
-	newItem.Uid = uid
-	newItem.LastVisited = time.Now()
-	newItem.ws = []*websocket.Conn{}
-	newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
-
+	if T.IsUserLoggedByUid(uid) {
+		T.mu.Lock()
+		newItem = T.session[uid]
+		T.mu.Unlock()
+		newItem.LastVisited = time.Now()
+	} else {
+		newItem.Uid = uid
+		newItem.LastVisited = time.Now()
+		newItem.ws = []*websocket.Conn{}
+		newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
+	}
+	
 	ret = <-ch
 	if ret.err != nil {
 		return ret.token, ret.err
@@ -62,7 +70,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 }
 
 func (T *Session) IsUserLoggedByToken(token string) (bool, error) {
-	uid, err := handlers.TokenAuthDecode(token)
+	uid, err := handlers.TokenUidDecode(token)
 	if err != nil {
 		return false, err
 	}
@@ -111,7 +119,7 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 	var uid int
 	var err error
 
-	uid, err = handlers.TokenAuthDecode(token)
+	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
 		return SessionItem{}, err
 	}
@@ -196,36 +204,39 @@ func (T *Session) GetTokenWS(uid int) (string, error) {
 	return item.TokenWS, nil
 }
 
-func (T *Session) AddWSConnection(token string, newWebSocket *websocket.Conn, wsMeta string) error {
+func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn, wsMeta string) error {
 	var item SessionItem
+	var message string
 	var err error
-	var uid int
+	var ws *websocket.Conn
 
-	item, err = T.FindUserByToken(token)
-	if err != nil {
-		return err
-	}
-	uid = item.Uid
-	// if len(item.ws) != 0 {
-	// Предупредить все остальные соединения о соединении с новым устройством
-	// используя в качестве информации о новом устройстве wsMeta
-	// }
-	item.ws = append(item.ws, newWebSocket)
 	T.mu.Lock()
-	T.session[uid] = item
+	item = T.session[uid]
 	T.mu.Unlock()
+
+	// Notice all other devices that already connected that new device was logged as same user
+	for i:=0; i < len(item.ws); i++ {
+		ws = item.ws[i]
+		message = "Someone (" + wsMeta + ") logged to your account. Watch out!"
+		err = ws.WriteMessage(1, []byte(message))
+		if err != nil {
+			return err
+		}
+	}
+
+	item.ws = append(item.ws, newWebSocket)
+	(*T).mu.Lock()
+	T.session[uid] = item
+	(*T).mu.Unlock()
 	return nil
 }
 
-func (T *Session) RemoveWSConnection(token string, webSocketToRemove *websocket.Conn) (isUserWasRemoved bool, err error) {
+func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn) (isUserWasRemoved bool, err error) {
 	var item SessionItem
-	var uid int
 
-	item, err = T.FindUserByToken(token)
-	if err != nil {
-		return false, err
-	}
-	uid = item.Uid
+	T.mu.Lock()
+	item = T.session[uid]
+	T.mu.Unlock()
 	if len(item.ws) < 1 {
 		T.mu.Lock()
 		delete(T.session, uid)

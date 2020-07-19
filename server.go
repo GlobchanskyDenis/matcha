@@ -2,9 +2,12 @@ package main
 
 import (
 	"MatchaServer/myDatabase"
+	// "github.com/gorilla/websocket"
 	"MatchaServer/config"
 	"net/http"
 )
+
+// var gWSarray = map[int](*websocket.Conn){}
 
 func main() {
 	var conn myDatabase.ConnDB

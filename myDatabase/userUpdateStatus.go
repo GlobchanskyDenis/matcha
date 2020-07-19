@@ -31,8 +31,6 @@ func (conn *ConnDB) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// fmt.Printf("%V %T\n", request, request)
-
 	requestItem, isExist = request["x-reg-token"]
 	if !isExist {
 		consoleLogError(r, "/user/update/status/", "x-reg-token not exist in request")
@@ -56,9 +54,9 @@ func (conn *ConnDB) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mail, err = handlers.TokenConfirmDecode(token)
+	mail, err = handlers.TokenMailDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/update/status/", "TokenConfirmDecode returned error - " + err.Error())
+		consoleLogWarning(r, "/user/update/status/", "TokenMailDecode returned error - " + err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		fmt.Fprintf(w, `{"error":"`+err.Error()+`"}`)
 		return

@@ -164,9 +164,9 @@ func (conn *ConnDB) userUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uid, err = handlers.TokenAuthDecode(token)
+	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/update/", "TokenDecode returned error - "+err.Error())
+		consoleLogWarning(r, "/user/update/", "TokenUidDecode returned error - "+err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		fmt.Fprintf(w, `{"error":"`+"token decoding error"+`"}`)
 		return

@@ -59,9 +59,10 @@
 				}
 			}
 
-			function wsConnect(uid, token) {
-				let socket = new WebSocket("ws://localhost:3000/ws/auth/?uid="+uid+"&ws-auth-token="+token)
+			function wsConnect(xAuthToken, wsAuthToken) {
+				let socket = new WebSocket("ws://localhost:3000/ws/auth/?x-auth-token="+xAuthToken+"&ws-auth-token="+wsAuthToken)
 				console.log("attempting websocket connection")
+				console.log("ws://localhost:3000/ws/auth/?uid="+xAuthToken+"&ws-auth-token="+wsAuthToken)
 
 				socket.onopen = function() {
 					console.log("web socket successfully connected")
@@ -129,7 +130,7 @@
 					document.forms['auth']['passwd'].value = "";
 					document.token = requestAsync["x-auth-token"]
 
-					wsConnect(requestAsync.uid, requestAsync["ws-auth-token"])
+					wsConnect(requestAsync["x-auth-token"], requestAsync["ws-auth-token"])
 				}
 
 				xhr.onerror = function() {

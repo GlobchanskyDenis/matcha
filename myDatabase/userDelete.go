@@ -25,7 +25,7 @@ func (conn *ConnDB) userDelete(w http.ResponseWriter, r *http.Request) {
 	message = "request for DELETE was recieved"
 	consoleLog(r, "/user/delete/", message)
 
-	uid, err = handlers.TokenAuthDecode(token)
+	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
 		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - " + err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
