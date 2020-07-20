@@ -2,16 +2,17 @@ package main
 
 import (
 	"MatchaServer/handlers"
-	"MatchaServer/myDatabase"
+	// "MatchaServer/database"
+	"MatchaServer/httpHandlers"
 	"MatchaServer/config"
 )
 
 func main() {
-	var conn myDatabase.ConnDB
+	// var conn myDatabase.ConnDB
 	var err error
 
 	print("Connecting to database\t")
-	err = conn.Connect()
+	conn, err := httpHandlers.CreateConnectionsStruct()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -20,7 +21,7 @@ func main() {
 	}
 
 	print("Drop users table\t")
-	err = conn.DropUsersTable()
+	err = conn.Db.DropUsersTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -29,7 +30,7 @@ func main() {
 	}
 
 	print("Drop ENUM types in db\t")
-	err = conn.DropEnumTypes()
+	err = conn.Db.DropEnumTypes()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	print("Create ENUM types in db\t")
-	err = conn.CreateEnumTypes()
+	err = conn.Db.CreateEnumTypes()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -47,7 +48,7 @@ func main() {
 	}
 
 	print("Create users table\t")
-	err = conn.CreateUsersTable()
+	err = conn.Db.CreateUsersTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -56,7 +57,7 @@ func main() {
 	}
 
 	print("Add admin@gmail.com user")
-	err = conn.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
+	err = conn.Db.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -65,7 +66,7 @@ func main() {
 	}
 
 	print("Set all fields to user\t")
-	err = conn.UpdateUser(config.User{1, "admin@gmail.com",
+	err = conn.Db.UpdateUser(config.User{1, "admin@gmail.com",
 	handlers.PasswdHash("admin"),
 	"admin", "superUser",
 	30, "male", "getero", "", 0,

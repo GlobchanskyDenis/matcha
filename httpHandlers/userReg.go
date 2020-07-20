@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"
@@ -9,7 +9,7 @@ import (
 )
 
 // USER REGISTRATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnDB) userReg(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token string
 		err                   error
@@ -72,7 +72,7 @@ func (conn *ConnDB) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isUserExists, err := conn.IsUserExists(mail)
+	isUserExists, err := conn.Db.IsUserExists(mail)
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "IsUserExists returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -86,7 +86,7 @@ func (conn *ConnDB) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = conn.SetNewUser(mail, handlers.PasswdHash(passwd))
+	err = conn.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -118,7 +118,7 @@ func (conn *ConnDB) userReg(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/reg
 // REGISTRATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnDB) HttpHandlerUserReg(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) HttpHandlerUserReg(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")

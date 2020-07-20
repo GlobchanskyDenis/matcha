@@ -1,18 +1,22 @@
-package myDatabase
+package database
 
 import (
 	// "fmt"
 	"MatchaServer/config"
-	"MatchaServer/session"
+	// "MatchaServer/session"
 	"database/sql"
 	"errors"
 	_ "github.com/lib/pq"
 	"strconv"
 )
 
+// type ConnDB struct {
+// 	db      *sql.DB
+// 	session session.Session
+// }
+
 type ConnDB struct {
 	db      *sql.DB
-	session session.Session
 }
 
 func (conn *ConnDB) Connect() error {
@@ -21,7 +25,7 @@ func (conn *ConnDB) Connect() error {
 	dsn = "user=" + config.DB_USER + " password=" + config.DB_PASSWD + " dbname=" + config.DB_NAME + " host=" + config.DB_HOST + " sslmode=disable"
 	db, err := sql.Open(config.DB_TYPE, dsn)
 	conn.db = db
-	conn.session = session.CreateSession()
+	// conn.session = session.CreateSession()
 	return err
 }
 

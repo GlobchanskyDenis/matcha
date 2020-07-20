@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"
@@ -8,10 +8,10 @@ import (
 	"strconv"
 )
 
-func (conn *ConnDB) searchAll(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) searchAll(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
-	users, err := conn.SearchUsersByOneFilter(filter)
+	users, err := conn.Db.SearchUsersByOneFilter(filter)
 	if err != nil {
 		consoleLogError(r, "/users/", "SearchUsersByOneFilter returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -31,9 +31,9 @@ func (conn *ConnDB) searchAll(w http.ResponseWriter, r *http.Request) {
 	consoleLogSuccess(r, "/users/", "array of " + BLUE + "all" + NO_COLOR + " users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
-func (conn *ConnDB) searchLogged(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) searchLogged(w http.ResponseWriter, r *http.Request) {
 
-	users, err := conn.GetLoggedUsers(conn.session.GetLoggedUsersUidSlice())
+	users, err := conn.Db.GetLoggedUsers(conn.session.GetLoggedUsersUidSlice())
 	if err != nil {
 		consoleLogError(r, "/users/", "GetLoggedUsers returned error"+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -52,7 +52,7 @@ func (conn *ConnDB) searchLogged(w http.ResponseWriter, r *http.Request) {
 	consoleLogSuccess(r, "/users/", "array of " + BLUE + "logged" + NO_COLOR + " users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
-func (conn *ConnDB) search(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) search(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
 	consoleLog(r, "/users/", "request was recieved with filter "+BLUE+filter+NO_COLOR)
@@ -72,7 +72,7 @@ func (conn *ConnDB) search(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (conn *ConnDB) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,OPTIONS")

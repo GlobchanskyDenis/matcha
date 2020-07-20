@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"
@@ -10,7 +10,7 @@ import (
 )
 
 // USER MAIL CONFIRM BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnDB) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, token string
 		err     error
@@ -62,7 +62,7 @@ func (conn *ConnDB) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = conn.GetUserByMail(mail)
+	user, err = conn.Db.GetUserByMail(mail)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "GetUserByMail returned error - " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -79,7 +79,7 @@ func (conn *ConnDB) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	user.AccType = "confirmed"
 
-	err = conn.UpdateUser(user)
+	err = conn.Db.UpdateUser(user)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "UpdateUser returned error - " + err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -95,7 +95,7 @@ func (conn *ConnDB) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/update/status . IT HANDLES:
 // UPDATE USER STATUS BY PATCH METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnDB) HttpHandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) HttpHandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")

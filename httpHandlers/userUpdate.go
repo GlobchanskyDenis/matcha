@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"
@@ -147,7 +147,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 // REQUEST BODY IS JSON
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 // RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
-func (conn *ConnDB) userUpdate(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid     int
 		err     error
@@ -179,7 +179,7 @@ func (conn *ConnDB) userUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = conn.GetUserByUid(uid)
+	user, err = conn.Db.GetUserByUid(uid)
 	if err != nil {
 		consoleLogError(r, "/user/update/", "GetUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -205,7 +205,7 @@ func (conn *ConnDB) userUpdate(w http.ResponseWriter, r *http.Request) {
 
 	consoleLog(r, "/user/update/", message)
 
-	err = conn.UpdateUser(user)
+	err = conn.Db.UpdateUser(user)
 	if err != nil {
 		consoleLogError(r, "/user/update/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -222,7 +222,7 @@ func (conn *ConnDB) userUpdate(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/update/
 // UPDATE USER BY PATCH METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnDB) HttpHandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) HttpHandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")

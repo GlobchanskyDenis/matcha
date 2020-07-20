@@ -1,7 +1,7 @@
 package main
 
 import (
-	"MatchaServer/myDatabase"
+	"MatchaServer/httpHandlers"
 	// "github.com/gorilla/websocket"
 	"MatchaServer/config"
 	"net/http"
@@ -10,10 +10,10 @@ import (
 // var gWSarray = map[int](*websocket.Conn){}
 
 func main() {
-	var conn myDatabase.ConnDB
-	var err error
+	// var conn myDatabase.ConnDB
+	// var err error
 
-	err = conn.Connect()
+	conn, err := httpHandlers.CreateConnectionsStruct()
 	if err != nil {
 		println(config.RED + "Server cannot start - " + err.Error() + config.NO_COLOR)
 	} else {

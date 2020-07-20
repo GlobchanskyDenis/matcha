@@ -1,4 +1,4 @@
-package myDatabase
+package database
 
 import (
 	// "fmt"

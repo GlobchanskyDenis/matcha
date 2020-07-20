@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"

@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"
@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 // 	return nil
 // }
 
-func (conn *ConnDB) wsReader(r *http.Request, ws *websocket.Conn) {
+func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn) {
 	for {
 		messageType, message, err := ws.ReadMessage()
 		if err != nil {
@@ -42,7 +42,7 @@ func (conn *ConnDB) wsReader(r *http.Request, ws *websocket.Conn) {
 
 // WEB SOCKET HANDLER FOR DOMAIN /ws/
 // GET PARAMS login AND ws-auth-token SHOULD BE IN REQUEST
-func (conn *ConnDB) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request) {
 	var wsAuthToken = r.URL.Query().Get("ws-auth-token")
 	var uidToken = r.URL.Query().Get("x-auth-token")
 	var message string

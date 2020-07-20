@@ -1,4 +1,4 @@
-package myDatabase
+package httpHandlers
 
 import (
 	. "MatchaServer/config"
@@ -9,7 +9,7 @@ import (
 )
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnDB) userAuth(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token, tokenWS, response string
 		user                                            User
@@ -55,7 +55,7 @@ func (conn *ConnDB) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = conn.GetUserDataForAuth(mail, handlers.PasswdHash(passwd))
+	user, err = conn.Db.GetUserDataForAuth(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		consoleLogError(r, "/auth/", "GetUserDataForAuth returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -113,7 +113,7 @@ func (conn *ConnDB) userAuth(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
 // AUTHENTICATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnDB) HttpHandlerUserAuth(w http.ResponseWriter, r *http.Request) {
+func (conn *ConnAll) HttpHandlerUserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
