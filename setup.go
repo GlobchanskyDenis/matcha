@@ -20,8 +20,8 @@ func main() {
 		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
-	print("Drop users table\t")
-	err = conn.Db.DropUsersTable()
+	print("Drop all tables\t\t")
+	err = conn.Db.DropAllTables()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -49,6 +49,33 @@ func main() {
 
 	print("Create users table\t")
 	err = conn.Db.CreateUsersTable()
+	if err != nil {
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
+	} else {
+		println(config.GREEN + " - done" + config.NO_COLOR)
+	}
+
+	print("Create notif table\t")
+	err = conn.Db.CreateNotifTable()
+	if err != nil {
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
+	} else {
+		println(config.GREEN + " - done" + config.NO_COLOR)
+	}
+
+	print("Create message table\t")
+	err = conn.Db.CreateMessageTable()
+	if err != nil {
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
+	} else {
+		println(config.GREEN + " - done" + config.NO_COLOR)
+	}
+
+	print("Create photo table\t")
+	err = conn.Db.CreatePhotoTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return

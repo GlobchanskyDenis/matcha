@@ -1,19 +1,12 @@
 package database
 
 import (
-	// "fmt"
 	"MatchaServer/config"
-	// "MatchaServer/session"
 	"database/sql"
 	"errors"
 	_ "github.com/lib/pq"
 	"strconv"
 )
-
-// type ConnDB struct {
-// 	db      *sql.DB
-// 	session session.Session
-// }
 
 type ConnDB struct {
 	db      *sql.DB
@@ -25,22 +18,51 @@ func (conn *ConnDB) Connect() error {
 	dsn = "user=" + config.DB_USER + " password=" + config.DB_PASSWD + " dbname=" + config.DB_NAME + " host=" + config.DB_HOST + " sslmode=disable"
 	db, err := sql.Open(config.DB_TYPE, dsn)
 	conn.db = db
-	// conn.session = session.CreateSession()
 	return err
 }
 
 ///////////// SETUP FUNCTIONS //////////////////
 
-func (Conn ConnDB) TruncateUsersTable() error {
+func (Conn ConnDB) TruncateAllTables() error {
 	db := Conn.db
 	_, err := db.Exec("TRUNCATE TABLE users") //IF EXISTS
-	return err
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("TRUNCATE TABLE notif") //IF EXISTS
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("TRUNCATE TABLE message") //IF EXISTS
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("TRUNCATE TABLE photo") //IF EXISTS
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (Conn ConnDB) DropUsersTable() error {
+func (Conn ConnDB) DropAllTables() error {
 	db := Conn.db
 	_, err := db.Exec("DROP TABLE IF EXISTS users")
-	return err
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS notif")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS message")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS photo")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (conn ConnDB) DropEnumTypes() error {
@@ -90,6 +112,34 @@ func (conn ConnDB) CreateUsersTable() error {
 		"avaPhotoID INTEGER NOT NULL DEFAULT 0," +
 		"accType acc_type NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")
+	return err
+}
+
+func (conn ConnDB) CreateNotifTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE notif (nid SERIAL NOT NULL, " +
+		"PRIMARY KEY (nid), " +
+		"uid INT NOT NULL, " +
+		"body VARCHAR(" + strconv.Itoa(config.NOTIF_MAX_LEN) + ") NOT NULL DEFAULT '')")
+	return err
+}
+
+func (conn ConnDB) CreateMessageTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE message (mid SERIAL NOT NULL, " +
+		"PRIMARY KEY (mid), " +
+		"uidSender INT NOT NULL, " +
+		"uidReceiver INT NOT NULL, " +
+		"message VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL DEFAULT '')")
+	return err
+}
+
+func (conn ConnDB) CreatePhotoTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE photo (pid SERIAL NOT NULL, " +
+		"PRIMARY KEY (pid), " +
+		"uid INT NOT NULL, " +
+		"photo BIT(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL DEFAULT '')") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!
 	return err
 }
 
