@@ -13,8 +13,18 @@ type ConnAll struct {
 	session session.Session
 }
 
-func CreateConnectionsStruct() (ConnAll, error) {
-	var dst ConnAll
+func (conn *ConnAll) ConnectAll() error {
+	conn.Db = database.ConnDB{}
+	err := conn.Db.Connect()
+	if err != nil {
+		return err
+	}
+	conn.session = session.CreateSession()
+	return nil
+}
+
+func CreateConnectionsStruct() (*ConnAll, error) {
+	var dst = &ConnAll{}
 
 	err := dst.Db.Connect()
 	if err != nil {

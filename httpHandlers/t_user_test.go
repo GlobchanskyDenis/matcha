@@ -12,9 +12,8 @@ import (
 )
 
 var (
-	conn  = ConnDB{}
+	conn = ConnAll{}
 	token string
-	// xRegToken string
 
 	mail   = "test@gmail.com"
 	passwd = "AsdVar34!A"
@@ -43,7 +42,11 @@ var (
 
 func TestRegUser(t *testing.T) {
 
-	conn.Connect()
+	err := conn.ConnectAll()
+	if err != nil {
+		t.Errorf(RED_BG+"ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
+		return
+	}
 
 	// requestData := strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`)
 	// url := "http://localhost:3000/user/reg/"
@@ -71,14 +74,14 @@ func TestRegUser(t *testing.T) {
 	// }
 	// t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
 
-	err := conn.SetNewUser(mail, handlers.PasswdHash(passwd))
+	err = conn.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		t.Errorf(RED_BG+"ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 
-	err = conn.UpdateUser(User{2, mail, handlers.PasswdHash(passwd),
+	err = conn.Db.UpdateUser(User{2, mail, handlers.PasswdHash(passwd),
 		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
 	if err != nil {
 		t.Errorf(RED_BG+"ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
@@ -300,14 +303,14 @@ func TestCreateUserForFailTests(t *testing.T) {
 	// }
 	// t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
 
-	err := conn.SetNewUser(mail, handlers.PasswdHash(passwd))
+	err := conn.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		t.Errorf(RED_BG+"ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 
-	err = conn.UpdateUser(User{3, mail, handlers.PasswdHash(passwd),
+	err = conn.Db.UpdateUser(User{3, mail, handlers.PasswdHash(passwd),
 		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
 	if err != nil {
 		t.Errorf(RED_BG+"ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")

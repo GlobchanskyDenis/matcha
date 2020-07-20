@@ -2,17 +2,16 @@ package main
 
 import (
 	"MatchaServer/handlers"
-	// "MatchaServer/database"
 	"MatchaServer/httpHandlers"
 	"MatchaServer/config"
 )
 
 func main() {
-	// var conn myDatabase.ConnDB
+	var conn = httpHandlers.ConnAll{}
 	var err error
 
 	print("Connecting to database\t")
-	conn, err := httpHandlers.CreateConnectionsStruct()
+	err = conn.ConnectAll()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
