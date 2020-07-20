@@ -79,7 +79,7 @@ func TestTokenAuthEnkoder(t *testing.T) {
 	var err error
 	var wasError bool
 
-	encodedToken, err = TokenAuthEncode(uid)
+	encodedToken, err = TokenUidEncode(uid)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: error was returned at encoding - %s"+NO_COLOR+"\n", err.Error())
 		return
@@ -100,7 +100,7 @@ func TestTokenAuthEnkoder(t *testing.T) {
 		wasError = true
 	}
 
-	newEncodedToken, err = TokenAuthEncode(uid)
+	newEncodedToken, err = TokenUidEncode(uid)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: error was returned at encoding - %s"+NO_COLOR+"\n", err.Error())
 		return
@@ -126,7 +126,7 @@ func TestTokenAuthDecoder(t *testing.T) {
 	var err error
 	var wasError bool
 
-	encodedToken, err = TokenAuthEncode(uid)
+	encodedToken, err = TokenUidEncode(uid)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: error was returned at encoding - %s"+NO_COLOR+"\n", err.Error())
 		return
@@ -136,7 +136,7 @@ func TestTokenAuthDecoder(t *testing.T) {
 		wasError = true
 	}
 
-	uid, err = TokenAuthDecode(encodedToken)
+	uid, err = TokenUidDecode(encodedToken)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: error was returned at decoding - %s"+NO_COLOR+"\n", err.Error())
 		return

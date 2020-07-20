@@ -24,7 +24,7 @@ var (
 	lnameNew       = "Глобчанский"
 	ageNew         = 21
 	genderNew      = "male"
-	orientationNew = "getero"
+	orientationNew = "hetero"
 	biographyNew   = "born, suffered, died"
 	avaPhotoIDNew  = 42
 
@@ -82,7 +82,7 @@ func TestRegUser(t *testing.T) {
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 
 	err = conn.Db.UpdateUser(User{2, mail, handlers.PasswdHash(passwd),
-		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
+		"testUser", "test", 30, genderNew, orientationNew, "", 0, "confirmed", 0})
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -311,7 +311,7 @@ func TestCreateUserForFailTests(t *testing.T) {
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 
 	err = conn.Db.UpdateUser(User{3, mail, handlers.PasswdHash(passwd),
-		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
+		"testUser", "test", 30, genderNew, orientationNew, "", 0, "confirmed", 0})
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return

@@ -187,7 +187,7 @@ func CheckGender(gender string) error {
 }
 
 func CheckOrientation(orientation string) error {
-	if orientation != "getero" && orientation != "bi" && orientation != "gay" {
+	if orientation != "hetero" && orientation != "bi" && orientation != "homo" {
 		return errors.New("orientation '" + orientation + "' not exist in database")
 	}
 	return nil

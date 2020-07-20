@@ -86,7 +86,7 @@ func (conn ConnDB) CreateEnumTypes() error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("CREATE TYPE enum_orientation AS ENUM ('getero', 'bi', 'gay', '')")
+	_, err = db.Exec("CREATE TYPE enum_orientation AS ENUM ('hetero', 'bi', 'homo', '')")
 	if err != nil {
 		return err
 	}

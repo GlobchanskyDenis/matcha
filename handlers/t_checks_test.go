@@ -484,7 +484,7 @@ func TestGenderInvalid_2(t *testing.T) {
 // ------------- ORIENTATION TESTING OF VALID CASES --------------------------
 
 func TestOrientationOK_1(t *testing.T) {
-	var orientation = "getero"
+	var orientation = "hetero"
 	err := CheckOrientation(orientation)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", orientation, err.Error())
@@ -504,7 +504,7 @@ func TestOrientationOK_2(t *testing.T) {
 }
 
 func TestOrientationOK_3(t *testing.T) {
-	var orientation = "gay"
+	var orientation = "homo"
 	err := CheckOrientation(orientation)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", orientation, err.Error())

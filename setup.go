@@ -95,7 +95,7 @@ func main() {
 	err = conn.Db.UpdateUser(config.User{1, "admin@gmail.com",
 		handlers.PasswdHash("admin"),
 		"admin", "superUser",
-		30, "male", "getero", "", 0,
+		30, "male", "hetero", "", 0,
 		"confirmed", 0})
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
