@@ -3,7 +3,7 @@ package database
 import (
 	"MatchaServer/config"
 	"database/sql"
-	"errors"
+	// "errors"
 	_ "github.com/lib/pq"
 	"strconv"
 )
@@ -130,7 +130,7 @@ func (conn ConnDB) CreateMessageTable() error {
 		"PRIMARY KEY (mid), " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
-		"message VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL DEFAULT '')")
+		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL DEFAULT '')")
 	return err
 }
 
@@ -139,34 +139,6 @@ func (conn ConnDB) CreatePhotoTable() error {
 	_, err := db.Exec("CREATE TABLE photo (pid SERIAL NOT NULL, " +
 		"PRIMARY KEY (pid), " +
 		"uid INT NOT NULL, " +
-		"photo BIT(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL DEFAULT '')") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!
+		"body BIT(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL DEFAULT '')") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!
 	return err
-}
-
-/////////////// MOST NEEDED FUNCTIONS ////////////////////////////
-
-func (conn ConnDB) SetNewUser(mail string, passwd string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO users (mail, passwd) VALUES ($1, $2)")
-	if err != nil {
-		return errors.New(err.Error() + " in preparing")
-	}
-	defer stmt.Close()
-	_, err = stmt.Exec(mail, passwd)
-	if err != nil {
-		return errors.New(err.Error() + " in executing")
-	}
-	return nil
-}
-
-func (conn *ConnDB) DeleteUser(uid int) error {
-	stmt, err := conn.db.Prepare("DELETE FROM users WHERE uid=$1")
-	if err != nil {
-		return errors.New(err.Error() + " in preparing")
-	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uid)
-	if err != nil {
-		return errors.New(err.Error() + " in executing")
-	}
-	return nil
 }

@@ -1,13 +1,56 @@
 package database
 
 import (
-	// "fmt"
 	"MatchaServer/config"
 	"database/sql"
 	"errors"
-	_ "github.com/lib/pq"
+	// _ "github.com/lib/pq"
 	"strconv"
 )
+
+func (conn ConnDB) SetNewUser(mail string, passwd string) error {
+	stmt, err := conn.db.Prepare("INSERT INTO users (mail, passwd) VALUES ($1, $2)")
+	if err != nil {
+		return errors.New(err.Error() + " in preparing")
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(mail, passwd)
+	if err != nil {
+		return errors.New(err.Error() + " in executing")
+	}
+	return nil
+}
+
+func (conn *ConnDB) DeleteUser(uid int) error {
+	stmt, err := conn.db.Prepare("DELETE FROM users WHERE uid=$1")
+	if err != nil {
+		return errors.New(err.Error() + " in preparing")
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(uid)
+	if err != nil {
+		return errors.New(err.Error() + " in executing")
+	}
+	return nil
+}
+
+func (conn *ConnDB) UpdateUser(user config.User) error {
+	stmt, err := conn.db.Prepare("UPDATE users SET " +
+		"mail=$2, passwd=$3, fname=$4, lname=$5, age=$6, gender=$7, " +
+		"orientation=$8, biography=$9, avaPhotoID=$10, accType=$11, rating=$12  " +
+		"WHERE uid=$1")
+	if err != nil {
+		return errors.New(err.Error() + " in preparing")
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(user.Uid, user.Mail, user.Passwd, user.Fname,
+		user.Lname, user.Age, user.Gender, user.Orientation,
+		user.Biography, user.AvaPhotoID, user.AccType, user.Rating)
+	if err != nil {
+		return errors.New(err.Error() + " in executing")
+	}
+	return nil
+}
 
 // Тут никак не реализован фильтр !!!!!!!!!!!!!!!
 func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) {

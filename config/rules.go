@@ -48,3 +48,16 @@ type User struct {
 	AccType     string `json:"-"`
 	Rating      int    `json:"rating"`
 }
+
+type Notif struct {
+	Nid         int    `json:"nid"`
+	Uid         int    `json:"uid"`
+	Body        string `json:"body"`
+}
+
+type Message struct {
+	Mid         int    `json:"nid"`
+	UidSender   int    `json:"uidSender"`
+	UidReceiver int    `json:"uidReceiver"`
+	Body        string `json:"body"`
+}
