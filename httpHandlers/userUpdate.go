@@ -5,7 +5,6 @@ import (
 	"MatchaServer/handlers"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -160,7 +159,7 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	if token == "" {
 		consoleLogWarning(r, "/user/update/", "token is empty")
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"`+"token is empty"+`"}`)
+		w.Write([]byte(`{"error":"` + "token is empty" + `"}`))
 		return
 	}
 
@@ -168,14 +167,14 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogWarning(r, "/user/update/", "TokenUidDecode returned error - "+err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"`+"token decoding error"+`"}`)
+		w.Write([]byte(`{"error":"` + "token decoding error" + `"}`))
 		return
 	}
 
 	if !conn.session.IsUserLoggedByUid(uid) {
 		consoleLogWarning(r, "/user/update/", "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"`+"user is not logged"+`"}`)
+		w.Write([]byte(`{"error":"` + "user is not logged" + `"}`))
 		return
 	}
 
@@ -183,7 +182,7 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/update/", "GetUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
+		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
 		return
 	}
 
@@ -191,7 +190,7 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/update/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"json decode failed"+`"}`)
+		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
 		return
 	}
 
@@ -199,7 +198,7 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogWarning(r, "/user/update/", err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+err.Error()+`"}`)
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
 	}
 
@@ -209,14 +208,15 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/update/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
+		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
 		return
 	}
 
 	// Проверить - принадлежит ли фото юзеру
 
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/user/update/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+" was updated successfully. No response body")
+	consoleLogSuccess(r, "/user/update/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
+		" was updated successfully. No response body")
 }
 
 // HTTP HANDLER FOR DOMAIN /user/update/

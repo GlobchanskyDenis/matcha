@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"strconv"
-	// "fmt"
 )
 
 var upgrader = websocket.Upgrader{
@@ -59,7 +58,8 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	consoleLog(r, "/ws/auth/", "Request was recieved, uid="+BLUE+strconv.Itoa(uid)+NO_COLOR+" ws-auth-token="+BLUE+wsAuthToken+NO_COLOR)
+	consoleLog(r, "/ws/auth/", "Request was recieved, uid="+BLUE+strconv.Itoa(uid)+NO_COLOR+
+		" ws-auth-token="+BLUE+wsAuthToken+NO_COLOR)
 
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -79,14 +79,15 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if tokenWS != wsAuthToken {
-		consoleLogWarning(r, "/ws/auth/", "ws-auth-token is wrong! Close Web Socket for user #"+BLUE+strconv.Itoa(uid)+NO_COLOR)
+		consoleLogWarning(r, "/ws/auth/", "ws-auth-token is wrong! Close Web Socket for user #"+
+			BLUE+strconv.Itoa(uid)+NO_COLOR)
 		ws.Close()
 		return
 	}
 
-	err = conn.session.AddWSConnection(uid, ws, r.Host + ": " + r.UserAgent())
+	err = conn.session.AddWSConnection(uid, ws, r.Host+": "+r.UserAgent())
 	if err != nil {
-		consoleLogWarning(r, "/ws/auth/", "AddWSConnection returned error: " + err.Error())
+		consoleLogWarning(r, "/ws/auth/", "AddWSConnection returned error: "+err.Error())
 	}
 
 	consoleLogSuccess(r, "/ws/auth/", "WebSocket was created")
@@ -95,12 +96,14 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 
 	userSessionWasClosed, err := conn.session.RemoveWSConnection(uid, ws)
 	if err != nil {
-		consoleLogWarning(r, "/ws/auth/", "RemoveWSConnection returned error: " + err.Error())
+		consoleLogWarning(r, "/ws/auth/", "RemoveWSConnection returned error: "+err.Error())
 	} else {
 		if userSessionWasClosed {
-			message = "ws connection is going for close, remove it from session. " + "User session was closed"
+			message = "ws connection is going for close, remove it from session. " +
+				"User session was closed"
 		} else {
-			message = "ws connection is going for close, remove it from session. " + "User session wasnt close - other devices still logged"
+			message = "ws connection is going for close, remove it from session. " +
+				"User session wasnt close - other devices still logged"
 		}
 		consoleLog(r, "/ws/auth/", message)
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 type ConnDB struct {
-	db      *sql.DB
+	db *sql.DB
 }
 
 func (conn *ConnDB) Connect() error {

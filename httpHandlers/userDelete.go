@@ -4,7 +4,6 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -27,17 +26,17 @@ func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - " + err.Error())
+		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - "+err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"` + err.Error() + `"}`)
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/delete/", "request json decode failed - " + err.Error())
+		consoleLogError(r, "/user/delete/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "json decode failed" + `"}`)
+		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
 		return
 	}
 
@@ -45,23 +44,23 @@ func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/delete/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"` + "password not exist" + `"}`)
+		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
 		return
 	}
 	passwd = handlers.PasswdHash(arg.(string))
 
 	user, err = conn.Db.GetUserByUid(uid)
 	if err != nil {
-		consoleLogError(r, "/user/delete/", "GetUserByUid returned error - " + err.Error())
+		consoleLogError(r, "/user/delete/", "GetUserByUid returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + err.Error() + `"}`)
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
 	}
 
 	if passwd != user.Passwd {
 		consoleLogWarning(r, "/user/delete/", "password is incorrect")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"wrong password"+`"}`)
+		w.Write([]byte(`{"error":"` + "wrong password" + `"}`))
 		return
 	}
 
@@ -69,14 +68,14 @@ func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	err = conn.Db.DeleteUser(user.Uid)
 	if err != nil {
-		consoleLogError(r, "/user/delete/", "DeleteUser returned error - " + err.Error())
+		consoleLogError(r, "/user/delete/", "DeleteUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
+		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/user/delete/", "user #" + BLUE + strconv.Itoa(user.Uid) + NO_COLOR +
+	consoleLogSuccess(r, "/user/delete/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was removed successfully. No response body")
 }
 

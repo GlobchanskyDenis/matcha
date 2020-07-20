@@ -1,8 +1,8 @@
 package main
 
 import (
-	"MatchaServer/httpHandlers"
 	"MatchaServer/config"
+	"MatchaServer/httpHandlers"
 	"net/http"
 )
 

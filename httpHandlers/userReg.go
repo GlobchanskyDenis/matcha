@@ -4,7 +4,6 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -12,16 +11,16 @@ import (
 func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token string
-		err                   error
-		request               map[string]interface{}
-		isExist               bool
+		err                          error
+		request                      map[string]interface{}
+		isExist                      bool
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"json decode failed"+`"}`)
+		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
 		return
 	}
 
@@ -29,7 +28,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/reg/", "mail not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"mail not exist"+`"}`)
+		w.Write([]byte(`{"error":"` + "mail not exist" + `"}`))
 		return
 	}
 	mail = arg.(string)
@@ -38,7 +37,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/reg/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"password not exist"+`"}`)
+		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
 		return
 	}
 	passwd = arg.(string)
@@ -50,7 +49,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/user/reg/", "mail or password is empty")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"mail or password is empty"+`"}`)
+		w.Write([]byte(`{"error":"` + "mail or password is empty" + `"}`))
 		return
 	}
 
@@ -59,7 +58,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		consoleLogWarning(r, "/user/reg/", "mail - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
 		// CheckMail is my own function, so I can not afraid of invalid runes in error
-		fmt.Fprintf(w, `{"error":"`+"mail error - "+err.Error()+`"}`)
+		w.Write([]byte(`{"error":"` + "mail error - " + err.Error() + `"}`))
 		return
 	}
 
@@ -68,7 +67,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		consoleLogWarning(r, "/user/reg/", "password - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
 		// CheckPasswd is my own function, so I can not afraid of invalid runes in error
-		fmt.Fprintf(w, `{"error":"`+"password error - "+err.Error()+`"}`)
+		w.Write([]byte(`{"error":"` + "password error - " + err.Error() + `"}`))
 		return
 	}
 
@@ -76,13 +75,13 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "IsUserExists returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"database request returned error"+`"}`)
+		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
 		return
 	}
 	if isUserExists {
 		consoleLogWarning(r, "/user/reg/", "user "+BLUE+mail+NO_COLOR+" alredy exists")
 		w.WriteHeader(http.StatusNotAcceptable) // 406
-		fmt.Fprintf(w, `{"error":"`+"user "+mail+" already exists"+`"}`)
+		w.Write([]byte(`{"error":"` + "user " + mail + " already exists" + `"}`))
 		return
 	}
 
@@ -90,7 +89,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"Cannot register this user"+`"}`)
+		w.Write([]byte(`{"error":"` + "Cannot register this user" + `"}`))
 		return
 	}
 
@@ -98,7 +97,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "TokenMailEncode returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"Cannot create token for this user"+`"}`)
+		w.Write([]byte(`{"error":"` + "Cannot create token for this user" + `"}`))
 		return
 	}
 

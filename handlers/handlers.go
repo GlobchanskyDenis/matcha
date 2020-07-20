@@ -4,10 +4,10 @@ import (
 	"MatchaServer/config"
 	"errors"
 	"hash/crc32"
+	"net/smtp"
 	"strconv"
 	"time"
 	"unicode/utf8"
-	"net/smtp"
 
 	"crypto/aes"
 	"crypto/cipher"

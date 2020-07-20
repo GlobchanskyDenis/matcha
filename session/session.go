@@ -56,7 +56,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 		newItem.ws = []*websocket.Conn{}
 		newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
 	}
-	
+
 	ret = <-ch
 	if ret.err != nil {
 		return ret.token, ret.err
@@ -215,7 +215,7 @@ func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn, wsMeta 
 	T.mu.Unlock()
 
 	// Notice all other devices that already connected that new device was logged as same user
-	for i:=0; i < len(item.ws); i++ {
+	for i := 0; i < len(item.ws); i++ {
 		ws = item.ws[i]
 		message = "Someone (" + wsMeta + ") logged to your account. Watch out!"
 		err = ws.WriteMessage(1, []byte(message))

@@ -4,7 +4,6 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -13,11 +12,11 @@ import (
 func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, token string
-		err     error
-		user    User
-		request map[string]interface{}
-		requestItem interface{}
-		isExist, ok bool
+		err                  error
+		user                 User
+		request              map[string]interface{}
+		requestItem          interface{}
+		isExist, ok          bool
 	)
 
 	message = "request for MAIL CONFIRM was recieved"
@@ -25,9 +24,9 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/update/status/", "request json decode failed - " + err.Error())
+		consoleLogError(r, "/user/update/status/", "request json decode failed - "+err.Error())
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"json decode failed"+`"}`)
+		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
 		return
 	}
 
@@ -35,7 +34,7 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogError(r, "/user/update/status/", "x-reg-token not exist in request")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"x-reg-token not exist in request"+`"}`)
+		w.Write([]byte(`{"error":"` + "x-reg-token not exist in request" + `"}`))
 		return
 	}
 
@@ -43,37 +42,37 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		consoleLogError(r, "/user/update/status/", "x-reg-token has wrong type")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"x-reg-token has wrong type"+`"}`)
+		w.Write([]byte(`{"error":"` + "x-reg-token has wrong type" + `"}`))
 		return
 	}
 
 	if token == "" {
 		consoleLogError(r, "/user/update/status/", "x-reg-token is empty")
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"`+"x-reg-token is empty"+`"}`)
+		w.Write([]byte(`{"error":"` + "x-reg-token is empty" + `"}`))
 		return
 	}
 
 	mail, err = handlers.TokenMailDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/update/status/", "TokenMailDecode returned error - " + err.Error())
+		consoleLogWarning(r, "/user/update/status/", "TokenMailDecode returned error - "+err.Error())
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"`+err.Error()+`"}`)
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
 	}
 
 	user, err = conn.Db.GetUserByMail(mail)
 	if err != nil {
-		consoleLogWarning(r, "/user/update/status/", "GetUserByMail returned error - " + err.Error())
+		consoleLogWarning(r, "/user/update/status/", "GetUserByMail returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+`database returned error`+`"}`)
+		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
 		return
 	}
 
 	if user == (User{}) {
 		consoleLogWarning(r, "/user/update/status/", "Mail doesnt exists in database")
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		fmt.Fprintf(w, `{"error":"`+`Mail doesnt exists in database`+`"}`)
+		w.Write([]byte(`{"error":"` + `Mail doesnt exists in database` + `"}`))
 		return
 	}
 
@@ -81,14 +80,14 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	err = conn.Db.UpdateUser(user)
 	if err != nil {
-		consoleLogWarning(r, "/user/update/status/", "UpdateUser returned error - " + err.Error())
+		consoleLogWarning(r, "/user/update/status/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+`database returned error`+`"}`)
+		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/user/update/status/", "user #" + BLUE + strconv.Itoa(user.Uid) + NO_COLOR +
+	consoleLogSuccess(r, "/user/update/status/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated its status successfully. No response body")
 }
 

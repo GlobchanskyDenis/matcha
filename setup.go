@@ -1,9 +1,9 @@
 package main
 
 import (
+	"MatchaServer/config"
 	"MatchaServer/handlers"
 	"MatchaServer/httpHandlers"
-	"MatchaServer/config"
 )
 
 func main() {
@@ -93,10 +93,10 @@ func main() {
 
 	print("Set all fields to user\t")
 	err = conn.Db.UpdateUser(config.User{1, "admin@gmail.com",
-	handlers.PasswdHash("admin"),
-	"admin", "superUser",
-	30, "male", "getero", "", 0,
-	"confirmed", 0})
+		handlers.PasswdHash("admin"),
+		"admin", "superUser",
+		30, "male", "getero", "", 0,
+		"confirmed", 0})
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return

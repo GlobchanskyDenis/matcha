@@ -4,7 +4,6 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -22,7 +21,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/auth/", "request decode error")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"decode error"+`"}`)
+		w.Write([]byte(`{"error":"` + "decode error" + `"}`))
 		return
 	}
 
@@ -30,7 +29,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/auth/", "mail not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"mail not exist"+`"}`)
+		w.Write([]byte(`{"error":"` + "mail not exist" + `"}`))
 		return
 	}
 	mail = arg.(string)
@@ -39,7 +38,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	if !isExist {
 		consoleLogWarning(r, "/user/auth/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"password not exist"+`"}`)
+		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
 		return
 	}
 	passwd = arg.(string)
@@ -51,7 +50,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/user/auth/", "mail or password is empty")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"mail or password is empty"+`"}`)
+		w.Write([]byte(`{"error":"` + "mail or password is empty" + `"}`))
 		return
 	}
 
@@ -59,21 +58,21 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/auth/", "GetUserDataForAuth returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"database request failed"+`"}`)
+		w.Write([]byte(`{"error":"` + "database request failed" + `"}`))
 		return
 	}
 
 	if (user == User{}) {
 		consoleLogWarning(r, "/user/auth/", "wrong mail or password")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		fmt.Fprintf(w, `{"error":"`+"wrong mail or password"+`"}`)
+		w.Write([]byte(`{"error":"` + "wrong mail or password" + `"}`))
 		return
 	}
 
 	if user.AccType == "not confirmed" {
-		consoleLogWarning(r, "/user/auth/", "user " + BLUE + user.Mail + NO_COLOR + " should confirm its email")
+		consoleLogWarning(r, "/user/auth/", "user "+BLUE+user.Mail+NO_COLOR+" should confirm its email")
 		w.WriteHeader(http.StatusAccepted) // 202
-		fmt.Fprintf(w, `{"error":"`+"confirm email first"+`"}`)
+		w.Write([]byte(`{"error":"` + "confirm email first" + `"}`))
 		return
 	}
 
@@ -81,7 +80,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		consoleLogError(r, "/user/auth/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"Cannot authenticate this user"+`"}`)
+		w.Write([]byte(`{"error":"` + "Cannot authenticate this user" + `"}`))
 		return
 	}
 
@@ -90,24 +89,24 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		consoleLogWarning(r, "/user/auth/", "Marshal returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"`+"cannot convert to json"+`"}`)
+		w.Write([]byte(`{"error":"` + "cannot convert to json" + `"}`))
 		return
 	}
 
 	tokenWS, err = conn.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
-		consoleLogError(r, "/user/auth/", "cannot create web socket token - " + err.Error())
+		consoleLogError(r, "/user/auth/", "cannot create web socket token - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		fmt.Fprintf(w, `{"error":"` + "cannot create web socket token" + `"}`)
+		w.Write([]byte(`{"error":"` + "cannot create web socket token" + `"}`))
 		return
 	}
 
 	// This is my valid case. Response status will be set automaticly to 200.
 	w.WriteHeader(http.StatusOK) // 200
 	response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
-	fmt.Fprintf(w, response)
-	consoleLogSuccess(r, "/user/auth/", "User " + BLUE + mail + NO_COLOR + " was authenticated successfully")
+	w.Write([]byte(response))
+	consoleLogSuccess(r, "/user/auth/", "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
 }
 
 // HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:

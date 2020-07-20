@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	conn = ConnAll{}
+	conn  = ConnAll{}
 	token string
 
 	mail   = "test@gmail.com"
@@ -44,7 +44,7 @@ func TestRegUser(t *testing.T) {
 
 	err := conn.ConnectAll()
 	if err != nil {
-		t.Errorf(RED_BG+"ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
+		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 
@@ -76,7 +76,7 @@ func TestRegUser(t *testing.T) {
 
 	err = conn.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
-		t.Errorf(RED_BG+"ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
+		t.Errorf(RED_BG + "ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
@@ -84,11 +84,11 @@ func TestRegUser(t *testing.T) {
 	err = conn.Db.UpdateUser(User{2, mail, handlers.PasswdHash(passwd),
 		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
 	if err != nil {
-		t.Errorf(RED_BG+"ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
+		t.Errorf(RED_BG + "ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
-	
+
 	print(YELLOW)
 }
 
@@ -305,7 +305,7 @@ func TestCreateUserForFailTests(t *testing.T) {
 
 	err := conn.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
-		t.Errorf(RED_BG+"ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
+		t.Errorf(RED_BG + "ERROR: SetNewUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
@@ -313,7 +313,7 @@ func TestCreateUserForFailTests(t *testing.T) {
 	err = conn.Db.UpdateUser(User{3, mail, handlers.PasswdHash(passwd),
 		"testUser", "test", 30, "male", "getero", "", 0, "confirmed", 0})
 	if err != nil {
-		t.Errorf(RED_BG+"ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
+		t.Errorf(RED_BG + "ERROR: UpdateUser returned error - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Logf(GREEN_BG + "SUCCESS: user confirmed its mail" + NO_COLOR + "\n")
