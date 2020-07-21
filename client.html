@@ -59,10 +59,10 @@
 				}
 			}
 
-			function wsConnect(xAuthToken, wsAuthToken) {
-				let socket = new WebSocket("ws://localhost:3000/ws/auth/?x-auth-token="+xAuthToken+"&ws-auth-token="+wsAuthToken)
+			function wsConnect(uid, wsAuthToken) {
+				let socket = new WebSocket("ws://localhost:3000/ws/auth/?uid="+uid+"&ws-auth-token="+wsAuthToken)
 				console.log("attempting websocket connection")
-				console.log("ws://localhost:3000/ws/auth/?uid="+xAuthToken+"&ws-auth-token="+wsAuthToken)
+				console.log("ws://localhost:3000/ws/auth/?uid="+uid+"&ws-auth-token="+wsAuthToken)
 
 				socket.onopen = function() {
 					console.log("web socket successfully connected")
@@ -82,7 +82,7 @@
 				}
 
 				function sendMessage() {
-					message = `{"type":"message","uidReceiver":0,"body":"test message"}`
+					message = `{"type":"message","uidReceiver":1,"body":"test message"}`
 					console.log("tx: " + message)
 					socket.send(message)
 				}
@@ -138,7 +138,7 @@
 					document.forms['auth']['passwd'].value = "";
 					document.token = requestAsync["x-auth-token"]
 
-					wsConnect(requestAsync["x-auth-token"], requestAsync["ws-auth-token"])
+					wsConnect(requestAsync.uid, requestAsync["ws-auth-token"])
 				}
 
 				xhr.onerror = function() {

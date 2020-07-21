@@ -2,7 +2,7 @@ package httpHandlers
 
 import (
 	. "MatchaServer/config"
-	"MatchaServer/handlers"
+	// "MatchaServer/handlers"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"encoding/json"
@@ -77,8 +77,8 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			continue
 		}
 		uidReceiver := int(uidReceiverFloat)
-		consoleLog(r, "/ws/auth/", "user #" + strconv.Itoa(uid) + " (" + r.Host +
-			") wants to send message to user #" + strconv.Itoa(uidReceiver))
+		consoleLog(r, "/ws/auth/", "user #" + BLUE + strconv.Itoa(uid) + NO_COLOR + " (" + BLUE + r.Host + NO_COLOR +
+			") wants to send message to user #" + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR)
 		arg, isExists = decodedMessage["body"]
 		if !isExists {
 			consoleLogWarning(r, "/ws/auth/", `"body" not exist in received by ws message. Skip request`)
@@ -101,7 +101,8 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 		}
 		isExists, err = conn.Db.IsUserExistsByUid(uidReceiver)
 		if !isExists {
-			consoleLogWarning(r, "/ws/auth/", `user #` + strconv.Itoa(uidReceiver) + ` not exists in database. Skip request`)
+			consoleLogWarning(r, "/ws/auth/", `user #` + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR +
+				` not exists in database. Skip request`)
 			err = wsWriteErrorMessage(r, ws, `user #` + strconv.Itoa(uidReceiver) + ` not exists in database`)
 			if err != nil {
 				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
@@ -119,6 +120,8 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			consoleLogWarning(r, "/ws/auth/", `SendMessageToLoggedUser returned error - ` + err.Error())
 			return
 		}
+		consoleLogSuccess(r, "/ws/auth/", "message from user #" + BLUE + strconv.Itoa(uid) + NO_COLOR +
+			" (" + BLUE + r.Host + NO_COLOR + ") to user #" + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR + " transmitted")
 	}
 }
 
@@ -126,11 +129,11 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 // GET PARAMS login AND ws-auth-token SHOULD BE IN REQUEST
 func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request) {
 	var wsAuthToken = r.URL.Query().Get("ws-auth-token")
-	var uidToken = r.URL.Query().Get("x-auth-token")
 	var message string
-	uid, err := handlers.TokenUidDecode(uidToken)
+	var uidStr = r.URL.Query().Get("uid")
+	var uid, err = strconv.Atoi(uidStr)
 	if err != nil {
-		consoleLogError(r, "/ws/auth/", "TokenUidDecode returned error "+err.Error())
+		consoleLogError(r, "/ws/auth/", "uid is invalid "+err.Error())
 		// I should open and close ws connection for browser didn't write errors in console.logs
 		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 		ws, err := upgrader.Upgrade(w, r, nil)
@@ -168,7 +171,7 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	conn.session.AddWSConnection(uid, ws)//, r.Host+": "+r.UserAgent()
+	conn.session.AddWSConnection(uid, ws)
 
 	consoleLogSuccess(r, "/ws/auth/", "WebSocket was created")
 
