@@ -14,6 +14,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		err                          error
 		request                      map[string]interface{}
 		isExist                      bool
+		user						 User
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
@@ -71,7 +72,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isUserExists, err := conn.Db.IsUserExists(mail)
+	isUserExists, err := conn.Db.IsUserExistsByMail(mail)
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "IsUserExists returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -98,6 +99,22 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		consoleLogError(r, "/user/reg/", "TokenMailEncode returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		w.Write([]byte(`{"error":"` + "Cannot create token for this user" + `"}`))
+		return
+	}
+
+	user, err = conn.Db.GetUserByMail(mail)
+	if err != nil {
+		consoleLogError(r, "/user/reg/", "GetUserByMail returned error "+err.Error())
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		w.Write([]byte(`{"error":"` + "Database returned error" + `"}`))
+		return
+	}
+
+	err = conn.Db.SetNewDevice(user.Uid, r.UserAgent())
+	if err != nil {
+		consoleLogError(r, "/user/reg/", "SetNewDevice returned error "+err.Error())
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		w.Write([]byte(`{"error":"` + "Database returned error" + `"}`))
 		return
 	}
 

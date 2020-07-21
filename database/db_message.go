@@ -5,16 +5,6 @@ import (
 	"errors"
 )
 
-// func (conn ConnDB) CreateMessageTable() error {
-// 	db := conn.db
-// 	_, err := db.Exec("CREATE TABLE message (mid SERIAL NOT NULL, " +
-// 		"PRIMARY KEY (mid), " +
-// 		"uidSender INT NOT NULL, " +
-// 		"uidReceiver INT NOT NULL, " +
-// 		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL DEFAULT '')")
-// 	return err
-// }
-
 func (conn ConnDB) SetNewMessage(uidSender int, uidReceiver int, body string) error {
 	stmt, err := conn.db.Prepare("INSERT INTO message (uidSender, uidReceiver, body) VALUES ($1, $2, $3)")
 	if err != nil {

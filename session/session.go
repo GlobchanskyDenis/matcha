@@ -203,31 +203,16 @@ func (T *Session) GetTokenWS(uid int) (string, error) {
 	return item.TokenWS, nil
 }
 
-func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn, wsMeta string) error {
+func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn) {
 	var item SessionItem
-	var message string
-	var err error
-	var ws *websocket.Conn
 
 	T.mu.Lock()
 	item = T.session[uid]
 	T.mu.Unlock()
-
-	// Notice all other devices that already connected that new device was logged as same user
-	for i := 0; i < len(item.ws); i++ {
-		ws = item.ws[i]
-		message = "Someone (" + wsMeta + ") logged to your account. Watch out!"
-		err = ws.WriteMessage(1, []byte(message))
-		if err != nil {
-			return err
-		}
-	}
-
 	item.ws = append(item.ws, newWebSocket)
-	(*T).mu.Lock()
+	T.mu.Lock()
 	T.session[uid] = item
-	(*T).mu.Unlock()
-	return nil
+	T.mu.Unlock()
 }
 
 func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn) (isUserWasRemoved bool, err error) {
@@ -264,6 +249,44 @@ func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn)
 		}
 	}
 	return false, errors.New("hmm... looks like this websocket isnt belong to this user")
+}
+
+func (T *Session) SendNotifToLoggedUser(uidReceiver int, uidSender int, notifBody string) error {
+	var item SessionItem
+	var message string
+	var err error
+	var ws *websocket.Conn
+
+	T.mu.Lock()
+	item = T.session[uidReceiver]
+	T.mu.Unlock()
+	for _, ws = range item.ws {
+		message = `{"type":"notif","uidSender":"` + strconv.Itoa(uidSender) + `","body":"` + notifBody + `"}`
+		err = ws.WriteMessage(1, []byte(message))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (T *Session) SendMessageToLoggedUser(uidReceiver int, uidSender int, messageBody string) error {
+	var item SessionItem
+	var message string
+	var err error
+	var ws *websocket.Conn
+
+	T.mu.Lock()
+	item = T.session[uidReceiver]
+	T.mu.Unlock()
+	for _, ws = range item.ws {
+		message = `{"type":"message","uidSender":"` + strconv.Itoa(uidSender) + `","body":"` + messageBody + `"}`
+		err = ws.WriteMessage(1, []byte(message))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (T *Session) DeleteUserSessionByUid(uid int) {

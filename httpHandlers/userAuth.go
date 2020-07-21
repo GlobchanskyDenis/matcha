@@ -5,7 +5,38 @@ import (
 	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
+	"errors"
 )
+
+func (conn *ConnAll) deviceHandler(w http.ResponseWriter, r *http.Request, uid int) error {
+	var (
+		devices		[]Device
+		device		Device
+		knownDevice bool
+		err 		error
+	)
+
+	devices, err = conn.Db.GetDevicesByUid(uid)
+	if err != nil {
+		return errors.New("GetDevicesByUid returned error "+err.Error())
+	}
+	for _, device = range devices {
+		if device.Device == r.UserAgent() {
+			knownDevice = true
+		}
+	}
+	if !knownDevice {
+		err = conn.Db.SetNewDevice(uid, r.UserAgent())
+		if err != nil {
+			return errors.New("SetNewDevice returned error "+err.Error())
+		}
+		err = conn.session.SendNotifToLoggedUser(uid, 0, `device from ` + r.Host + " found:" + r.UserAgent())
+		if err != nil {
+			return errors.New("SendNotifToLoggedUser returned error "+err.Error())
+		}
+	}
+	return nil
+}
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
@@ -76,11 +107,20 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if this device is unknown yet - then make notification that new device if found
+	err = conn.deviceHandler(w, r, user.Uid)
+	if err != nil {
+		consoleLogError(r, "/user/auth/", err.Error())
+		w.WriteHeader(http.StatusInternalServerError) // 500
+		w.Write([]byte(`{"error":"` + "Database or websocket error" + `"}`))
+		return
+	}
+
 	token, err = conn.session.AddUserToSession(user.Uid)
 	if err != nil {
-		consoleLogError(r, "/user/auth/", "SetNewUser returned error "+err.Error())
+		consoleLogError(r, "/user/auth/", "AddUserToSession returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "Cannot authenticate this user" + `"}`))
+		w.Write([]byte(`{"error":"` + "Web socket error" + `"}`))
 		return
 	}
 

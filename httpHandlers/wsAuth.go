@@ -5,6 +5,7 @@ import (
 	"MatchaServer/handlers"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"encoding/json"
 	"strconv"
 )
 
@@ -13,27 +14,109 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// func (conn *ConnDB) wsWriteMessage(r *http.Request, ws *websocket.Conn, message string) error {
-// 	err := ws.WriteMessage(1, []byte(message))
-// 	if err != nil {
-// 		consoleLogError(r, "/ws/", "Error: ws.WriteMessage returned error - " + fmt.Sprintf("%s", err))
-// 		return nil
-// 	}
-// 	return nil
+// message = []byte("hi from server")
+// err = ws.WriteMessage(messageType, message)
+// if err != nil {
+// 	consoleLogError(r, "/ws/auth/", "ws.WriteMessage returned error - "+err.Error())
+// 	return
 // }
 
-func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn) {
+func wsWriteErrorMessage(r *http.Request, ws *websocket.Conn, messageBody string) error {
+	message := `{"type":"error","uidSender":0,"body":"` + messageBody + `"}`
+	err := ws.WriteMessage(1, []byte(message))
+	if err != nil {
+		consoleLogError(r, "/ws/auth/", "ws.WriteMessage returned error - " + err.Error())
+		return nil
+	}
+	return nil
+}
+
+// INFINITE LOOP THAT HANDLES MESSAGES FROM CURRENT USER
+func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
+	var decodedMessage map[string]interface{}
+
 	for {
-		messageType, message, err := ws.ReadMessage()
+		_, RequestMessage, err := ws.ReadMessage()
 		if err != nil {
-			consoleLogError(r, "/ws/auth/", "ws.ReadMessage returned error - "+err.Error())
+			closeErr, ok := err.(*websocket.CloseError)
+			if ok && (closeErr.Code == 1000 || closeErr.Code == 1001) {
+				consoleLogWarning(r, "/ws/auth/", closeErr.Error())
+			} else {
+				consoleLogError(r, "/ws/auth/", "ws.ReadMessage returned error - "+err.Error())
+			}
 			return
 		}
-		consoleLog(r, "/ws/auth/", "client said: "+string(message))
-		message = []byte("hi from server")
-		err = ws.WriteMessage(messageType, message)
+		err = json.Unmarshal(RequestMessage, &decodedMessage)
 		if err != nil {
-			consoleLogError(r, "/ws/auth/", "ws.WriteMessage returned error - "+err.Error())
+			consoleLogError(r, "/ws/auth/", "request json decode failed - "+err.Error() + `. Skip request`)
+			err = wsWriteErrorMessage(r, ws, "request json decode failed")
+			if err != nil {
+				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
+				return
+			}
+			continue
+		}
+		arg, isExists := decodedMessage["uidReceiver"]
+		if !isExists {
+			consoleLogWarning(r, "/ws/auth/", `"uidReceiver" not exist in received by ws message. Skip request`)
+			err = wsWriteErrorMessage(r, ws, `"uidReceiver" not exist in received by ws message`)
+			if err != nil {
+				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
+				return
+			}
+			continue
+		}
+		uidReceiverFloat, ok := arg.(float64)
+		if !ok {
+			consoleLogWarning(r, "/ws/auth/", `wrong type of "uidReceiver". Skip request`)
+			err = wsWriteErrorMessage(r, ws, `wrong type of "uidReceiver"`)
+			if err != nil {
+				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
+				return
+			}
+			continue
+		}
+		uidReceiver := int(uidReceiverFloat)
+		consoleLog(r, "/ws/auth/", "user #" + strconv.Itoa(uid) + " (" + r.Host +
+			") wants to send message to user #" + strconv.Itoa(uidReceiver))
+		arg, isExists = decodedMessage["body"]
+		if !isExists {
+			consoleLogWarning(r, "/ws/auth/", `"body" not exist in received by ws message. Skip request`)
+			err = wsWriteErrorMessage(r, ws, `"body" not exist in received by ws message`)
+			if err != nil {
+				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
+				return
+			}
+			continue
+		}
+		messageBody, ok := arg.(string)
+		if !ok {
+			consoleLogWarning(r, "/ws/auth/", `wrong type of "body". Skip request`)
+			err = wsWriteErrorMessage(r, ws, `wrong type of "body"`)
+			if err != nil {
+				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
+				return
+			}
+			continue
+		}
+		isExists, err = conn.Db.IsUserExistsByUid(uidReceiver)
+		if !isExists {
+			consoleLogWarning(r, "/ws/auth/", `user #` + strconv.Itoa(uidReceiver) + ` not exists in database. Skip request`)
+			err = wsWriteErrorMessage(r, ws, `user #` + strconv.Itoa(uidReceiver) + ` not exists in database`)
+			if err != nil {
+				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
+				return
+			}
+			continue
+		}
+		err = conn.Db.SetNewMessage(uid, uidReceiver, messageBody)
+		if err != nil {
+			consoleLogWarning(r, "/ws/auth/", `SetNewMessage returned error - ` + err.Error())
+			return
+		}
+		err = conn.session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
+		if err != nil {
+			consoleLogWarning(r, "/ws/auth/", `SendMessageToLoggedUser returned error - ` + err.Error())
 			return
 		}
 	}
@@ -85,25 +168,22 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = conn.session.AddWSConnection(uid, ws, r.Host+": "+r.UserAgent())
-	if err != nil {
-		consoleLogWarning(r, "/ws/auth/", "AddWSConnection returned error: "+err.Error())
-	}
+	conn.session.AddWSConnection(uid, ws)//, r.Host+": "+r.UserAgent()
 
 	consoleLogSuccess(r, "/ws/auth/", "WebSocket was created")
 
-	conn.wsReader(r, ws)
+	conn.wsReader(r, ws, uid)
 
 	userSessionWasClosed, err := conn.session.RemoveWSConnection(uid, ws)
 	if err != nil {
 		consoleLogWarning(r, "/ws/auth/", "RemoveWSConnection returned error: "+err.Error())
 	} else {
 		if userSessionWasClosed {
-			message = "ws connection is going for close, remove it from session. " +
+			message = "remove ws connection from session. " +
 				"User session was closed"
 		} else {
-			message = "ws connection is going for close, remove it from session. " +
-				"User session wasnt close - other devices still logged"
+			message = "remove ws connection from session. " +
+				"User session wasn't close - other devices still logged"
 		}
 		consoleLog(r, "/ws/auth/", message)
 	}

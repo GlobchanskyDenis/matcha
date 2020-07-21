@@ -4,7 +4,6 @@ import (
 	"MatchaServer/config"
 	"database/sql"
 	"errors"
-	// _ "github.com/lib/pq"
 	"strconv"
 )
 
@@ -174,7 +173,6 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 	tmp := []byte(query)
 	tmp = tmp[:(len(tmp) - 2)]
 	query = string(tmp) + ")"
-	// fmt.Println(query)
 
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
@@ -200,13 +198,29 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 	return users, nil
 }
 
-func (conn ConnDB) IsUserExists(mail string) (bool, error) {
-	stmt, err := conn.db.Prepare("SELECT uid FROM users WHERE mail=$1")
+func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {
+	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
 	if err != nil {
 		return false, err
 	}
 	defer stmt.Close()
 	row, err := stmt.Query(mail)
+	if err != nil {
+		return false, err
+	}
+	if row.Next() {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (conn ConnDB) IsUserExistsByUid(uid int) (bool, error) {
+	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+	row, err := stmt.Query(uid)
 	if err != nil {
 		return false, err
 	}

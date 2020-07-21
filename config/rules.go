@@ -19,9 +19,10 @@ const (
 	NAME_MAX_LEN      = 30
 	BIOGRAPHY_MAX_LEN = 300
 
-	NOTIF_MAX_LEN   = 150
+	NOTIF_MAX_LEN   = 250
 	MESSAGE_MAX_LEN = 300
 	PHOTO_MAX_LEN   = 300
+	DEVICE_MAX_LEN  = 150
 
 	RED       = "\033[31m"
 	GREEN     = "\033[32m"
@@ -51,7 +52,8 @@ type User struct {
 
 type Notif struct {
 	Nid         int    `json:"nid"`
-	Uid         int    `json:"uid"`
+	UidSender   int    `json:"uidSender"`
+	UidReceiver int    `json:"uidReceiver"`
 	Body        string `json:"body"`
 }
 
@@ -60,4 +62,14 @@ type Message struct {
 	UidSender   int    `json:"uidSender"`
 	UidReceiver int    `json:"uidReceiver"`
 	Body        string `json:"body"`
+}
+
+type MessageWS struct {
+	
+}
+
+type Device struct {
+	Id          int    `json:"id"`
+	Uid  		int    `json:"uid"`
+	Device      string `json:"device"`
 }

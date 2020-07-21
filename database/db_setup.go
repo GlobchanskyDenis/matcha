@@ -3,7 +3,6 @@ package database
 import (
 	"MatchaServer/config"
 	"database/sql"
-	// "errors"
 	_ "github.com/lib/pq"
 	"strconv"
 )
@@ -59,6 +58,10 @@ func (Conn ConnDB) DropAllTables() error {
 		return err
 	}
 	_, err = db.Exec("DROP TABLE IF EXISTS photo")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS devices")
 	if err != nil {
 		return err
 	}
@@ -119,8 +122,9 @@ func (conn ConnDB) CreateNotifTable() error {
 	db := conn.db
 	_, err := db.Exec("CREATE TABLE notif (nid SERIAL NOT NULL, " +
 		"PRIMARY KEY (nid), " +
-		"uid INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.NOTIF_MAX_LEN) + ") NOT NULL DEFAULT '')")
+		"uidSender INT NOT NULL, " +
+		"uidReceiver INT NOT NULL, " +
+		"body VARCHAR(" + strconv.Itoa(config.NOTIF_MAX_LEN) + ") NOT NULL)")
 	return err
 }
 
@@ -130,7 +134,7 @@ func (conn ConnDB) CreateMessageTable() error {
 		"PRIMARY KEY (mid), " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL DEFAULT '')")
+		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL)")
 	return err
 }
 
@@ -139,6 +143,15 @@ func (conn ConnDB) CreatePhotoTable() error {
 	_, err := db.Exec("CREATE TABLE photo (pid SERIAL NOT NULL, " +
 		"PRIMARY KEY (pid), " +
 		"uid INT NOT NULL, " +
-		"body BIT(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL DEFAULT '')") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!
+		"body BIT(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!
+	return err
+}
+
+func (conn ConnDB) CreateDevicesTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE devices (id SERIAL NOT NULL, " +
+		"PRIMARY KEY (id), " +
+		"uid INT NOT NULL, " +
+		"device VARCHAR(" + strconv.Itoa(config.DEVICE_MAX_LEN) + ") NOT NULL)")
 	return err
 }

@@ -5,13 +5,13 @@ import (
 	"errors"
 )
 
-func (conn ConnDB) SetNewNotif(uid int, body string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO notif (uid, body) VALUES ($1, $2)")
+func (conn ConnDB) SetNewNotif(uidReceiver int, uidSender int, body string) error {
+	stmt, err := conn.db.Prepare("INSERT INTO notif (uidSender, uidReceiver, body) VALUES ($1, $2, $3)")
 	if err != nil {
 		return errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(uid, body)
+	_, err = stmt.Exec(uidSender, uidReceiver, body)
 	if err != nil {
 		return errors.New(err.Error() + " in executing")
 	}
@@ -31,11 +31,11 @@ func (conn ConnDB) DeleteNotif(nid int) error {
 	return nil
 }
 
-func (conn ConnDB) GetNotifByUid(uid int) ([]config.Notif, error) {
+func (conn ConnDB) GetNotifByUidReceiver(uid int) ([]config.Notif, error) {
 	var notifs = []config.Notif{}
 	var notif config.Notif
 
-	stmt, err := conn.db.Prepare("SELECT * FROM notif WHERE uid=$1")
+	stmt, err := conn.db.Prepare("SELECT * FROM notif WHERE uidReceiver=$1")
 	if err != nil {
 		return notifs, errors.New(err.Error() + " in preparing")
 	}
@@ -44,7 +44,7 @@ func (conn ConnDB) GetNotifByUid(uid int) ([]config.Notif, error) {
 		return notifs, errors.New(err.Error() + " in executing")
 	}
 	for rows.Next() {
-		err = rows.Scan(&(notif.Nid), &(notif.Uid), &(notif.Body))
+		err = rows.Scan(&(notif.Nid), &(notif.UidSender), &(notif.UidReceiver), &(notif.Body))
 		if err != nil {
 			return notifs, errors.New(err.Error() + " in rows")
 		}

@@ -66,7 +66,7 @@
 
 				socket.onopen = function() {
 					console.log("web socket successfully connected")
-					socket.send("hello from client")
+					sendMessage()
 				}
 
 				socket.onclose = function(event) {
@@ -78,8 +78,16 @@
 				}
 
 				socket.onmessage = function(message) {
-					console.log("server said: ", message.data)
+					console.log("rx: ", message.data)
 				}
+
+				function sendMessage() {
+					message = `{"type":"message","uidReceiver":0,"body":"test message"}`
+					console.log("tx: " + message)
+					socket.send(message)
+				}
+
+				// setInterval(sendMessage, 7000)
 			}
 
 			function AuthUser() {
