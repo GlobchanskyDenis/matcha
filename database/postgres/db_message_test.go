@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	. "MatchaServer/config"
@@ -54,7 +54,7 @@ func TestCreateTables_MessageTest(t *testing.T) {
 }
 
 func TestSetMessage_1(t *testing.T) {
-	err := connMes.SetNewMessage(1, 2, "transmit message from 1 to 2")
+	_, err := connMes.SetNewMessage(1, 2, "transmit message from 1 to 2")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -63,7 +63,7 @@ func TestSetMessage_1(t *testing.T) {
 }
 
 func TestSetMessage_2(t *testing.T) {
-	err := connMes.SetNewMessage(2, 1, "transmit message from 2 to 1")
+	_, err := connMes.SetNewMessage(2, 1, "transmit message from 2 to 1")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -72,7 +72,7 @@ func TestSetMessage_2(t *testing.T) {
 }
 
 func TestSetMessage_3(t *testing.T) {
-	err := connMes.SetNewMessage(2, 2, "transmit message from 2 to 2")
+	_, err := connMes.SetNewMessage(2, 2, "transmit message from 2 to 2")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -81,7 +81,7 @@ func TestSetMessage_3(t *testing.T) {
 }
 
 func TestSetMessage_4(t *testing.T) {
-	err := connMes.SetNewMessage(3, 1, "transmit message from 3 to 1")
+	_, err := connMes.SetNewMessage(3, 1, "transmit message from 3 to 1")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return

@@ -3,13 +3,14 @@ package main
 import (
 	"MatchaServer/config"
 	"MatchaServer/httpHandlers"
+	"MatchaServer/database/postgres"
 	"net/http"
 )
 
 func main() {
 	var server = httpHandlers.Server{}
 
-	err := server.ConnectAll()
+	err := server.New(&postgres.ConnDB{})
 	if err != nil {
 		println(config.RED + "Server cannot start - " + err.Error() + config.NO_COLOR)
 	} else {

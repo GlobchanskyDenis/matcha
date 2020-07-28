@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	. "MatchaServer/config"
@@ -54,7 +54,7 @@ func TestCreateTables_NotifTest(t *testing.T) {
 }
 
 func TestSetNotif_1(t *testing.T) {
-	err := connNotif.SetNewNotif(1, 4, "test notification. User #1")
+	_, err := connNotif.SetNewNotif(1, 4, "test notification. User #1")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -63,7 +63,7 @@ func TestSetNotif_1(t *testing.T) {
 }
 
 func TestSetNotif_2(t *testing.T) {
-	err := connNotif.SetNewNotif(1, 4, "test notification. User #1")
+	_, err := connNotif.SetNewNotif(1, 4, "test notification. User #1")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -72,7 +72,7 @@ func TestSetNotif_2(t *testing.T) {
 }
 
 func TestSetNotif_3(t *testing.T) {
-	err := connNotif.SetNewNotif(2, 4, "test notification. User #2")
+	_, err := connNotif.SetNewNotif(2, 4, "test notification. User #2")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -81,7 +81,7 @@ func TestSetNotif_3(t *testing.T) {
 }
 
 func TestSetNotif_4(t *testing.T) {
-	err := connNotif.SetNewNotif(3, 4, "test notification. User #3")
+	_, err := connNotif.SetNewNotif(3, 4, "test notification. User #3")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR + "\n")
 		return

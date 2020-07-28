@@ -9,12 +9,12 @@ import (
 )
 
 type Server struct {
-	Db      database.ConnDB
+	Db		database.Storage
 	session session.Session
 }
 
-func (server *Server) ConnectAll() error {
-	server.Db = database.ConnDB{}
+func (server *Server) New(storage database.Storage) error {
+	server.Db = storage
 	err := server.Db.Connect()
 	if err != nil {
 		return err

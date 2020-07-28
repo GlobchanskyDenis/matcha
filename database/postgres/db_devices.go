@@ -1,14 +1,10 @@
-package database
+package postgres
 
 import (
 	"MatchaServer/config"
 	"errors"
 )
-// type Device struct {
-// 	Id          int    `json:"id"`
-// 	Uid  		int    `json:"uid"`
-// 	Device      string `json:"device"`
-// }
+
 func (conn ConnDB) SetNewDevice(uid int, device string) error {
 	stmt, err := conn.db.Prepare("INSERT INTO devices (uid, device) VALUES ($1, $2)")
 	if err != nil {

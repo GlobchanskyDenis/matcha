@@ -1,0 +1,46 @@
+package database
+
+import (
+	"MatchaServer/config"
+)
+
+type Storage interface {
+	// setup
+	Connect() error
+	TruncateAllTables() error
+	DropAllTables() error
+	DropEnumTypes() error
+	CreateEnumTypes() error
+	CreateUsersTable() error
+	CreateNotifTable() error
+	CreateMessageTable() error
+	CreatePhotoTable() error
+	CreateDevicesTable() error
+
+	// user
+	SetNewUser(mail string, passwd string) (config.User, error)
+	DeleteUser(uid int) error
+	UpdateUser(user config.User) error
+	SearchUsersByOneFilter(filter string) ([]config.User, error)
+	GetUserByUid(uid int) (config.User, error)
+	GetUserByMail(mail string) (config.User, error)
+	GetUserForAuth(mail string, passwd string) (config.User, error)
+	GetLoggedUsers(uid []int) ([]config.User, error)
+	IsUserExistsByMail(mail string) (bool, error)
+	IsUserExistsByUid(uid int) (bool, error)
+
+	// devices
+	SetNewDevice(uid int, device string) error
+	DeleteDevice(id int) error
+	GetDevicesByUid(uid int) ([]config.Device, error)
+
+	// message
+	SetNewMessage(uidSender int, uidReceiver int, body string) (int, error)
+	DeleteMessage(nid int) error
+	GetMessagesFromChat(uidSender int, uidReceiver int) ([]config.Message, error)
+
+	// notifications
+	SetNewNotif(uidReceiver int, uidSender int, body string) (int, error)
+	DeleteNotif(nid int) error
+	GetNotifByUidReceiver(uid int) ([]config.Notif, error)
+}
