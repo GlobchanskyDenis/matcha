@@ -3,6 +3,8 @@ package httpHandlers
 import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
+	// "MatchaServer/database/fakeSql"
+	"MatchaServer/database/postgres"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +46,8 @@ var (
 func TestUserCreate(t *testing.T) {
 	print(NO_COLOR)
 
-	err := server.ConnectAll()
+	err := server.New(&postgres.ConnDB{})
+	// err := server.New(&fakeSql.ConnFake{})
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return
