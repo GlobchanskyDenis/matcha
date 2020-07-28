@@ -32,7 +32,7 @@ func wsWriteErrorMessage(r *http.Request, ws *websocket.Conn, messageBody string
 }
 
 // INFINITE LOOP THAT HANDLES MESSAGES FROM CURRENT USER
-func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
+func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 	var decodedMessage map[string]interface{}
 
 	for {
@@ -99,7 +99,7 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			}
 			continue
 		}
-		isExists, err = conn.Db.IsUserExistsByUid(uidReceiver)
+		isExists, err = server.Db.IsUserExistsByUid(uidReceiver)
 		if !isExists {
 			consoleLogWarning(r, "/ws/auth/", `user #` + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR +
 				` not exists in database. Skip request`)
@@ -110,12 +110,12 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			}
 			continue
 		}
-		err = conn.Db.SetNewMessage(uid, uidReceiver, messageBody)
+		_, err = server.Db.SetNewMessage(uid, uidReceiver, messageBody)
 		if err != nil {
 			consoleLogWarning(r, "/ws/auth/", `SetNewMessage returned error - ` + err.Error())
 			return
 		}
-		err = conn.session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
+		err = server.session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
 		if err != nil {
 			consoleLogWarning(r, "/ws/auth/", `SendMessageToLoggedUser returned error - ` + err.Error())
 			return
@@ -127,7 +127,7 @@ func (conn *ConnAll) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 
 // WEB SOCKET HANDLER FOR DOMAIN /ws/
 // GET PARAMS login AND ws-auth-token SHOULD BE IN REQUEST
-func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request) {
+func (server *Server) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request) {
 	var wsAuthToken = r.URL.Query().Get("ws-auth-token")
 	var message string
 	var uidStr = r.URL.Query().Get("uid")
@@ -158,7 +158,7 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 		ws.Close()
 		return
 	}
-	tokenWS, err := conn.session.GetTokenWS(uid)
+	tokenWS, err := server.session.GetTokenWS(uid)
 	if err != nil {
 		consoleLogError(r, "/ws/auth/", "GetTokenWS returned error - "+err.Error())
 		ws.Close()
@@ -171,13 +171,13 @@ func (conn *ConnAll) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	conn.session.AddWSConnection(uid, ws)
+	server.session.AddWSConnection(uid, ws)
 
 	consoleLogSuccess(r, "/ws/auth/", "WebSocket was created")
 
-	conn.wsReader(r, ws, uid)
+	server.wsReader(r, ws, uid)
 
-	userSessionWasClosed, err := conn.session.RemoveWSConnection(uid, ws)
+	userSessionWasClosed, err := server.session.RemoveWSConnection(uid, ws)
 	if err != nil {
 		consoleLogWarning(r, "/ws/auth/", "RemoveWSConnection returned error: "+err.Error())
 	} else {

@@ -8,7 +8,7 @@ import (
 )
 
 // USER REGISTRATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
+func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token string
 		err                          error
@@ -49,7 +49,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/user/reg/", "mail or password is empty")
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "mail or password is empty" + `"}`))
 		return
 	}
@@ -57,7 +57,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	err = handlers.CheckMail(mail)
 	if err != nil {
 		consoleLogWarning(r, "/user/reg/", "mail - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		// CheckMail is my own function, so I can not afraid of invalid runes in error
 		w.Write([]byte(`{"error":"` + "mail error - " + err.Error() + `"}`))
 		return
@@ -66,13 +66,13 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 	err = handlers.CheckPasswd(passwd)
 	if err != nil {
 		consoleLogWarning(r, "/user/reg/", "password - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		// CheckPasswd is my own function, so I can not afraid of invalid runes in error
 		w.Write([]byte(`{"error":"` + "password error - " + err.Error() + `"}`))
 		return
 	}
 
-	isUserExists, err := conn.Db.IsUserExistsByMail(mail)
+	isUserExists, err := server.Db.IsUserExistsByMail(mail)
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "IsUserExists returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -86,7 +86,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = conn.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
+	user, err = server.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -102,15 +102,15 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = conn.Db.GetUserByMail(mail)
-	if err != nil {
-		consoleLogError(r, "/user/reg/", "GetUserByMail returned error "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "Database returned error" + `"}`))
-		return
-	}
+	// user, err = server.Db.GetUserByMail(mail)
+	// if err != nil {
+	// 	consoleLogError(r, "/user/reg/", "GetUserByMail returned error "+err.Error())
+	// 	w.WriteHeader(http.StatusInternalServerError) // 500
+	// 	w.Write([]byte(`{"error":"` + "Database returned error" + `"}`))
+	// 	return
+	// }
 
-	err = conn.Db.SetNewDevice(user.Uid, r.UserAgent())
+	err = server.Db.SetNewDevice(user.Uid, r.UserAgent())
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "SetNewDevice returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -134,7 +134,7 @@ func (conn *ConnAll) userReg(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/reg
 // REGISTRATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnAll) HttpHandlerUserReg(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HttpHandlerUserReg(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")
@@ -142,7 +142,7 @@ func (conn *ConnAll) HttpHandlerUserReg(w http.ResponseWriter, r *http.Request) 
 
 	if r.Method == "POST" {
 
-		conn.userReg(w, r)
+		server.userReg(w, r)
 
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)

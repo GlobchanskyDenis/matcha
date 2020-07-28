@@ -5,17 +5,18 @@ import (
 	"errors"
 )
 
-func (conn ConnDB) SetNewMessage(uidSender int, uidReceiver int, body string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO message (uidSender, uidReceiver, body) VALUES ($1, $2, $3)")
+func (conn ConnDB) SetNewMessage(uidSender int, uidReceiver int, body string) (int, error) {
+	var mid int
+	stmt, err := conn.db.Prepare("INSERT INTO message (uidSender, uidReceiver, body) VALUES ($1, $2, $3) RETURNING mid")
 	if err != nil {
-		return errors.New(err.Error() + " in preparing")
+		return mid, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(uidSender, uidReceiver, body)
+	err = stmt.QueryRow(uidSender, uidReceiver, body).Scan(&mid)
 	if err != nil {
-		return errors.New(err.Error() + " in executing")
+		return mid, errors.New(err.Error() + " in executing")
 	}
-	return nil
+	return mid, nil
 }
 
 func (conn ConnDB) DeleteMessage(nid int) error {

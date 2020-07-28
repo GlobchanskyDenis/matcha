@@ -8,7 +8,7 @@ import (
 	"errors"
 )
 
-func (conn *ConnAll) deviceHandler(w http.ResponseWriter, r *http.Request, uid int) error {
+func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid int) error {
 	var (
 		devices		[]Device
 		device		Device
@@ -16,7 +16,7 @@ func (conn *ConnAll) deviceHandler(w http.ResponseWriter, r *http.Request, uid i
 		err 		error
 	)
 
-	devices, err = conn.Db.GetDevicesByUid(uid)
+	devices, err = server.Db.GetDevicesByUid(uid)
 	if err != nil {
 		return errors.New("GetDevicesByUid returned error "+err.Error())
 	}
@@ -26,11 +26,11 @@ func (conn *ConnAll) deviceHandler(w http.ResponseWriter, r *http.Request, uid i
 		}
 	}
 	if !knownDevice {
-		err = conn.Db.SetNewDevice(uid, r.UserAgent())
+		err = server.Db.SetNewDevice(uid, r.UserAgent())
 		if err != nil {
 			return errors.New("SetNewDevice returned error "+err.Error())
 		}
-		err = conn.session.SendNotifToLoggedUser(uid, 0, `device from ` + r.Host + " found:" + r.UserAgent())
+		err = server.session.SendNotifToLoggedUser(uid, 0, `device from ` + r.Host + " found:" + r.UserAgent())
 		if err != nil {
 			return errors.New("SendNotifToLoggedUser returned error "+err.Error())
 		}
@@ -39,7 +39,7 @@ func (conn *ConnAll) deviceHandler(w http.ResponseWriter, r *http.Request, uid i
 }
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
+func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, passwd, token, tokenWS, response string
 		user                                            User
@@ -80,14 +80,14 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	// Simple validation
 	if mail == "" || passwd == "" {
 		consoleLogWarning(r, "/user/auth/", "mail or password is empty")
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "mail or password is empty" + `"}`))
 		return
 	}
 
-	user, err = conn.Db.GetUserDataForAuth(mail, handlers.PasswdHash(passwd))
+	user, err = server.Db.GetUserForAuth(mail, handlers.PasswdHash(passwd))
 	if err != nil {
-		consoleLogError(r, "/user/auth/", "GetUserDataForAuth returned error "+err.Error())
+		consoleLogError(r, "/user/auth/", "GetUserForAuth returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		w.Write([]byte(`{"error":"` + "database request failed" + `"}`))
 		return
@@ -95,7 +95,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 
 	if (user == User{}) {
 		consoleLogWarning(r, "/user/auth/", "wrong mail or password")
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "wrong mail or password" + `"}`))
 		return
 	}
@@ -108,7 +108,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if this device is unknown yet - then make notification that new device if found
-	err = conn.deviceHandler(w, r, user.Uid)
+	err = server.deviceHandler(w, r, user.Uid)
 	if err != nil {
 		consoleLogError(r, "/user/auth/", err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -116,7 +116,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err = conn.session.AddUserToSession(user.Uid)
+	token, err = server.session.AddUserToSession(user.Uid)
 	if err != nil {
 		consoleLogError(r, "/user/auth/", "AddUserToSession returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -133,7 +133,7 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenWS, err = conn.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
+	tokenWS, err = server.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		consoleLogError(r, "/user/auth/", "cannot create web socket token - "+err.Error())
@@ -152,13 +152,13 @@ func (conn *ConnAll) userAuth(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
 // AUTHENTICATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnAll) HttpHandlerUserAuth(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HttpHandlerUserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
 
 	if r.Method == "POST" {
-		conn.userAuth(w, r)
+		server.userAuth(w, r)
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 		consoleLog(r, "/user/auth/", "client wants to know what methods are allowed")

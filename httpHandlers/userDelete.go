@@ -10,7 +10,7 @@ import (
 
 // USER REMOVE BY DELETE METHOD. NO REQUEST BODY. RESPONSE BODY IS JSON ONLY IN CASE OF ERROR.
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
-func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
+func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	var (
 		message string
 		err     error
@@ -49,7 +49,7 @@ func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	passwd = handlers.PasswdHash(arg.(string))
 
-	user, err = conn.Db.GetUserByUid(uid)
+	user, err = server.Db.GetUserByUid(uid)
 	if err != nil {
 		consoleLogError(r, "/user/delete/", "GetUserByUid returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -59,14 +59,14 @@ func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	if passwd != user.Passwd {
 		consoleLogWarning(r, "/user/delete/", "password is incorrect")
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "wrong password" + `"}`))
 		return
 	}
 
-	conn.session.DeleteUserSessionByUid(user.Uid)
+	server.session.DeleteUserSessionByUid(user.Uid)
 
-	err = conn.Db.DeleteUser(user.Uid)
+	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		consoleLogError(r, "/user/delete/", "DeleteUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -82,7 +82,7 @@ func (conn *ConnAll) userDelete(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/delete/
 // DELETE USER BY DELETE METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnAll) HttpHandlerUserDelete(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HttpHandlerUserDelete(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "OPTIONS,DELETE")
@@ -95,7 +95,7 @@ func (conn *ConnAll) HttpHandlerUserDelete(w http.ResponseWriter, r *http.Reques
 
 	} else if r.Method == "DELETE" {
 
-		conn.userDelete(w, r)
+		server.userDelete(w, r)
 
 	} else {
 		// ALL OTHERS METHODS

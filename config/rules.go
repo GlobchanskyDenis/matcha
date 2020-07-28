@@ -64,10 +64,6 @@ type Message struct {
 	Body        string `json:"body"`
 }
 
-type MessageWS struct {
-	
-}
-
 type Device struct {
 	Id          int    `json:"id"`
 	Uid  		int    `json:"uid"`

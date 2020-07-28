@@ -8,23 +8,23 @@ import (
 	"net/http"
 )
 
-type ConnAll struct {
+type Server struct {
 	Db      database.ConnDB
 	session session.Session
 }
 
-func (conn *ConnAll) ConnectAll() error {
-	conn.Db = database.ConnDB{}
-	err := conn.Db.Connect()
+func (server *Server) ConnectAll() error {
+	server.Db = database.ConnDB{}
+	err := server.Db.Connect()
 	if err != nil {
 		return err
 	}
-	conn.session = session.CreateSession()
+	server.session = session.CreateSession()
 	return nil
 }
 
-func CreateConnectionsStruct() (*ConnAll, error) {
-	var dst = &ConnAll{}
+func CreateConnectionsStruct() (*Server, error) {
+	var dst = &Server{}
 
 	err := dst.Db.Connect()
 	if err != nil {

@@ -5,17 +5,18 @@ import (
 	"errors"
 )
 
-func (conn ConnDB) SetNewNotif(uidReceiver int, uidSender int, body string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO notif (uidSender, uidReceiver, body) VALUES ($1, $2, $3)")
+func (conn ConnDB) SetNewNotif(uidReceiver int, uidSender int, body string) (int, error) {
+	var nid int
+	stmt, err := conn.db.Prepare("INSERT INTO notif (uidSender, uidReceiver, body) VALUES ($1, $2, $3) RETURNING nid")
 	if err != nil {
-		return errors.New(err.Error() + " in preparing")
+		return nid, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(uidSender, uidReceiver, body)
+	err = stmt.QueryRow(uidSender, uidReceiver, body).Scan(&nid)
 	if err != nil {
-		return errors.New(err.Error() + " in executing")
+		return nid, errors.New(err.Error() + " in executing")
 	}
-	return nil
+	return nid, nil
 }
 
 func (conn ConnDB) DeleteNotif(nid int) error {

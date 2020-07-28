@@ -7,10 +7,10 @@ import (
 	"strconv"
 )
 
-func (conn *ConnAll) searchAll(w http.ResponseWriter, r *http.Request) {
+func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
-	users, err := conn.Db.SearchUsersByOneFilter(filter)
+	users, err := server.Db.SearchUsersByOneFilter(filter)
 	if err != nil {
 		consoleLogError(r, "/users/", "SearchUsersByOneFilter returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -31,9 +31,9 @@ func (conn *ConnAll) searchAll(w http.ResponseWriter, r *http.Request) {
 		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
-func (conn *ConnAll) searchLogged(w http.ResponseWriter, r *http.Request) {
+func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
 
-	users, err := conn.Db.GetLoggedUsers(conn.session.GetLoggedUsersUidSlice())
+	users, err := server.Db.GetLoggedUsers(server.session.GetLoggedUsersUidSlice())
 	if err != nil {
 		consoleLogError(r, "/users/", "GetLoggedUsers returned error"+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -53,7 +53,7 @@ func (conn *ConnAll) searchLogged(w http.ResponseWriter, r *http.Request) {
 		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
-func (conn *ConnAll) search(w http.ResponseWriter, r *http.Request) {
+func (server *Server) search(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
 	consoleLog(r, "/users/", "request was recieved with filter "+BLUE+filter+NO_COLOR)
@@ -66,14 +66,14 @@ func (conn *ConnAll) search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if filter == "all" {
-		conn.searchAll(w, r)
+		server.searchAll(w, r)
 	}
 	if filter == "logged" {
-		conn.searchLogged(w, r)
+		server.searchLogged(w, r)
 	}
 }
 
-func (conn *ConnAll) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,OPTIONS")
@@ -81,7 +81,7 @@ func (conn *ConnAll) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 
-		conn.search(w, r)
+		server.search(w, r)
 
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)

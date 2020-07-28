@@ -7,17 +7,18 @@ import (
 	"strconv"
 )
 
-func (conn ConnDB) SetNewUser(mail string, passwd string) error {
-	stmt, err := conn.db.Prepare("INSERT INTO users (mail, passwd) VALUES ($1, $2)")
+func (conn ConnDB) SetNewUser(mail string, passwd string) (config.User, error) {
+	var user config.User
+	stmt, err := conn.db.Prepare("INSERT INTO users (mail, passwd) VALUES ($1, $2) RETURNING uid, mail")
 	if err != nil {
-		return errors.New(err.Error() + " in preparing")
+		return user, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(mail, passwd)
+	err = stmt.QueryRow(mail, passwd).Scan(&(user.Uid), &(user.Mail))
 	if err != nil {
-		return errors.New(err.Error() + " in executing")
+		return user, errors.New(err.Error() + " in executing")
 	}
-	return nil
+	return user, nil
 }
 
 func (conn *ConnDB) DeleteUser(uid int) error {
@@ -130,7 +131,7 @@ func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
 	return user, nil
 }
 
-func (db *ConnDB) GetUserDataForAuth(mail string, passwd string) (config.User, error) {
+func (db *ConnDB) GetUserForAuth(mail string, passwd string) (config.User, error) {
 	var (
 		user config.User
 		err  error

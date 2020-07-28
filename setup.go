@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	var conn = httpHandlers.ConnAll{}
+	var server = httpHandlers.Server{}
 	var err error
 
 	print("Connecting to database\t\t")
-	err = conn.ConnectAll()
+	err = server.ConnectAll()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -20,7 +20,7 @@ func main() {
 	}
 
 	print("Drop all tables\t\t\t")
-	err = conn.Db.DropAllTables()
+	err = server.Db.DropAllTables()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -29,7 +29,7 @@ func main() {
 	}
 
 	print("Drop ENUM types in db\t\t")
-	err = conn.Db.DropEnumTypes()
+	err = server.Db.DropEnumTypes()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	print("Create ENUM types in db\t\t")
-	err = conn.Db.CreateEnumTypes()
+	err = server.Db.CreateEnumTypes()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -47,7 +47,7 @@ func main() {
 	}
 
 	print("Create users table\t\t")
-	err = conn.Db.CreateUsersTable()
+	err = server.Db.CreateUsersTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -56,7 +56,7 @@ func main() {
 	}
 
 	print("Create notif table\t\t")
-	err = conn.Db.CreateNotifTable()
+	err = server.Db.CreateNotifTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	print("Create message table\t\t")
-	err = conn.Db.CreateMessageTable()
+	err = server.Db.CreateMessageTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -74,7 +74,7 @@ func main() {
 	}
 
 	print("Create photo table\t\t")
-	err = conn.Db.CreatePhotoTable()
+	err = server.Db.CreatePhotoTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -83,7 +83,7 @@ func main() {
 	}
 
 	print("Create known devices table\t")
-	err = conn.Db.CreateDevicesTable()
+	err = server.Db.CreateDevicesTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -92,7 +92,7 @@ func main() {
 	}
 
 	print("Add admin@gmail.com user\t")
-	err = conn.Db.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
+	user, err := server.Db.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -101,11 +101,13 @@ func main() {
 	}
 
 	print("Set all fields to user\t\t")
-	err = conn.Db.UpdateUser(config.User{1, "admin@gmail.com",
-		handlers.PasswdHash("admin"),
-		"admin", "superUser",
-		30, "male", "hetero", "", 0,
-		"confirmed", 0})
+	user.Passwd = handlers.PasswdHash("admin")
+	user.Fname = "admin"
+	user.Lname = "superUser"
+	user.Age = 30
+	user.Gender = "male"
+	user.Orientation = "hetero"
+	err = server.Db.UpdateUser(user)
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return

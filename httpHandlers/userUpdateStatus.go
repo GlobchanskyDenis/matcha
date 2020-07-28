@@ -9,7 +9,7 @@ import (
 )
 
 // USER MAIL CONFIRM BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, token string
 		err                  error
@@ -41,7 +41,7 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	token, ok = requestItem.(string)
 	if !ok {
 		consoleLogError(r, "/user/update/status/", "x-reg-token has wrong type")
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "x-reg-token has wrong type" + `"}`))
 		return
 	}
@@ -61,7 +61,7 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = conn.Db.GetUserByMail(mail)
+	user, err = server.Db.GetUserByMail(mail)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "GetUserByMail returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -78,7 +78,7 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	user.AccType = "confirmed"
 
-	err = conn.Db.UpdateUser(user)
+	err = server.Db.UpdateUser(user)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -94,13 +94,13 @@ func (conn *ConnAll) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/update/status . IT HANDLES:
 // UPDATE USER STATUS BY PATCH METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnAll) HttpHandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HttpHandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 	if r.Method == "PATCH" {
-		conn.userUpdateStatus(w, r)
+		server.userUpdateStatus(w, r)
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 		consoleLog(r, "/auth/", "client wants to know what methods are allowed")

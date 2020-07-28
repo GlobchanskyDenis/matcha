@@ -146,7 +146,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 // REQUEST BODY IS JSON
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 // RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
-func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
+func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid     int
 		err     error
@@ -171,14 +171,14 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !conn.session.IsUserLoggedByUid(uid) {
+	if !server.session.IsUserLoggedByUid(uid) {
 		consoleLogWarning(r, "/user/update/", "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		w.Write([]byte(`{"error":"` + "user is not logged" + `"}`))
 		return
 	}
 
-	user, err = conn.Db.GetUserByUid(uid)
+	user, err = server.Db.GetUserByUid(uid)
 	if err != nil {
 		consoleLogError(r, "/user/update/", "GetUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -197,14 +197,14 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 	user, message, err = fillUserStruct(request, user)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/", err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
 	}
 
 	consoleLog(r, "/user/update/", message)
 
-	err = conn.Db.UpdateUser(user)
+	err = server.Db.UpdateUser(user)
 	if err != nil {
 		consoleLogError(r, "/user/update/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -222,7 +222,7 @@ func (conn *ConnAll) userUpdate(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/update/
 // UPDATE USER BY PATCH METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (conn *ConnAll) HttpHandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HttpHandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")
@@ -235,7 +235,7 @@ func (conn *ConnAll) HttpHandlerUserUpdate(w http.ResponseWriter, r *http.Reques
 
 	} else if r.Method == "PATCH" {
 
-		conn.userUpdate(w, r)
+		server.userUpdate(w, r)
 
 	} else {
 		// ALL OTHER METHODS
