@@ -82,7 +82,7 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/delete/
 // DELETE USER BY DELETE METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HttpHandlerUserDelete(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HandlerUserDelete(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "OPTIONS,DELETE")

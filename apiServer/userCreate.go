@@ -14,7 +14,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		err                          error
 		request                      map[string]interface{}
 		isExist                      bool
-		user						 User
+		user                         User
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
@@ -102,14 +102,6 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// user, err = server.Db.GetUserByMail(mail)
-	// if err != nil {
-	// 	consoleLogError(r, "/user/reg/", "GetUserByMail returned error "+err.Error())
-	// 	w.WriteHeader(http.StatusInternalServerError) // 500
-	// 	w.Write([]byte(`{"error":"` + "Database returned error" + `"}`))
-	// 	return
-	// }
-
 	err = server.Db.SetNewDevice(user.Uid, r.UserAgent())
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "SetNewDevice returned error "+err.Error())
@@ -134,7 +126,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/reg
 // REGISTRATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HttpHandlerUserReg(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HandlerUserCreate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")

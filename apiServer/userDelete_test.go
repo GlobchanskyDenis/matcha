@@ -4,10 +4,10 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/database/fakeSql"
 	// "MatchaServer/database/postgres"
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"bytes"
 	"strings"
 	"testing"
 )
@@ -30,12 +30,12 @@ func TestUserDelete(t *testing.T) {
 	/////////// TESTING ///////////
 
 	testCases := []struct {
-		name           string
-		payload        interface{}
-		requestBody    *strings.Reader
+		name               string
+		payload            interface{}
+		requestBody        *strings.Reader
 		requestHeaderName  string
 		requestHeaderValue string
-		expectedStatus int
+		expectedStatus     int
 	}{
 		{
 			name: "invalid passwd",
@@ -44,7 +44,7 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty passwd",
 			payload: map[string]string{
@@ -52,7 +52,7 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid no useful fields at all",
 			payload: map[string]string{
@@ -60,13 +60,13 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus:     http.StatusBadRequest,
 		}, {
-			name: "invalid no fields at all",
-			payload: map[string]string{},
+			name:               "invalid no fields at all",
+			payload:            map[string]string{},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus:     http.StatusBadRequest,
 		}, {
 			name: "invalid token",
 			payload: map[string]string{
@@ -74,7 +74,7 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: "token123",
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus:     http.StatusUnauthorized,
 		}, {
 			name: "invalid empty token",
 			payload: map[string]string{
@@ -82,7 +82,7 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: "token123",
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus:     http.StatusUnauthorized,
 		}, {
 			name: "invalid no token at all",
 			payload: map[string]string{
@@ -90,19 +90,19 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "tokkkken",
 			requestHeaderValue: "token321",
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus:     http.StatusUnauthorized,
 		}, {
-			name: "invalid broken json",
-			requestBody: strings.NewReader(`{"passwd":` + passwdNew + `"}`),
+			name:               "invalid broken json",
+			requestBody:        strings.NewReader(`{"passwd":` + passwdNew + `"}`),
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus:     http.StatusBadRequest,
 		}, {
-			name: "invalid broken json",
-			requestBody: strings.NewReader(`[{"passwd":"` + passwdNew + `"}`),
+			name:               "invalid broken json",
+			requestBody:        strings.NewReader(`[{"passwd":"` + passwdNew + `"}`),
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus:     http.StatusBadRequest,
 		}, {
 			name: "valid",
 			payload: map[string]string{
@@ -110,7 +110,7 @@ func TestUserDelete(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		},
 	}
 
@@ -127,7 +127,7 @@ func TestUserDelete(t *testing.T) {
 				req = httptest.NewRequest("DELETE", url, tc.requestBody)
 			}
 			req.Header.Add(tc.requestHeaderName, tc.requestHeaderValue)
-			server.HttpHandlerUserDelete(rec, req)
+			server.HandlerUserDelete(rec, req)
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if rec.Code != http.StatusOK {

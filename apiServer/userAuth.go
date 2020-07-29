@@ -4,21 +4,21 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
 	"encoding/json"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid int) error {
 	var (
-		devices		[]Device
-		device		Device
+		devices     []Device
+		device      Device
 		knownDevice bool
-		err 		error
+		err         error
 	)
 
 	devices, err = server.Db.GetDevicesByUid(uid)
 	if err != nil {
-		return errors.New("GetDevicesByUid returned error "+err.Error())
+		return errors.New("GetDevicesByUid returned error " + err.Error())
 	}
 	for _, device = range devices {
 		if device.Device == r.UserAgent() {
@@ -28,11 +28,11 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 	if !knownDevice {
 		err = server.Db.SetNewDevice(uid, r.UserAgent())
 		if err != nil {
-			return errors.New("SetNewDevice returned error "+err.Error())
+			return errors.New("SetNewDevice returned error " + err.Error())
 		}
-		err = server.session.SendNotifToLoggedUser(uid, 0, `device from ` + r.Host + " found:" + r.UserAgent())
+		err = server.session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
 		if err != nil {
-			return errors.New("SendNotifToLoggedUser returned error "+err.Error())
+			return errors.New("SendNotifToLoggedUser returned error " + err.Error())
 		}
 	}
 	return nil
@@ -152,7 +152,7 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
 // AUTHENTICATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HttpHandlerUserAuth(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HandlerUserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")

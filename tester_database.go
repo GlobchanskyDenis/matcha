@@ -1,8 +1,8 @@
 package main
 
 import (
-	"MatchaServer/myDatabase"
 	"MatchaServer/handlers"
+	"MatchaServer/myDatabase"
 	"encoding/json"
 	"fmt"
 	"sync"

@@ -3,9 +3,9 @@ package apiServer
 import (
 	. "MatchaServer/config"
 	// "MatchaServer/handlers"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"encoding/json"
 	"strconv"
 )
 
@@ -25,7 +25,7 @@ func wsWriteErrorMessage(r *http.Request, ws *websocket.Conn, messageBody string
 	message := `{"type":"error","uidSender":0,"body":"` + messageBody + `"}`
 	err := ws.WriteMessage(1, []byte(message))
 	if err != nil {
-		consoleLogError(r, "/ws/auth/", "ws.WriteMessage returned error - " + err.Error())
+		consoleLogError(r, "/ws/auth/", "ws.WriteMessage returned error - "+err.Error())
 		return nil
 	}
 	return nil
@@ -48,7 +48,7 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 		}
 		err = json.Unmarshal(RequestMessage, &decodedMessage)
 		if err != nil {
-			consoleLogError(r, "/ws/auth/", "request json decode failed - "+err.Error() + `. Skip request`)
+			consoleLogError(r, "/ws/auth/", "request json decode failed - "+err.Error()+`. Skip request`)
 			err = wsWriteErrorMessage(r, ws, "request json decode failed")
 			if err != nil {
 				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
@@ -77,8 +77,8 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			continue
 		}
 		uidReceiver := int(uidReceiverFloat)
-		consoleLog(r, "/ws/auth/", "user #" + BLUE + strconv.Itoa(uid) + NO_COLOR + " (" + BLUE + r.Host + NO_COLOR +
-			") wants to send message to user #" + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR)
+		consoleLog(r, "/ws/auth/", "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" ("+BLUE+r.Host+NO_COLOR+
+			") wants to send message to user #"+BLUE+strconv.Itoa(uidReceiver)+NO_COLOR)
 		arg, isExists = decodedMessage["body"]
 		if !isExists {
 			consoleLogWarning(r, "/ws/auth/", `"body" not exist in received by ws message. Skip request`)
@@ -101,9 +101,9 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 		}
 		isExists, err = server.Db.IsUserExistsByUid(uidReceiver)
 		if !isExists {
-			consoleLogWarning(r, "/ws/auth/", `user #` + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR +
+			consoleLogWarning(r, "/ws/auth/", `user #`+BLUE+strconv.Itoa(uidReceiver)+NO_COLOR+
 				` not exists in database. Skip request`)
-			err = wsWriteErrorMessage(r, ws, `user #` + strconv.Itoa(uidReceiver) + ` not exists in database`)
+			err = wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(uidReceiver)+` not exists in database`)
 			if err != nil {
 				consoleLogError(r, "/ws/auth/", "wsWriteErrorMessage returned error - "+err.Error())
 				return
@@ -112,16 +112,16 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 		}
 		_, err = server.Db.SetNewMessage(uid, uidReceiver, messageBody)
 		if err != nil {
-			consoleLogWarning(r, "/ws/auth/", `SetNewMessage returned error - ` + err.Error())
+			consoleLogWarning(r, "/ws/auth/", `SetNewMessage returned error - `+err.Error())
 			return
 		}
 		err = server.session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
 		if err != nil {
-			consoleLogWarning(r, "/ws/auth/", `SendMessageToLoggedUser returned error - ` + err.Error())
+			consoleLogWarning(r, "/ws/auth/", `SendMessageToLoggedUser returned error - `+err.Error())
 			return
 		}
-		consoleLogSuccess(r, "/ws/auth/", "message from user #" + BLUE + strconv.Itoa(uid) + NO_COLOR +
-			" (" + BLUE + r.Host + NO_COLOR + ") to user #" + BLUE + strconv.Itoa(uidReceiver) + NO_COLOR + " transmitted")
+		consoleLogSuccess(r, "/ws/auth/", "message from user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
+			" ("+BLUE+r.Host+NO_COLOR+") to user #"+BLUE+strconv.Itoa(uidReceiver)+NO_COLOR+" transmitted")
 	}
 }
 

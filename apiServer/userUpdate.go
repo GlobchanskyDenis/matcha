@@ -222,7 +222,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/update/
 // UPDATE USER BY PATCH METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HttpHandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")

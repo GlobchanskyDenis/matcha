@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"github.com/gorilla/websocket"
 	// "strconv"
 )
 
-var upgrader = websocket.Upgrader {
-	ReadBufferSize: 1024,
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
 
@@ -49,7 +49,7 @@ func wsEndPoint(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprintf(w, "WebsocketHere")
 	// log.Printf("someone call web socket")
 
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true	}
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 

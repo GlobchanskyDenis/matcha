@@ -65,7 +65,7 @@ type Message struct {
 }
 
 type Device struct {
-	Id          int    `json:"id"`
-	Uid  		int    `json:"uid"`
-	Device      string `json:"device"`
+	Id     int    `json:"id"`
+	Uid    int    `json:"uid"`
+	Device string `json:"device"`
 }

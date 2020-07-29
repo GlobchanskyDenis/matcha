@@ -2,8 +2,8 @@ package postgres
 
 import (
 	. "MatchaServer/config"
-	"testing"
 	"strconv"
+	"testing"
 )
 
 var connNotif ConnDB

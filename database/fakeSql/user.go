@@ -13,7 +13,7 @@ func (conn ConnFake) SetNewUser(mail string, passwd string) (config.User, error)
 	for key := 1; ; key++ {
 		if _, isExists := conn.users[key]; !isExists {
 			user.Uid = key
-			break;
+			break
 		}
 	}
 

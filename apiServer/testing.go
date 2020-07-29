@@ -1,13 +1,13 @@
 package apiServer
 
 import (
-	"testing"
 	"MatchaServer/config"
 	"MatchaServer/handlers"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"encoding/json"
+	"testing"
 )
 
 var (
@@ -65,7 +65,7 @@ func (server *Server) TestTestUserAuthorize(t *testing.T, user config.User) stri
 	println(user.Passwd)
 	requestBody := strings.NewReader(`{"mail":"` + user.Mail + `","passwd":"` + user.Passwd + `"}`)
 	req := httptest.NewRequest("POST", url, requestBody)
-	server.HttpHandlerUserAuth(rec, req)
+	server.HandlerUserAuth(rec, req)
 	if rec.Code != http.StatusOK {
 		println("Expected 200")
 		print("Got ")

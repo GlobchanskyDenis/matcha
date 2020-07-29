@@ -5,11 +5,11 @@ import (
 )
 
 type ConnFake struct {
-	users		map[int]config.User
-	devices		map[int]config.Device
-	messages	map[int]config.Message
-	notif		map[int]config.Notif
-	photos		map[int]string
+	users    map[int]config.User
+	devices  map[int]config.Device
+	messages map[int]config.Message
+	notif    map[int]config.Notif
+	photos   map[int]string
 }
 
 func New() *ConnFake {

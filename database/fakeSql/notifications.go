@@ -14,7 +14,7 @@ func (conn ConnFake) SetNewNotif(uidReceiver int, uidSender int, body string) (i
 	for key := 1; ; key++ {
 		if _, isExists := conn.notif[key]; !isExists {
 			notif.Nid = key
-			break;
+			break
 		}
 	}
 

@@ -29,52 +29,52 @@ func TestUserAuthenticate(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		requestBody		*strings.Reader
+		requestBody    *strings.Reader
 		expectedStatus int
 	}{
 		{
-			name: "invalid mail",
-			requestBody: strings.NewReader(`{"mail":"` + mailFail + `","passwd":"` + passwd + `"}`),
+			name:           "invalid mail",
+			requestBody:    strings.NewReader(`{"mail":"` + mailFail + `","passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid passwd",
-			requestBody: strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwdFail + `"}`),
+			name:           "invalid passwd",
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwdFail + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid empty passwd",
-			requestBody: strings.NewReader(`{"mail":"` + mail + `","passwd":""}`),
+			name:           "invalid empty passwd",
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":""}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid empty mail",
-			requestBody: strings.NewReader(`{"mail":"","passwd":"` + passwd + `"}`),
+			name:           "invalid empty mail",
+			requestBody:    strings.NewReader(`{"mail":"","passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid no mail",
-			requestBody: strings.NewReader(`{"passwd":"` + passwd + `"}`),
+			name:           "invalid no mail",
+			requestBody:    strings.NewReader(`{"passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name: "invalid no passwd",
-			requestBody: strings.NewReader(`{"mail":"` + mail + `"}`),
+			name:           "invalid no passwd",
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name: "invalid broken json",
-			requestBody: strings.NewReader(`[{"mail":"` + mail + `","passwd":"` + passwd + `"}`),
+			name:           "invalid broken json",
+			requestBody:    strings.NewReader(`[{"mail":"` + mail + `","passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name: "invalid broken json",
-			requestBody: strings.NewReader(`{"mail":` + mail + `","passwd":"` + passwd + `"}`),
+			name:           "invalid broken json",
+			requestBody:    strings.NewReader(`{"mail":` + mail + `","passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name: "invalid wrong password",
-			requestBody: strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwdNew + `"}`),
+			name:           "invalid wrong password",
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwdNew + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid not existing mail",
-			requestBody: strings.NewReader(`{"mail":"` + mailNew + `","passwd":"` + passwd + `"}`),
+			name:           "invalid not existing mail",
+			requestBody:    strings.NewReader(`{"mail":"` + mailNew + `","passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "valid",
-			requestBody: strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`),
+			name:           "valid",
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`),
 			expectedStatus: http.StatusOK,
 		},
 	}
@@ -84,7 +84,7 @@ func TestUserAuthenticate(t *testing.T) {
 			url := "http://localhost:3000/user/auth/"
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("POST", url, tc.requestBody)
-			server.HttpHandlerUserAuth(rec, req)
+			server.HandlerUserAuth(rec, req)
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else {

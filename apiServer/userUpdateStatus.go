@@ -94,7 +94,7 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 // HTTP HANDLER FOR DOMAIN /user/update/status . IT HANDLES:
 // UPDATE USER STATUS BY PATCH METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HttpHandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "PATCH,OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")

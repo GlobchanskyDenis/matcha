@@ -14,7 +14,7 @@ func (conn ConnFake) SetNewMessage(uidSender int, uidReceiver int, body string) 
 	for key := 1; ; key++ {
 		if _, isExists := conn.messages[key]; !isExists {
 			message.Mid = key
-			break;
+			break
 		}
 	}
 
@@ -33,7 +33,7 @@ func (conn ConnFake) GetMessagesFromChat(uidSender int, uidReceiver int) ([]conf
 
 	for _, message = range conn.messages {
 		if (message.UidSender == uidSender && message.UidReceiver == uidReceiver) &&
-		(message.UidSender == uidReceiver && message.UidReceiver == uidSender) {
+			(message.UidSender == uidReceiver && message.UidReceiver == uidSender) {
 			messages = append(messages, message)
 		}
 	}

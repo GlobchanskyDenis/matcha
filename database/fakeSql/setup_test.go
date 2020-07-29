@@ -26,7 +26,7 @@ func TestTruncate(t *testing.T) {
 
 	println(user1.Uid)
 	println(user2.Uid)
-	
+
 	if user1.Uid == user2.Uid {
 		t.Errorf(RED_BG + "ERROR: Uid is invalid " + NO_COLOR + "\n")
 	}

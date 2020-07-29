@@ -6,7 +6,7 @@ import (
 )
 
 type Server struct {
-	Db		database.Storage
+	Db      database.Storage
 	session session.Session
 }
 

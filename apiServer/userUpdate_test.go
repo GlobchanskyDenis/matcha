@@ -4,10 +4,10 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/database/fakeSql"
 	// "MatchaServer/database/postgres"
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"bytes"
 	"strings"
 	"testing"
 )
@@ -30,12 +30,12 @@ func TestUserUpdate(t *testing.T) {
 	/////////// TESTING ///////////
 
 	testCases := []struct {
-		name           string
-		payload        interface{}
-		requestBody    *strings.Reader
+		name               string
+		payload            interface{}
+		requestBody        *strings.Reader
 		requestHeaderName  string
 		requestHeaderValue string
-		expectedStatus int
+		expectedStatus     int
 	}{
 		{
 			name: "valid mail",
@@ -44,7 +44,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid passwd",
 			payload: map[string]string{
@@ -52,7 +52,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid fname",
 			payload: map[string]string{
@@ -60,7 +60,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid lname",
 			payload: map[string]string{
@@ -68,7 +68,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid age",
 			payload: map[string]int{
@@ -76,7 +76,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid gender",
 			payload: map[string]string{
@@ -84,7 +84,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid orientation",
 			payload: map[string]string{
@@ -92,7 +92,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid biography",
 			payload: map[string]string{
@@ -100,7 +100,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "valid avaPhotoID",
 			payload: map[string]int{
@@ -108,7 +108,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusOK,
+			expectedStatus:     http.StatusOK,
 		}, {
 			name: "invalid mail",
 			payload: map[string]string{
@@ -116,7 +116,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid passwd",
 			payload: map[string]string{
@@ -124,7 +124,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid fname",
 			payload: map[string]string{
@@ -132,7 +132,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid lname",
 			payload: map[string]string{
@@ -140,7 +140,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid age",
 			payload: map[string]int{
@@ -148,7 +148,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid gender",
 			payload: map[string]string{
@@ -156,7 +156,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid orientation",
 			payload: map[string]string{
@@ -164,7 +164,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid biography",
 			payload: map[string]string{
@@ -172,7 +172,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid avaPhotoID",
 			payload: map[string]int{
@@ -180,7 +180,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty mail",
 			payload: map[string]string{
@@ -188,7 +188,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty passwd",
 			payload: map[string]string{
@@ -196,7 +196,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty fname",
 			payload: map[string]string{
@@ -204,7 +204,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty lname",
 			payload: map[string]string{
@@ -212,7 +212,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty gender",
 			payload: map[string]string{
@@ -220,7 +220,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty orientation",
 			payload: map[string]string{
@@ -228,7 +228,7 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus:     http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid update no usefull fields at all",
 			payload: map[string]string{
@@ -236,9 +236,9 @@ func TestUserUpdate(t *testing.T) {
 			},
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusUnprocessableEntity,
-		},{
-			name:               "invalid token",
+			expectedStatus:     http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid token",
 			payload: map[string]string{
 				"fname": fnameNew,
 			},
@@ -246,7 +246,7 @@ func TestUserUpdate(t *testing.T) {
 			requestHeaderValue: "BlaBla",
 			expectedStatus:     http.StatusUnauthorized,
 		}, {
-			name:               "invalid token not exists",
+			name: "invalid token not exists",
 			payload: map[string]string{
 				"fname": fnameNew,
 			},
@@ -254,17 +254,17 @@ func TestUserUpdate(t *testing.T) {
 			requestHeaderValue: "token",
 			expectedStatus:     http.StatusUnauthorized,
 		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`[{"mail":"` + mailNew + `"}`),
+			name:               "invalid broken json",
+			requestBody:        strings.NewReader(`[{"mail":"` + mailNew + `"}`),
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus:     http.StatusBadRequest,
 		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`{"mail":` + mailNew + `"}`),
+			name:               "invalid broken json",
+			requestBody:        strings.NewReader(`{"mail":` + mailNew + `"}`),
 			requestHeaderName:  "x-auth-token",
 			requestHeaderValue: token,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus:     http.StatusBadRequest,
 		},
 	}
 
@@ -281,7 +281,7 @@ func TestUserUpdate(t *testing.T) {
 				req = httptest.NewRequest("PATCH", url, tc.requestBody)
 			}
 			req.Header.Add(tc.requestHeaderName, tc.requestHeaderValue)
-			server.HttpHandlerUserUpdate(rec, req)
+			server.HandlerUserUpdate(rec, req)
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if tc.expectedStatus != http.StatusOK {
@@ -297,7 +297,7 @@ func TestUserUpdate(t *testing.T) {
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest("PATCH", url, nil)
 		req.Header.Add("x-auth-token", token)
-		server.HttpHandlerUserUpdate(rec, req)
+		server.HandlerUserUpdate(rec, req)
 		expectedStatus := http.StatusBadRequest
 		if rec.Code != expectedStatus {
 			t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, expectedStatus)

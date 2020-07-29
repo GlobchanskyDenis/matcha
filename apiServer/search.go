@@ -73,7 +73,7 @@ func (server *Server) search(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (server *Server) HttpHandlerSearch(w http.ResponseWriter, r *http.Request) {
+func (server *Server) HandlerSearch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET,OPTIONS")

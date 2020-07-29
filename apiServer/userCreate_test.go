@@ -4,10 +4,10 @@ import (
 	. "MatchaServer/config"
 	"MatchaServer/database/fakeSql"
 	// "MatchaServer/database/postgres"
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"bytes"
 	"strings"
 	"testing"
 )
@@ -104,7 +104,7 @@ func TestUserCreate(t *testing.T) {
 			} else {
 				req = httptest.NewRequest("POST", url, tc.requestBody)
 			}
-			server.HttpHandlerUserReg(rec, req)
+			server.HandlerUserCreate(rec, req)
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if tc.expectedStatus != http.StatusOK {

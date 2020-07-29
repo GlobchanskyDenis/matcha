@@ -13,7 +13,7 @@ func (conn ConnFake) SetNewDevice(uid int, deviceName string) error {
 	for key := 1; ; key++ {
 		if _, isExists := conn.devices[key]; !isExists {
 			device.Id = key
-			break;
+			break
 		}
 	}
 

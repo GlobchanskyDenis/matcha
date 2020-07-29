@@ -1,10 +1,10 @@
 package main
 
 import (
-	"MatchaServer/config"
-	"MatchaServer/handlers"
 	"MatchaServer/apiServer"
+	"MatchaServer/config"
 	"MatchaServer/database/postgres"
+	"MatchaServer/handlers"
 	// "MatchaServer/database/fakeSql"
 )
 

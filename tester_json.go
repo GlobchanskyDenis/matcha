@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 )
 
 type reg struct {
-	Id	int
-	Login string
+	Id     int
+	Login  string
 	Passwd string
 }
 
