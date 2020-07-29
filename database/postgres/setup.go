@@ -11,6 +11,10 @@ type ConnDB struct {
 	db *sql.DB
 }
 
+func New() *ConnDB {
+	return &ConnDB{}
+}
+
 func (conn *ConnDB) Connect() error {
 	var dsn string
 

@@ -1,4 +1,4 @@
-package httpHandlers
+package apiServer
 
 import (
 	. "MatchaServer/config"

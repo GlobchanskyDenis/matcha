@@ -3,18 +3,15 @@ package main
 import (
 	"MatchaServer/config"
 	"MatchaServer/handlers"
-	"MatchaServer/httpHandlers"
-	// "MatchaServer/database/postgres"
-	"MatchaServer/database/fakeSql"
+	"MatchaServer/apiServer"
+	"MatchaServer/database/postgres"
+	// "MatchaServer/database/fakeSql"
 )
 
 func main() {
-	var server = httpHandlers.Server{}
-	var err error
-
 	print("Connecting to database\t\t")
-	// err = server.New(&postgres.ConnDB{})
-	err = server.New(&fakeSql.ConnFake{})
+	// server, err := apiServer.New(fakeSql.New())
+	server, err := apiServer.New(postgres.New())
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return

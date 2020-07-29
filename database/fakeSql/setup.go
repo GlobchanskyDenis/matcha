@@ -12,6 +12,10 @@ type ConnFake struct {
 	photos		map[int]string
 }
 
+func New() *ConnFake {
+	return &ConnFake{}
+}
+
 func (conn *ConnFake) Connect() error {
 	conn.users = map[int]config.User{}
 	conn.devices = map[int]config.Device{}
