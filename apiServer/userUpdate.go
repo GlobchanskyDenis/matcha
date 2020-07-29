@@ -148,13 +148,36 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 // RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
 func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid     int
-		err     error
-		user    User
-		message string
-		request map[string]interface{}
-		token   = r.Header.Get("x-auth-token")
+		uid            int
+		err            error
+		user           User
+		message, token string
+		request        map[string]interface{}
 	)
+
+	err = json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		consoleLogError(r, "/user/update/", "request json decode failed - "+err.Error())
+		w.WriteHeader(http.StatusBadRequest) // 400
+		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
+		return
+	}
+
+	arg, isExist := request["x-auth-token"]
+	if !isExist {
+		consoleLogWarning(r, "/user/update/", "token not exists")
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		w.Write([]byte(`{"error":"` + "token not exists" + `"}`))
+		return
+	}
+
+	token, ok := arg.(string)
+	if !ok {
+		consoleLogWarning(r, "/user/update/", "token have wrong type")
+		w.WriteHeader(http.StatusBadRequest) // 400
+		w.Write([]byte(`{"error":"` + "token have wrong type" + `"}`))
+		return
+	}
 
 	if token == "" {
 		consoleLogWarning(r, "/user/update/", "token is empty")
@@ -183,14 +206,6 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		consoleLogError(r, "/user/update/", "GetUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
-		return
-	}
-
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		consoleLogError(r, "/user/update/", "request json decode failed - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
 		return
 	}
 

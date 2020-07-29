@@ -12,25 +12,16 @@ import (
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	var (
-		message string
-		err     error
-		token   = r.Header.Get("x-auth-token")
-		user    User
-		request map[string]interface{}
-		passwd  string
-		uid     int
+		message, token string
+		err            error
+		user           User
+		request        map[string]interface{}
+		passwd         string
+		uid            int
 	)
 
 	message = "request for DELETE was recieved"
 	consoleLog(r, "/user/delete/", message)
-
-	uid, err = handlers.TokenUidDecode(token)
-	if err != nil {
-		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - "+err.Error())
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
-		return
-	}
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -40,7 +31,38 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg, isExist := request["passwd"]
+	arg, isExist := request["x-auth-token"]
+	if !isExist {
+		consoleLogWarning(r, "/user/delete/", "token not exist")
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		w.Write([]byte(`{"error":"` + "token not exist" + `"}`))
+		return
+	}
+
+	token, ok := arg.(string)
+	if !ok {
+		consoleLogWarning(r, "/user/delete/", "token have wrong type")
+		w.WriteHeader(http.StatusBadRequest) // 400
+		w.Write([]byte(`{"error":"` + "token have wrong type" + `"}`))
+		return
+	}
+
+	if token == "" {
+		consoleLogWarning(r, "/user/delete/", "token is empty")
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		w.Write([]byte(`{"error":"` + "token is empty" + `"}`))
+		return
+	}
+
+	uid, err = handlers.TokenUidDecode(token)
+	if err != nil {
+		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - "+err.Error())
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		return
+	}
+
+	arg, isExist = request["passwd"]
 	if !isExist {
 		consoleLogWarning(r, "/user/delete/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
