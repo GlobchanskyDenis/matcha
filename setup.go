@@ -6,6 +6,7 @@ import (
 	"MatchaServer/database/postgres"
 	"MatchaServer/handlers"
 	// "MatchaServer/database/fakeSql"
+	"time"
 )
 
 func main() {
@@ -92,7 +93,7 @@ func main() {
 	}
 
 	print("Add admin@gmail.com user\t")
-	user, err := server.Db.SetNewUser("admin@gmail.com", handlers.PasswdHash("admin"))
+	user, err := server.Db.SetNewUser("admin@gmail.com", handlers.PassHash("admin"))
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -101,9 +102,10 @@ func main() {
 	}
 
 	print("Set all fields to user\t\t")
-	user.Passwd = handlers.PasswdHash("admin")
+	user.EncryptedPass = handlers.PassHash("admin")
 	user.Fname = "admin"
 	user.Lname = "superUser"
+	user.Birth = time.Now()
 	user.Age = 30
 	user.Gender = "male"
 	user.Orientation = "hetero"

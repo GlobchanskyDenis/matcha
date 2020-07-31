@@ -15,7 +15,7 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		err                  error
 		user                 User
 		request              map[string]interface{}
-		requestItem          interface{}
+		item                 interface{}
 		isExist, ok          bool
 	)
 
@@ -30,7 +30,7 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestItem, isExist = request["x-reg-token"]
+	item, isExist = request["x-reg-token"]
 	if !isExist {
 		consoleLogError(r, "/user/update/status/", "x-reg-token not exist in request")
 		w.WriteHeader(http.StatusBadRequest) // 400
@@ -38,7 +38,7 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, ok = requestItem.(string)
+	token, ok = item.(string)
 	if !ok {
 		consoleLogError(r, "/user/update/status/", "x-reg-token has wrong type")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
@@ -76,7 +76,7 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.AccType = "confirmed"
+	user.Status = "confirmed"
 
 	err = server.Db.UpdateUser(user)
 	if err != nil {

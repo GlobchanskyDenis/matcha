@@ -2,8 +2,9 @@ package apiServer
 
 import (
 	. "MatchaServer/config"
-	"MatchaServer/database/fakeSql"
-	// "MatchaServer/database/postgres"
+	// "MatchaServer/database/fakeSql"
+
+	"MatchaServer/database/postgres"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -17,12 +18,12 @@ func TestUserAuthenticate(t *testing.T) {
 
 	/////////// INITIALIZE ///////////
 
-	server, err := New(fakeSql.New())
+	server, err := New(postgres.New())
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
-	testUser := server.TestTestUserCreate(t, mail, passwd)
+	testUser := server.TestTestUserCreate(t, mail, pass)
 	defer server.Db.DeleteUser(testUser.Uid)
 
 	/////////// TESTING ///////////
@@ -34,23 +35,23 @@ func TestUserAuthenticate(t *testing.T) {
 	}{
 		{
 			name:           "invalid mail",
-			requestBody:    strings.NewReader(`{"mail":"` + mailFail + `","passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`{"mail":"` + mailFail + `","pass":"` + pass + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name:           "invalid passwd",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwdFail + `"}`),
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + passFail + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name:           "invalid empty passwd",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":""}`),
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":""}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name:           "invalid empty mail",
-			requestBody:    strings.NewReader(`{"mail":"","passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`{"mail":"","pass":"` + pass + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name:           "invalid no mail",
-			requestBody:    strings.NewReader(`{"passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`{"pass":"` + pass + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid no passwd",
@@ -58,23 +59,23 @@ func TestUserAuthenticate(t *testing.T) {
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`[{"mail":"` + mail + `","passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`[{"mail":"` + mail + `","pass":"` + pass + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`{"mail":` + mail + `","passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`{"mail":` + mail + `","pass":"` + pass + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid wrong password",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwdNew + `"}`),
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + passNew + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name:           "invalid not existing mail",
-			requestBody:    strings.NewReader(`{"mail":"` + mailNew + `","passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`{"mail":"` + mailNew + `","pass":"` + pass + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name:           "valid",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","passwd":"` + passwd + `"}`),
+			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + pass + `"}`),
 			expectedStatus: http.StatusOK,
 		},
 	}

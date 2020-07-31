@@ -13,7 +13,7 @@ type ConnFake struct {
 }
 
 func New() *ConnFake {
-	return &ConnFake{}
+	return &(ConnFake{})
 }
 
 func (conn *ConnFake) Connect() error {

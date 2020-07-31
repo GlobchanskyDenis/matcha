@@ -8,7 +8,7 @@ import (
 func TestPasswdHash_1(t *testing.T) {
 	var passwd = "admin"
 	var wasError bool
-	var hash = PasswdHash(passwd)
+	var hash = PassHash(passwd)
 
 	for i := 0; i < len(hash); i++ {
 		if (hash[i] < '0' || hash[i] > '9') &&
@@ -29,8 +29,8 @@ func TestPasswdHash_1(t *testing.T) {
 
 func TestPasswdHash_2(t *testing.T) {
 	var passwd = "admin"
-	var hash1 = PasswdHash(passwd)
-	var hash2 = PasswdHash(passwd)
+	var hash1 = PassHash(passwd)
+	var hash2 = PassHash(passwd)
 
 	if hash1 != hash2 {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", hash1, hash2)

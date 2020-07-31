@@ -11,48 +11,48 @@ import (
 )
 
 var (
-	mail   = "test@gmail.com"
-	passwd = "AsdVar34!A"
+	mail = "test@gmail.com"
+	pass = "AsdVar34!A"
 
 	mailNew        = "test_new@gmail.com"
-	passwdNew      = "DFe2*FDsd"
+	passNew        = "DFe2*FDsd"
 	fnameNew       = "Денис"
 	lnameNew       = "Глобчанский"
 	ageNew         = 21
 	genderNew      = "male"
 	orientationNew = "hetero"
-	biographyNew   = `born, suffered, died`
-	avaPhotoIDNew  = 42
+	bioNew         = `born, suffered, died`
+	avaIDNew       = 42
 
 	mailFail        = "mail@gmail@yandex.ru"
-	passwdFail      = "12345678"
+	passFail        = "12345678"
 	fnameFail       = "@Денис"
 	lnameFail       = "qweкий   "
 	ageFail         = 217
 	genderFail      = "thing"
 	orientationFail = "люблю всех"
-	biographyFail   = `фвыфв ывфывфщзшзщольджук  йлофыдлвоы фыдлвоыдвлффды дл 
+	bioFail         = `фвыфв ывфывфщзшзщольджук  йлофыдлвоы фыдлвоыдвлффды дл 
 	ывофыдлвоыфлдвоы оыфво фылдво л ыовлывфвфыовфыд офыл офвд лфывыфлво фв флдв офлвдофы лфо фдылов
 	sdsadasdsa sadasdasdasd asd asdsadas as asdasdsad as`
-	avaPhotoIDFail = -1
+	avaIDFail = -1
 )
 
-func (server *Server) TestTestUserCreate(t *testing.T, mail string, passwd string) config.User {
+func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string) config.User {
 	t.Helper()
 
-	user, err := server.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
+	user, err := server.Db.SetNewUser(mail, handlers.PassHash(pass))
 	if err != nil {
 		t.Errorf(config.RED_BG + "ERROR: Cannot create test user - " + err.Error() + config.NO_COLOR + "\n")
 		return user
 	}
-	user.Passwd = handlers.PasswdHash(passwd)
-	user.AccType = "confirmed"
+	user.Pass = pass
+	user.EncryptedPass = handlers.PassHash(pass)
+	user.Status = "confirmed"
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		t.Errorf(config.RED_BG + "ERROR: Cannot update test user - " + err.Error() + config.NO_COLOR + "\n")
 		return user
 	}
-	user.Passwd = passwd
 	return user
 }
 
@@ -61,9 +61,7 @@ func (server *Server) TestTestUserAuthorize(t *testing.T, user config.User) stri
 
 	url := "http://localhost:3000/user/auth/"
 	rec := httptest.NewRecorder()
-	println(user.Mail)
-	println(user.Passwd)
-	requestBody := strings.NewReader(`{"mail":"` + user.Mail + `","passwd":"` + user.Passwd + `"}`)
+	requestBody := strings.NewReader(`{"mail":"` + user.Mail + `","pass":"` + user.Pass + `"}`)
 	req := httptest.NewRequest("POST", url, requestBody)
 	server.HandlerUserAuth(rec, req)
 	if rec.Code != http.StatusOK {

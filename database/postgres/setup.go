@@ -3,8 +3,9 @@ package postgres
 import (
 	"MatchaServer/config"
 	"database/sql"
-	_ "github.com/lib/pq"
 	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 type ConnDB struct {
@@ -12,13 +13,13 @@ type ConnDB struct {
 }
 
 func New() *ConnDB {
-	return &ConnDB{}
+	return &(ConnDB{})
 }
 
 func (conn *ConnDB) Connect() error {
 	var dsn string
 
-	dsn = "user=" + config.DB_USER + " password=" + config.DB_PASSWD + " dbname=" + config.DB_NAME + " host=" + config.DB_HOST + " sslmode=disable"
+	dsn = "user=" + config.DB_USER + " password=" + config.DB_PASS + " dbname=" + config.DB_NAME + " host=" + config.DB_HOST + " sslmode=disable"
 	db, err := sql.Open(config.DB_TYPE, dsn)
 	conn.db = db
 	return err
@@ -84,6 +85,14 @@ func (conn ConnDB) DropEnumTypes() error {
 	}
 
 	_, err = db.Exec("DROP TYPE IF EXISTS acc_type")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TYPE IF EXISTS acc_status")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TYPE IF EXISTS enum_status")
 	return err
 }
 
@@ -98,7 +107,12 @@ func (conn ConnDB) CreateEnumTypes() error {
 		return err
 	}
 
-	_, err = db.Exec("CREATE TYPE acc_type AS ENUM ('confirmed', 'not confirmed', '')")
+	_, err = db.Exec("CREATE TYPE enum_status AS ENUM ('confirmed', 'not confirmed', '')")
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("CREATE TYPE acc_status AS ENUM ('confirmed', 'not confirmed', '')")
 	return err
 }
 
@@ -109,15 +123,15 @@ func (conn ConnDB) CreateUsersTable() error {
 	_, err := db.Exec("CREATE TABLE users (uid SERIAL NOT NULL, " +
 		"mail VARCHAR(" + strconv.Itoa(config.MAIL_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"PRIMARY KEY (mail), " +
-		"passwd VARCHAR(35) NOT NULL, " +
+		"encryptedPass VARCHAR(35) NOT NULL, " +
 		"fname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"lname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
-		"age INTEGER NOT NULL DEFAULT 0, " +
+		"birth DATE DEFAULT '1955-02-03', " +
 		"gender enum_gender NOT NULL DEFAULT '', " +
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
-		"biography VARCHAR(" + strconv.Itoa(config.BIOGRAPHY_MAX_LEN) + ") NOT NULL DEFAULT '', " +
-		"avaPhotoID INTEGER NOT NULL DEFAULT 0," +
-		"accType acc_type NOT NULL DEFAULT 'not confirmed'," +
+		"bio VARCHAR(" + strconv.Itoa(config.BIO_MAX_LEN) + ") NOT NULL DEFAULT '', " +
+		"avaID INTEGER NOT NULL DEFAULT 0," +
+		"status enum_status NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")
 	return err
 }

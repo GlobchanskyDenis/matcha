@@ -1,23 +1,25 @@
 package config
 
-import ()
+import (
+	"time"
+)
 
 const (
-	DB_HOST   = "localhost"
-	DB_NAME   = "matcha_db"
-	DB_USER   = "bsabre"
-	DB_PASSWD = "23"
-	DB_TYPE   = "postgres"
+	DB_HOST = "localhost"
+	DB_NAME = "matcha_db"
+	DB_USER = "bsabre"
+	DB_PASS = "23"
+	DB_TYPE = "postgres"
 
-	MAIL_FROM   = "bsabre.cat@gmail.com"
-	MAIL_HOST   = "smtp.gmail.com"
-	MAIL_PASSWD = "den619392"
+	MAIL_FROM = "bsabre.cat@gmail.com"
+	MAIL_HOST = "smtp.gmail.com"
+	MAIL_PASS = "den619392"
 
-	PASSWD_MIN_LEN    = 6
-	MAIL_MAX_LEN      = 30
-	MAIL_MIN_LEN      = 6
-	NAME_MAX_LEN      = 30
-	BIOGRAPHY_MAX_LEN = 300
+	PASS_MIN_LEN = 6
+	MAIL_MAX_LEN = 30
+	MAIL_MIN_LEN = 6
+	NAME_MAX_LEN = 30
+	BIO_MAX_LEN  = 300
 
 	NOTIF_MAX_LEN   = 250
 	MESSAGE_MAX_LEN = 300
@@ -36,18 +38,20 @@ const (
 )
 
 type User struct {
-	Uid         int    `json:"uid"`
-	Mail        string `json:"mail,,omitempty"`
-	Passwd      string `json:"-"`
-	Fname       string `json:"fname"`
-	Lname       string `json:"lname"`
-	Age         int    `json:"age,,omitempty"`
-	Gender      string `json:"gender,,omitempty"`
-	Orientation string `json:"orientation,,omitempty"`
-	Biography   string `json:"biography,,omitempty"`
-	AvaPhotoID  int    `json:"avaPhotoID,,omitempty"`
-	AccType     string `json:"-"`
-	Rating      int    `json:"rating"`
+	Uid           int       `json:"uid"`
+	Mail          string    `json:"mail,,omitempty"`
+	Pass          string    `json:"-"`
+	EncryptedPass string    `json:"-"`
+	Fname         string    `json:"fname"`
+	Lname         string    `json:"lname"`
+	Birth         time.Time `json:"-"`
+	Age           int       `json:"age,,omitempty"`
+	Gender        string    `json:"gender,,omitempty"`
+	Orientation   string    `json:"orientation,,omitempty"`
+	Bio           string    `json:"bio,,omitempty"`
+	AvaID         int       `json:"avaID,,omitempty"`
+	Status        string    `json:"-"`
+	Rating        int       `json:"rating"`
 }
 
 type Notif struct {

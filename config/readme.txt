@@ -20,6 +20,12 @@ sudo -i -u postgres
 psql -d matcha_db    // Последние две команды на маке выполняются как psql postgres
 SELECT * FROM pg_database;
 SELECT * FROM pg_shadow;
+SELECT * FROM information_schema.tables  WHERE table_schema='public' ORDER BY table_name;
+SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name;
+SELECT * FROM test WHERE interest[1] IN (1, 2)
+SELECT * FROM test WHERE interest[1123]=2 OR interest[2]=2 OR interest[3]=2 OR interest[4]=2 OR interest[5]=2
+SELECT * FROM test WHERE interest='{2,3,5}'
+INSERT INTO test (name, interest) VALUES ('vasya', '{2, 3, 5}')
 
 в списках должны находиться база данных matcha_db и пользователь bsabre
 запустить программу setup.go

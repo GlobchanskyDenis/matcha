@@ -2,8 +2,9 @@ package apiServer
 
 import (
 	. "MatchaServer/config"
-	"MatchaServer/database/fakeSql"
-	// "MatchaServer/database/postgres"
+	// "MatchaServer/database/fakeSql"
+
+	"MatchaServer/database/postgres"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -18,12 +19,12 @@ func TestUserDelete(t *testing.T) {
 
 	/////////// INITIALIZE ///////////
 
-	server, err := New(fakeSql.New())
+	server, err := New(postgres.New())
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
-	testUser := server.TestTestUserCreate(t, mail, passwd)
+	testUser := server.TestTestUserCreate(t, mail, pass)
 	token := server.TestTestUserAuthorize(t, testUser)
 	defer server.Db.DeleteUser(testUser.Uid)
 
@@ -36,16 +37,16 @@ func TestUserDelete(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name: "invalid passwd",
+			name: "invalid password",
 			payload: map[string]string{
-				"passwd":       passwdFail,
+				"pass":         passFail,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid empty passwd",
+			name: "invalid empty password",
 			payload: map[string]string{
-				"passwd":       "",
+				"pass":         "",
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
@@ -65,35 +66,35 @@ func TestUserDelete(t *testing.T) {
 		}, {
 			name: "invalid token",
 			payload: map[string]string{
-				"passwd":       passwd,
+				"pass":         pass,
 				"x-auth-token": "token123",
 			},
 			expectedStatus: http.StatusUnauthorized,
 		}, {
 			name: "invalid empty token",
 			payload: map[string]string{
-				"passwd":       passwd,
+				"pass":         pass,
 				"x-auth-token": "",
 			},
 			expectedStatus: http.StatusUnauthorized,
 		}, {
 			name: "invalid no token at all",
 			payload: map[string]string{
-				"passwd": passwd,
+				"pass": pass,
 			},
 			expectedStatus: http.StatusUnauthorized,
 		}, {
 			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`{"passwd":` + passwdNew + `","x-auth-token":"` + token + `"}`),
+			requestBody:    strings.NewReader(`{"pass":` + passNew + `","x-auth-token":"` + token + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`[{"passwd":"` + passwdNew + `","x-auth-token":"` + token + `"}`),
+			requestBody:    strings.NewReader(`[{"pass":"` + passNew + `","x-auth-token":"` + token + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name: "valid",
 			payload: map[string]string{
-				"passwd":       passwd,
+				"pass":         pass,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusOK,

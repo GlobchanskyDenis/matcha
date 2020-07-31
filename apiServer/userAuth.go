@@ -41,11 +41,11 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, mail, passwd, token, tokenWS, response string
-		user                                            User
-		err                                             error
-		request                                         map[string]interface{}
-		isExist                                         bool
+		message, mail, pass, token, tokenWS, response string
+		user                                          User
+		err                                           error
+		request                                       map[string]interface{}
+		isExist                                       bool
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
@@ -65,27 +65,27 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	}
 	mail = arg.(string)
 
-	arg, isExist = request["passwd"]
+	arg, isExist = request["pass"]
 	if !isExist {
 		consoleLogWarning(r, "/user/auth/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
 		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
 		return
 	}
-	passwd = arg.(string)
+	pass = arg.(string)
 
 	message = "request was recieved, mail: " + BLUE + mail + NO_COLOR + " password: hidden "
 	consoleLog(r, "/user/auth/", message)
 
 	// Simple validation
-	if mail == "" || passwd == "" {
+	if mail == "" || pass == "" {
 		consoleLogWarning(r, "/user/auth/", "mail or password is empty")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "mail or password is empty" + `"}`))
 		return
 	}
 
-	user, err = server.Db.GetUserForAuth(mail, handlers.PasswdHash(passwd))
+	user, err = server.Db.GetUserForAuth(mail, handlers.PassHash(pass))
 	if err != nil {
 		consoleLogError(r, "/user/auth/", "GetUserForAuth returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
@@ -100,7 +100,7 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.AccType == "not confirmed" {
+	if user.Status == "not confirmed" {
 		consoleLogWarning(r, "/user/auth/", "user "+BLUE+user.Mail+NO_COLOR+" should confirm its email")
 		w.WriteHeader(http.StatusAccepted) // 202
 		w.Write([]byte(`{"error":"` + "confirm email first" + `"}`))

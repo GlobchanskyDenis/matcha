@@ -12,12 +12,12 @@ import (
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, token string
-		err            error
-		user           User
-		request        map[string]interface{}
-		passwd         string
-		uid            int
+		message, token      string
+		err                 error
+		user                User
+		request             map[string]interface{}
+		pass, encryptedPass string
+		uid                 int
 	)
 
 	message = "request for DELETE was recieved"
@@ -62,14 +62,23 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg, isExist = request["passwd"]
+	arg, isExist = request["pass"]
 	if !isExist {
 		consoleLogWarning(r, "/user/delete/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
 		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
 		return
 	}
-	passwd = handlers.PasswdHash(arg.(string))
+
+	pass, ok = arg.(string)
+	if !ok {
+		consoleLogWarning(r, "/user/delete/", "password have wrong type")
+		w.WriteHeader(http.StatusBadRequest) // 400
+		w.Write([]byte(`{"error":"` + "token have wrong type" + `"}`))
+		return
+	}
+
+	encryptedPass = handlers.PassHash(pass)
 
 	user, err = server.Db.GetUserByUid(uid)
 	if err != nil {
@@ -79,7 +88,7 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if passwd != user.Passwd {
+	if encryptedPass != user.EncryptedPass {
 		consoleLogWarning(r, "/user/delete/", "password is incorrect")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "wrong password" + `"}`))

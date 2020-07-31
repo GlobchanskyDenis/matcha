@@ -9,7 +9,7 @@ import (
 
 func TestPasswordOK_1(t *testing.T) {
 	var passwd = "password654321!!!"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", passwd, err.Error())
 	} else {
@@ -19,7 +19,7 @@ func TestPasswordOK_1(t *testing.T) {
 
 func TestPasswordOK_2(t *testing.T) {
 	var passwd = "qwerty23@"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", passwd, err.Error())
 	} else {
@@ -29,7 +29,7 @@ func TestPasswordOK_2(t *testing.T) {
 
 func TestPasswordOK_3(t *testing.T) {
 	var passwd = "m42_new_!pass"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", passwd, err.Error())
 	} else {
@@ -41,7 +41,7 @@ func TestPasswordOK_3(t *testing.T) {
 
 func TestPasswordInvalid_1(t *testing.T) {
 	var passwd = "Денис Глобчанский"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -51,7 +51,7 @@ func TestPasswordInvalid_1(t *testing.T) {
 
 func TestPasswordInvalid_2(t *testing.T) {
 	var passwd = "asd2!"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -61,7 +61,7 @@ func TestPasswordInvalid_2(t *testing.T) {
 
 func TestPasswordInvalid_3(t *testing.T) {
 	var passwd = "asdasdad"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -71,7 +71,7 @@ func TestPasswordInvalid_3(t *testing.T) {
 
 func TestPasswordInvalid_4(t *testing.T) {
 	var passwd = "password"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -81,7 +81,7 @@ func TestPasswordInvalid_4(t *testing.T) {
 
 func TestPasswordInvalid_5(t *testing.T) {
 	var passwd = "qwerty"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -91,7 +91,7 @@ func TestPasswordInvalid_5(t *testing.T) {
 
 func TestPasswordInvalid_6(t *testing.T) {
 	var passwd = "123546212"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -101,7 +101,7 @@ func TestPasswordInvalid_6(t *testing.T) {
 
 func TestPasswordInvalid_7(t *testing.T) {
 	var passwd = "asdasdsad34543145"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -111,7 +111,7 @@ func TestPasswordInvalid_7(t *testing.T) {
 
 func TestPasswordInvalid_8(t *testing.T) {
 	var passwd = "admin"
-	err := CheckPasswd(passwd)
+	err := CheckPass(passwd)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", passwd)
 	} else {
@@ -539,7 +539,7 @@ func TestOrientationInvalid_2(t *testing.T) {
 
 func TestBiographyOK_1(t *testing.T) {
 	var biography = "Родился, потерпел, умер"
-	err := CheckBiography(biography)
+	err := CheckBio(biography)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", biography, err.Error())
 	} else {
@@ -554,7 +554,7 @@ func TestBiographyOK_2(t *testing.T) {
 	работал программистом
 	изобрел машину времени
 	умер в 1875`
-	err := CheckBiography(biography)
+	err := CheckBio(biography)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s %s"+NO_COLOR+"\n", biography, err.Error())
 	} else {
@@ -568,7 +568,7 @@ func TestBiographyInvalid_1(t *testing.T) {
 	var biography = `фывдофдфыощцййцшойцвлфыолдыфоафыдаорыфдлфыодлыфоыфвдлоыфвлдф
 	овфылдвоыфлдвоыфвлдоывфлдвофылдвоывлфывоылфдыовлосчсчтсчсчьстчьсчимч
 	ыршыфвоыфвфлдлвоывфрвфылвдфродвлыфвфдлвфдвлфвфл`
-	err := CheckBiography(biography)
+	err := CheckBio(biography)
 	if err == nil {
 		t.Errorf(RED_BG+"FAILED: '%s' should be error"+NO_COLOR+"\n", biography)
 	} else {

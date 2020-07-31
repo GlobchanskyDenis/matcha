@@ -8,14 +8,14 @@ import (
 func TestUser(t *testing.T) {
 	var repo = ConnFake{}
 	var mail = "mail@mail.ru"
-	var pass = "EncryptedPass"
+	var encryptedPass = "EncryptedPass"
 	var mailNew = "email@mail.ru"
-	var passNew = "NewEncryptedPass"
+	var encryptedPassNew = "NewEncryptedPass"
 
 	_ = repo.Connect()
 
-	user1, _ := repo.SetNewUser(mail, pass)
-	user2, _ := repo.SetNewUser(mailNew, passNew)
+	user1, _ := repo.SetNewUser(mail, encryptedPass)
+	user2, _ := repo.SetNewUser(mailNew, encryptedPassNew)
 	user1.Fname = "Denis"
 	user1.Lname = "Globchansky"
 	_ = repo.UpdateUser(user1)
@@ -29,7 +29,7 @@ func TestUser(t *testing.T) {
 		t.Error(RED_BG + "ERROR: GetUserByMail" + NO_COLOR + "\n")
 		return
 	}
-	userTmp, _ = repo.GetUserForAuth(mail, pass)
+	userTmp, _ = repo.GetUserForAuth(mail, encryptedPass)
 	if userTmp != user1 {
 		t.Error(RED_BG + "ERROR: GetUserForAuth" + NO_COLOR + "\n")
 		return

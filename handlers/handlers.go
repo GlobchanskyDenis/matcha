@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	passwdSalt = "+++"
-	masterKey  = "passphrasewhichneedstobe32bytes!"
+	passSalt  = "+++"
+	masterKey = "passphrasewhichneedstobe32bytes!"
 )
 
 func isLetter(c rune) bool {
@@ -70,14 +70,14 @@ func isMailRunePermitted(c rune) bool {
 	return false
 }
 
-func CheckPasswd(passwd string) error {
+func CheckPass(pass string) error {
 	var (
 		wasLetter      bool
 		wasDigit       bool
 		wasSpacialChar bool
-		buf            = []rune(passwd)
+		buf            = []rune(pass)
 	)
-	if utf8.RuneCountInString(passwd) < config.PASSWD_MIN_LEN {
+	if utf8.RuneCountInString(pass) < config.PASS_MIN_LEN {
 		return errors.New("too short password")
 	}
 
@@ -193,18 +193,17 @@ func CheckOrientation(orientation string) error {
 	return nil
 }
 
-func CheckBiography(biography string) error {
-	if len(biography) > config.BIOGRAPHY_MAX_LEN {
+func CheckBio(bio string) error {
+	if len(bio) > config.BIO_MAX_LEN {
 		return errors.New("too long biography length")
 	}
 	return nil
 }
 
-func PasswdHash(passwd string) string {
-	passwd += passwdSalt
-	crcH := crc32.ChecksumIEEE([]byte(passwd))
-	passwdHash := strconv.FormatUint(uint64(crcH), 20)
-	return passwdHash
+func PassHash(pass string) string {
+	pass += passSalt
+	crcH := crc32.ChecksumIEEE([]byte(pass))
+	return strconv.FormatUint(uint64(crcH), 20)
 }
 
 func TokenWebSocketAuth(uid int) string {
@@ -336,7 +335,7 @@ func TokenMailDecode(token string) (string, error) {
 }
 
 func SendMail(to string, xRegToken string) error {
-	auth := smtp.PlainAuth("", config.MAIL_FROM, config.MAIL_PASSWD, config.MAIL_HOST)
+	auth := smtp.PlainAuth("", config.MAIL_FROM, config.MAIL_PASS, config.MAIL_HOST)
 	message := `To: <` + to + `>
 From: "Matcha administration" <` + config.MAIL_FROM + `>
 Subject: Confirm registration in Matcha

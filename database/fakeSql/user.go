@@ -4,11 +4,11 @@ import (
 	"MatchaServer/config"
 )
 
-func (conn ConnFake) SetNewUser(mail string, passwd string) (config.User, error) {
+func (conn ConnFake) SetNewUser(mail string, encryptedPass string) (config.User, error) {
 	var user config.User
 
 	user.Mail = mail
-	user.Passwd = passwd
+	user.EncryptedPass = encryptedPass
 
 	for key := 1; ; key++ {
 		if _, isExists := conn.users[key]; !isExists {
@@ -50,9 +50,9 @@ func (conn *ConnFake) GetUserByMail(mail string) (config.User, error) {
 	return config.User{}, nil
 }
 
-func (conn *ConnFake) GetUserForAuth(mail string, passwd string) (config.User, error) {
+func (conn *ConnFake) GetUserForAuth(mail string, encryptedPass string) (config.User, error) {
 	for _, user := range conn.users {
-		if user.Mail == mail && user.Passwd == passwd {
+		if user.Mail == mail && user.EncryptedPass == encryptedPass {
 			return user, nil
 		}
 	}

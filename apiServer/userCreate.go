@@ -10,11 +10,11 @@ import (
 // USER REGISTRATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, mail, passwd, token string
-		err                          error
-		request                      map[string]interface{}
-		isExist                      bool
-		user                         User
+		message, mail, pass, token string
+		err                        error
+		request                    map[string]interface{}
+		isExist                    bool
+		user                       User
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
@@ -34,20 +34,26 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 	}
 	mail = arg.(string)
 
-	arg, isExist = request["passwd"]
+	arg, isExist = request["pass"]
 	if !isExist {
 		consoleLogWarning(r, "/user/reg/", "password not exist")
 		w.WriteHeader(http.StatusBadRequest) // 400
 		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
 		return
 	}
-	passwd = arg.(string)
+	pass, ok := arg.(string)
+	if !ok {
+		consoleLogError(r, "/user/reg/", "wrong password type")
+		w.WriteHeader(http.StatusBadRequest) // 400
+		w.Write([]byte(`{"error":"` + "wrong password type" + `"}`))
+		return
+	}
 
 	message = "request was recieved, mail: " + BLUE + mail + NO_COLOR +
 		" password: hidden"
 	consoleLog(r, "/user/reg/", message)
 
-	if mail == "" || passwd == "" {
+	if mail == "" || pass == "" {
 		consoleLogWarning(r, "/user/reg/", "mail or password is empty")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "mail or password is empty" + `"}`))
@@ -63,7 +69,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = handlers.CheckPasswd(passwd)
+	err = handlers.CheckPass(pass)
 	if err != nil {
 		consoleLogWarning(r, "/user/reg/", "password - "+err.Error())
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
@@ -86,7 +92,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = server.Db.SetNewUser(mail, handlers.PasswdHash(passwd))
+	user, err = server.Db.SetNewUser(mail, handlers.PassHash(pass))
 	if err != nil {
 		consoleLogError(r, "/user/reg/", "SetNewUser returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500

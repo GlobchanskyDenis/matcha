@@ -43,9 +43,9 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid passwd",
+			name: "valid password",
 			payload: map[string]string{
-				"passwd":       passwdNew,
+				"pass":         passNew,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusOK,
@@ -64,9 +64,9 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid age",
+			name: "valid birth date",
 			payload: map[string]interface{}{
-				"age":          ageNew,
+				"birth":        "1989-10-23",
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusOK,
@@ -87,14 +87,14 @@ func TestUserUpdate(t *testing.T) {
 		}, {
 			name: "valid biography",
 			payload: map[string]string{
-				"biography":    biographyNew,
+				"bio":          bioNew,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid avaPhotoID",
 			payload: map[string]interface{}{
-				"avaPhotoID":   avaPhotoIDNew,
+				"avaID":        avaIDNew,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusOK,
@@ -106,9 +106,9 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid passwd",
+			name: "invalid password",
 			payload: map[string]string{
-				"passwd":       passwdFail,
+				"pass":         passFail,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
@@ -127,9 +127,16 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid age",
+			name: "invalid birth date",
 			payload: map[string]interface{}{
-				"age":          ageFail,
+				"birth":        "2020-08-23",
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid birth date - bad parsing",
+			payload: map[string]interface{}{
+				"birth":        "198910-23",
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
@@ -150,14 +157,14 @@ func TestUserUpdate(t *testing.T) {
 		}, {
 			name: "invalid biography",
 			payload: map[string]string{
-				"biography":    biographyFail,
+				"bio":          bioFail,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid avaPhotoID",
 			payload: map[string]interface{}{
-				"avaPhotoID":   avaPhotoIDFail,
+				"avaID":        avaIDFail,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
@@ -171,7 +178,7 @@ func TestUserUpdate(t *testing.T) {
 		}, {
 			name: "invalid empty passwd",
 			payload: map[string]string{
-				"passwd":       "",
+				"pass":         "",
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,

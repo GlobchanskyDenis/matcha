@@ -1,7 +1,7 @@
 package main
 
 import (
-	"MicroProjects/session"
+	"MatchaServer/session"
 	"fmt"
 )
 

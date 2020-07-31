@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func fillUserStruct(request map[string]interface{}, user User) (User, string, error) {
@@ -30,15 +31,15 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		message += " mail=" + BLUE + arg.(string) + NO_COLOR
 	}
-	arg, isExist = request["passwd"]
+	arg, isExist = request["pass"]
 	if isExist {
 		usefullFieldsExists = true
-		tmp, ok := arg.(string)
+		user.Pass, ok = arg.(string)
 		if !ok {
 			return user, message, errors.New("wrong type of param")
 		}
-		user.Passwd = handlers.PasswdHash(tmp)
-		err = handlers.CheckPasswd(tmp)
+		user.EncryptedPass = handlers.PassHash(user.Pass)
+		err = handlers.CheckPass(user.Pass)
 		if err != nil {
 			return user, message, err
 		}
@@ -70,18 +71,23 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		message += " lname=" + BLUE + arg.(string) + NO_COLOR
 	}
-	arg, isExist = request["age"]
+	arg, isExist = request["birth"]
 	if isExist {
 		usefullFieldsExists = true
-		tmpFloat, ok = arg.(float64)
-		user.Age = int(tmpFloat)
+		birth, ok := arg.(string)
 		if !ok {
 			return user, message, errors.New("wrong type of param")
 		}
-		if user.Age > 80 || user.Age < 14 {
-			return user, message, errors.New("this age is forbidden")
+		user.Birth, err = time.Parse("2006-01-02", birth)
+		if err != nil {
+			return user, message, err
 		}
-		message += " age=" + BLUE + strconv.Itoa(user.Age) + NO_COLOR
+		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		if user.Age > 80 || user.Age < 16 {
+			return user, message, errors.New("forbidden age")
+		}
+		message += " birth=" + BLUE + birth + NO_COLOR + " age=" + BLUE + 
+		strconv.Itoa(user.Age) + NO_COLOR + strconv.Itoa(user.Age) + NO_COLOR
 	}
 	arg, isExist = request["gender"]
 	if isExist {
@@ -109,31 +115,31 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		message += " orientation=" + BLUE + arg.(string) + NO_COLOR
 	}
-	arg, isExist = request["biography"]
+	arg, isExist = request["bio"]
 	if isExist {
 		usefullFieldsExists = true
-		user.Biography, ok = arg.(string)
+		user.Bio, ok = arg.(string)
 		if !ok {
 			return user, message, errors.New("wrong type of param")
 		}
-		err = handlers.CheckBiography(user.Biography)
+		err = handlers.CheckBio(user.Bio)
 		if err != nil {
 			return user, message, err
 		}
-		message += " biography=" + BLUE + arg.(string) + NO_COLOR
+		message += " bio=" + BLUE + arg.(string) + NO_COLOR
 	}
-	arg, isExist = request["avaPhotoID"]
+	arg, isExist = request["avaID"]
 	if isExist {
 		usefullFieldsExists = true
 		tmpFloat, ok = arg.(float64)
-		user.AvaPhotoID = int(tmpFloat)
+		user.AvaID = int(tmpFloat)
 		if !ok {
 			return user, message, errors.New("wrong type of param")
 		}
-		if user.AvaPhotoID < 0 {
+		if user.AvaID < 0 {
 			return user, message, errors.New("this id is forbidden")
 		}
-		message += " avaPhotoID=" + BLUE + strconv.Itoa(user.AvaPhotoID) + NO_COLOR
+		message += " avaID=" + BLUE + strconv.Itoa(user.AvaID) + NO_COLOR
 	}
 
 	if !usefullFieldsExists {

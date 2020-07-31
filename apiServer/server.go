@@ -10,13 +10,10 @@ type Server struct {
 	session session.Session
 }
 
-func New(storage database.Storage) (*Server, error) {
+func New(newStorage database.Storage) (*Server, error) {
 	var server = &Server{}
-	server.Db = storage
+	(*server).Db = newStorage
+	(*server).session = session.CreateSession()
 	err := server.Db.Connect()
-	if err != nil {
-		return server, err
-	}
-	server.session = session.CreateSession()
-	return server, nil
+	return server, err
 }
