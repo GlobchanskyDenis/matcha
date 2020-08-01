@@ -23,6 +23,10 @@ var (
 	orientationNew = "hetero"
 	bioNew         = `born, suffered, died`
 	avaIDNew       = 42
+	latitudeNew	   = 3.1415
+	longitudeNew   = 56
+	interests1New  = [...]int{1, 2, 65}
+	interests2New  = []int{}
 
 	mailFail        = "mail@gmail@yandex.ru"
 	passFail        = "12345678"
@@ -35,6 +39,9 @@ var (
 	ывофыдлвоыфлдвоы оыфво фылдво л ыовлывфвфыовфыд офыл офвд лфывыфлво фв флдв офлвдофы лфо фдылов
 	sdsadasdsa sadasdasdasd asd asdsadas as asdasdsad as`
 	avaIDFail = -1
+	latitudeFail    = "123"
+	longitudeFail    = "asd"
+	// interestsFail   = nil
 )
 
 func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string) config.User {

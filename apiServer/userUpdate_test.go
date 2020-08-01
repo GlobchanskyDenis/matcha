@@ -2,8 +2,8 @@ package apiServer
 
 import (
 	. "MatchaServer/config"
-	"MatchaServer/database/fakeSql"
-	// "MatchaServer/database/postgres"
+	// "MatchaServer/database/fakeSql"
+	"MatchaServer/database/postgres"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -18,7 +18,7 @@ func TestUserUpdate(t *testing.T) {
 
 	/////////// INITIALIZE ///////////
 
-	server, err := New(fakeSql.New())
+	server, err := New(postgres.New())
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR + "\n")
 		return
@@ -99,6 +99,34 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusOK,
 		}, {
+			name: "valid latitude",
+			payload: map[string]interface{}{
+				"latitude":     latitudeNew,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusOK,
+		}, {
+			name: "valid longitude",
+			payload: map[string]interface{}{
+				"longitude":    longitudeNew,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusOK,
+		}, {
+			name: "valid interests",
+			payload: map[string]interface{}{
+				"interests":    interests1New,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusOK,
+		}, {
+			name: "valid interests",
+			payload: map[string]interface{}{
+				"interests":    interests2New,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusOK,
+		}, {
 			name: "invalid mail",
 			payload: map[string]string{
 				"mail":         mailFail,
@@ -165,6 +193,27 @@ func TestUserUpdate(t *testing.T) {
 			name: "invalid avaPhotoID",
 			payload: map[string]interface{}{
 				"avaID":        avaIDFail,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid latitude",
+			payload: map[string]interface{}{
+				"latitude":     latitudeFail,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid longitude",
+			payload: map[string]interface{}{
+				"longitude":    longitudeFail,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid interests",
+			payload: map[string]interface{}{
+				"interests":    nil,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,

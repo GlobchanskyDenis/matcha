@@ -15,6 +15,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	var message string
 	var err error
 	var tmpFloat float64
+	var interfaceArr []interface{}
+	var interestsStr string
 
 	message = "request for UPDATE was recieved: "
 
@@ -140,6 +142,46 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			return user, message, errors.New("this id is forbidden")
 		}
 		message += " avaID=" + BLUE + strconv.Itoa(user.AvaID) + NO_COLOR
+	}
+	arg, isExist = request["latitude"]
+	if isExist {
+		usefullFieldsExists = true
+		tmpFloat, ok = arg.(float64)
+		if !ok {
+			return user, message, errors.New("wrong type of param")
+		}
+		user.Latitude = float32(tmpFloat)
+		message += " latitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
+	}
+	arg, isExist = request["longitude"]
+	if isExist {
+		usefullFieldsExists = true
+		tmpFloat, ok = arg.(float64)
+		if !ok {
+			return user, message, errors.New("wrong type of param")
+		}
+		user.Latitude = float32(tmpFloat)
+		message += " longitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
+	}
+	arg, isExist = request["interests"]
+	if isExist {
+		usefullFieldsExists = true
+		interfaceArr, ok = arg.([]interface{})
+		if !ok {
+			return user, message, errors.New("wrong type of param")
+		}
+		for _, item := range interfaceArr {
+			tmpFloat, ok = item.(float64)
+			if !ok {
+				return user, message, errors.New("wrong type of param")
+			}
+			user.Interests = append(user.Interests, int(tmpFloat))
+			interestsStr += strconv.Itoa(int(tmpFloat)) + ", "
+		}
+		if len(interestsStr) > 2 {
+			interestsStr = string(interestsStr[:len(interestsStr) - 2])
+		}
+		message += " interests=" + BLUE + interestsStr + NO_COLOR
 	}
 
 	if !usefullFieldsExists {

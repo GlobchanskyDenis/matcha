@@ -213,12 +213,12 @@ func TokenWebSocketAuth(uid int) string {
 	dataToHash := str + curTime.Format(time.RFC3339Nano)
 	tmpHash := crc32.ChecksumIEEE([]byte(dataToHash))
 	hash := strconv.FormatUint(uint64(tmpHash), 35)
-	token := string(hash[:])
+	token := string(hash)
 
 	dataToHash = curTime.Format(time.RFC3339Nano)
 	tmpHash = crc32.ChecksumIEEE([]byte(dataToHash))
 	hash = strconv.FormatUint(uint64(tmpHash), 35)
-	token += string(hash[:])
+	token += string(hash)
 
 	return token
 }

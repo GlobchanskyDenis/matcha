@@ -69,7 +69,8 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user == (User{}) {
+	if user.Uid == 0 {
+		// it means that no such iser in database
 		consoleLogWarning(r, "/user/update/status/", "Mail doesnt exists in database")
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		w.Write([]byte(`{"error":"` + `Mail doesnt exists in database` + `"}`))

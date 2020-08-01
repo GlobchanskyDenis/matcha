@@ -48,6 +48,14 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 		isExist                                       bool
 	)
 
+	defer func() {
+		if err := recover(); err != nil {
+			println("PANIC!!!!! " + err.(error).Error())
+		}
+	}()
+
+	
+
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/user/auth/", "request decode error")
@@ -93,7 +101,8 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (user == User{}) {
+	if user.Uid == 0 {
+		// it means that no such users in database
 		consoleLogWarning(r, "/user/auth/", "wrong mail or password")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
 		w.Write([]byte(`{"error":"` + "wrong mail or password" + `"}`))

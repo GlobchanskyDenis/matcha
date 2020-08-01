@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -36,17 +37,24 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 }
 
 func (conn *ConnDB) UpdateUser(user config.User) error {
+	var interests string
+	for _, item := range user.Interests {
+		interests += strconv.Itoa(item) + ", "
+	}
+	if len(interests) > 2 {
+		interests = string(interests[:len(interests) - 2])
+	}
 	stmt, err := conn.db.Prepare("UPDATE users SET " +
 		"mail=$2, encryptedPass=$3, fname=$4, lname=$5, birth=$6, gender=$7, " +
-		"orientation=$8, bio=$9, avaID=$10, status=$11, rating=$12  " +
-		"WHERE uid=$1")
+		"orientation=$8, bio=$9, avaID=$10, latitude=$11, longitude=$12, " +
+		"interests='{" + interests + "}', status=$13, rating=$14 WHERE uid=$1")
 	if err != nil {
 		return errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
 		user.Lname, user.Birth.Format("2006-01-02"), user.Gender, user.Orientation,
-		user.Bio, user.AvaID, user.Status, user.Rating)
+		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
 	if err != nil {
 		return errors.New(err.Error() + " in executing")
 	}
@@ -61,6 +69,7 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) 
 		err   error
 		rows  *sql.Rows
 		birth string
+		interests string
 	)
 
 	rows, err = conn.db.Query("SELECT * FROM users")
@@ -68,18 +77,33 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) 
 		return nil, err
 	}
 	for rows.Next() {
-		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &(user.Status), &(user.Rating))
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating)
 		if err != nil {
 			return nil, err
 		}
-		birth = string(birth[:10])
-		user.Birth, err = time.Parse("2006-01-02", birth)
-		if err != nil {
-			return nil, err
+		// handle user Interests
+		if len(interests) > 2 {
+			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+			for _, strItem := range strArr {
+				intItem, err := strconv.Atoi(strItem)
+				if err != nil {
+					return nil, err
+				}
+				user.Interests = append(user.Interests, intItem)
+			}
 		}
-		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		// handle user birth and age
+		if len(birth) > 10 {
+			birth = string(birth[:10])
+			user.Birth, err = time.Parse("2006-01-02", birth)
+			if err != nil {
+				return nil, err
+			}
+			user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		}
 		users = append(users, user)
 	}
 	return users, err
@@ -91,6 +115,7 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 		err  error
 		row  *sql.Rows
 		birth string
+		interests string
 	)
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
@@ -105,17 +130,32 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
 			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &(user.Status), &(user.Rating))
+			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
+			&(user.Status), &(user.Rating))
 		if err != nil {
 			return user, err
 		}
 	}
-	birth = string(birth[:10])
-	user.Birth, err = time.Parse("2006-01-02", birth)
-	if err != nil {
-		return user, err
+	// handle user Interests
+	if len(interests) > 2 {
+		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+		for _, strItem := range strArr {
+			intItem, err := strconv.Atoi(strItem)
+			if err != nil {
+				return user, err
+			}
+			user.Interests = append(user.Interests, intItem)
+		}
 	}
-	user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+	// handle user birth and age
+	if len(birth) > 10 {
+		birth = string(birth[:10])
+		user.Birth, err = time.Parse("2006-01-02", birth)
+		if err != nil {
+			return user, err
+		}
+		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+	}
 	return user, nil
 }
 
@@ -125,8 +165,8 @@ func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
 		err  error
 		row  *sql.Rows
 		birth string
+		interests string
 	)
-
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
 	if err != nil {
 		return user, errors.New(err.Error() + " in preparing")
@@ -139,17 +179,32 @@ func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
 			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &(user.Status), &(user.Rating))
+			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
+			&(user.Status), &(user.Rating))
 		if err != nil {
 			return user, err
 		}
 	}
-	birth = string(birth[:10])
-	user.Birth, err = time.Parse("2006-01-02", birth)
-	if err != nil {
-		return user, err
+	// handle user Interests
+	if len(interests) > 2 {
+		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+		for _, strItem := range strArr {
+			intItem, err := strconv.Atoi(strItem)
+			if err != nil {
+				return user, err
+			}
+			user.Interests = append(user.Interests, intItem)
+		}
 	}
-	user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+	// handle user birth and age
+	if len(birth) > 10 {
+		birth = string(birth[:10])
+		user.Birth, err = time.Parse("2006-01-02", birth)
+		if err != nil {
+			return user, err
+		}
+		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+	}
 	return user, nil
 }
 
@@ -159,6 +214,7 @@ func (db *ConnDB) GetUserForAuth(mail string, encryptedPass string) (config.User
 		err  error
 		row  *sql.Rows
 		birth string
+		interests string
 	)
 
 	stmt, err := db.db.Prepare("SELECT * FROM users WHERE mail=$1 AND encryptedPass=$2")
@@ -173,12 +229,25 @@ func (db *ConnDB) GetUserForAuth(mail string, encryptedPass string) (config.User
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
 			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &(user.Status), &(user.Rating))
+			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
+			&(user.Status), &(user.Rating))
 		if err != nil {
 			return user, err
 		}
 	}
-	if len(birth) >= 10 {
+	// handle user Interests
+	if len(interests) > 2 {
+		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+		for _, strItem := range strArr {
+			intItem, err := strconv.Atoi(strItem)
+			if err != nil {
+				return user, err
+			}
+			user.Interests = append(user.Interests, intItem)
+		}
+	}
+	// handle user birth and age
+	if len(birth) > 10 {
 		birth = string(birth[:10])
 		user.Birth, err = time.Parse("2006-01-02", birth)
 		if err != nil {
@@ -193,6 +262,7 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 	var users = []config.User{}
 	var user config.User
 	var birth string
+	var interests string
 
 	if len(uid) == 0 {
 		return users, nil
@@ -204,7 +274,7 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 		query += "$" + strconv.Itoa(i) + ", "
 	}
 	tmp := []byte(query)
-	tmp = tmp[:(len(tmp) - 2)]
+	tmp = tmp[:len(tmp) - 2]
 	query = string(tmp) + ")"
 
 	stmt, err := conn.db.Prepare(query)
@@ -221,16 +291,31 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 	for rows.Next() {
 		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
 			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &(user.Status), &(user.Rating))
+			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
+			&(user.Status), &(user.Rating))
 		if err != nil {
 			return nil, err
 		}
-		birth = string(birth[:10])
-		user.Birth, err = time.Parse("2006-01-02", birth)
-		if err != nil {
-			return nil, err
+		// handle user Interests
+		if len(interests) > 2 {
+			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+			for _, strItem := range strArr {
+				intItem, err := strconv.Atoi(strItem)
+				if err != nil {
+					return nil, err
+				}
+				user.Interests = append(user.Interests, intItem)
+			}
 		}
-		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		// handle user birth and age
+		if len(birth) > 10 {
+			birth = string(birth[:10])
+			user.Birth, err = time.Parse("2006-01-02", birth)
+			if err != nil {
+				return nil, err
+			}
+			user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		}
 		users = append(users, user)
 	}
 	return users, nil

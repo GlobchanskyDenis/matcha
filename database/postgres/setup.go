@@ -130,7 +130,10 @@ func (conn ConnDB) CreateUsersTable() error {
 		"gender enum_gender NOT NULL DEFAULT '', " +
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
 		"bio VARCHAR(" + strconv.Itoa(config.BIO_MAX_LEN) + ") NOT NULL DEFAULT '', " +
-		"avaID INTEGER NOT NULL DEFAULT 0," +
+		"avaID INTEGER NOT NULL DEFAULT 0, " +
+		"latitude FLOAT DEFAULT 0, " +
+		"longitude FLOAT DEFAULT 0, " +
+		"interests INTEGER[] DEFAULT '{}'," +
 		"status enum_status NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")
 	return err
