@@ -58,6 +58,13 @@ type User struct {
 	Rating        int       `json:"rating"`
 }
 
+func (user User) IsEmpty() bool {
+	if user.Uid == 0 && user.Mail == "" && user.Pass == "" && user.EncryptedPass == "" {
+		return true
+	}
+	return false
+}
+
 type Notif struct {
 	Nid         int    `json:"nid"`
 	UidSender   int    `json:"uidSender"`
