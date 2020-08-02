@@ -200,6 +200,35 @@ func CheckBio(bio string) error {
 	return nil
 }
 
+func FindUnknownInterests(knownInterests []config.Interest, interestsNameArr []string) []config.Interest {
+	var unknownInterests []config.Interest
+	var newInterest config.Interest
+	var isKnown bool
+	for _, interestsName := range interestsNameArr {
+		isKnown = false
+		for _, interest := range knownInterests {
+			if interest.Name == interestsName {
+				isKnown = true
+			}
+		}
+		if !isKnown {
+			newInterest.Name = interestsName
+			unknownInterests = append(unknownInterests, newInterest)
+		}
+	}
+	return unknownInterests
+}
+
+func CheckInterest(interest string) error {
+	if interest == "" {
+		return errors.New("empty interest")
+	}
+	if len(interest) > config.INTEREST_MAX_LEN {
+		return errors.New("too big interest length")
+	}
+	return nil
+}
+
 func PassHash(pass string) string {
 	pass += passSalt
 	crcH := crc32.ChecksumIEEE([]byte(pass))

@@ -70,6 +70,10 @@ func (Conn ConnDB) DropAllTables() error {
 	if err != nil {
 		return err
 	}
+	_, err = db.Exec("DROP TABLE IF EXISTS interests")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -133,7 +137,7 @@ func (conn ConnDB) CreateUsersTable() error {
 		"avaID INTEGER NOT NULL DEFAULT 0, " +
 		"latitude FLOAT DEFAULT 0, " +
 		"longitude FLOAT DEFAULT 0, " +
-		"interests INTEGER[] DEFAULT '{}'," +
+		"interests VARCHAR(" + strconv.Itoa(config.INTEREST_MAX_LEN) + ")[] DEFAULT '{}'," +
 		"status enum_status NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")
 	return err
@@ -174,5 +178,13 @@ func (conn ConnDB) CreateDevicesTable() error {
 		"PRIMARY KEY (id), " +
 		"uid INT NOT NULL, " +
 		"device VARCHAR(" + strconv.Itoa(config.DEVICE_MAX_LEN) + ") NOT NULL)")
+	return err
+}
+
+func (conn ConnDB) CreateInterestsTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE interests (id SERIAL NOT NULL, " +
+		"PRIMARY KEY (id), " +
+		"name VARCHAR(" + strconv.Itoa(config.INTEREST_MAX_LEN) + ") NOT NULL)")
 	return err
 }

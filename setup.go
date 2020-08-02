@@ -92,6 +92,15 @@ func main() {
 		println(config.GREEN + " - done" + config.NO_COLOR)
 	}
 
+	print("Create interests table\t\t")
+	err = server.Db.CreateInterestsTable()
+	if err != nil {
+		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		return
+	} else {
+		println(config.GREEN + " - done" + config.NO_COLOR)
+	}
+
 	print("Add admin@gmail.com user\t")
 	user, err := server.Db.SetNewUser("admin@gmail.com", handlers.PassHash("admin"))
 	if err != nil {

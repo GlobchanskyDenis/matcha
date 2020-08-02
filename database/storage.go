@@ -16,6 +16,7 @@ type Storage interface {
 	CreateMessageTable() error
 	CreatePhotoTable() error
 	CreateDevicesTable() error
+	CreateInterestsTable() error
 
 	// user
 	SetNewUser(mail string, passwd string) (config.User, error)
@@ -43,4 +44,8 @@ type Storage interface {
 	SetNewNotif(uidReceiver int, uidSender int, body string) (int, error)
 	DeleteNotif(nid int) error
 	GetNotifByUidReceiver(uid int) ([]config.Notif, error)
+
+	// interests
+	AddInterests(unknownInterests []config.Interest) error
+	GetInterests() ([]config.Interest, error)
 }

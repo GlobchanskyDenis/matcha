@@ -171,12 +171,16 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			return user, message, errors.New("wrong type of param")
 		}
 		for _, item := range interfaceArr {
-			tmpFloat, ok = item.(float64)
+			tmpStr, ok := item.(string)
 			if !ok {
 				return user, message, errors.New("wrong type of param")
 			}
-			user.Interests = append(user.Interests, int(tmpFloat))
-			interestsStr += strconv.Itoa(int(tmpFloat)) + ", "
+			err = handlers.CheckInterest(tmpStr)
+			if err != nil {
+				return user, message, errors.New("invalid interest - " + err.Error())
+			}
+			user.Interests = append(user.Interests, tmpStr)
+			interestsStr += tmpStr + ", "
 		}
 		if len(interestsStr) > 2 {
 			interestsStr = string(interestsStr[:len(interestsStr) - 2])
@@ -234,6 +238,50 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	arg, isExist = request["interests"]
+	if isExist {
+		var interestsNameArr []string
+		knownInterests, err := server.Db.GetInterests()
+		if err != nil {
+			consoleLogWarning(r, "/user/update/", "GetInterests returned error - " + err.Error())
+			w.WriteHeader(http.StatusInternalServerError) // 500
+			w.Write([]byte(`{"error":"` + "database error" + `"}`))
+			return
+		}
+		interfaceArr, ok := arg.([]interface{})
+		if !ok {
+			consoleLogWarning(r, "/user/update/", "wrong argument type (interests)")
+			w.WriteHeader(http.StatusUnprocessableEntity) // 422
+			w.Write([]byte(`{"error":"` + "wrong argument type (interests)" + `"}`))
+			return
+		}
+		for _, item := range interfaceArr {
+			interest, ok := item.(string)
+			if !ok {
+				consoleLogWarning(r, "/user/update/", "wrong argument type (interests item)")
+				w.WriteHeader(http.StatusUnprocessableEntity) // 422
+				w.Write([]byte(`{"error":"` + "wrong argument type (interests item)" + `"}`))
+				return
+			}
+			err = handlers.CheckInterest(interest)
+			if err != nil {
+				consoleLogWarning(r, "/user/update/", "invalid interest - " + err.Error())
+				w.WriteHeader(http.StatusUnprocessableEntity) // 422
+				w.Write([]byte(`{"error":"` + "invalid interest - " + err.Error() + `"}`))
+				return
+			}
+			interestsNameArr = append(interestsNameArr, interest)
+		}
+		unknownInterests := handlers.FindUnknownInterests(knownInterests, interestsNameArr)
+		err = server.Db.AddInterests(unknownInterests)
+		if err != nil {
+			consoleLogError(r, "/user/update/", "AddInterests returned error - " + err.Error())
+			w.WriteHeader(http.StatusInternalServerError) // 500
+			w.Write([]byte(`{"error":"` + "database error" + `"}`))
+			return
+		}
+	}
+
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/", "TokenUidDecode returned error - "+err.Error())
@@ -266,6 +314,8 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	consoleLog(r, "/user/update/", message)
+
+
 
 	err = server.Db.UpdateUser(user)
 	if err != nil {

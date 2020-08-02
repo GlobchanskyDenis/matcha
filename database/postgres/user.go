@@ -16,7 +16,7 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (config.User, e
 		return user, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(mail, encryptedPass).Scan(&(user.Uid), &(user.Mail))
+	err = stmt.QueryRow(mail, encryptedPass).Scan(&user.Uid, &user.Mail)
 	if err != nil {
 		return user, errors.New(err.Error() + " in executing")
 	}
@@ -39,7 +39,7 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 func (conn *ConnDB) UpdateUser(user config.User) error {
 	var interests string
 	for _, item := range user.Interests {
-		interests += strconv.Itoa(item) + ", "
+		interests += item + ", "
 	}
 	if len(interests) > 2 {
 		interests = string(interests[:len(interests) - 2])
@@ -88,11 +88,11 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) 
 		if len(interests) > 2 {
 			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
 			for _, strItem := range strArr {
-				intItem, err := strconv.Atoi(strItem)
-				if err != nil {
-					return nil, err
-				}
-				user.Interests = append(user.Interests, intItem)
+				// intItem, err := strconv.Atoi(strItem)
+				// if err != nil {
+				// 	return nil, err
+				// }
+				user.Interests = append(user.Interests, strItem)
 			}
 		}
 		// handle user birth and age
@@ -140,11 +140,11 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 	if len(interests) > 2 {
 		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
 		for _, strItem := range strArr {
-			intItem, err := strconv.Atoi(strItem)
-			if err != nil {
-				return user, err
-			}
-			user.Interests = append(user.Interests, intItem)
+			// intItem, err := strconv.Atoi(strItem)
+			// if err != nil {
+			// 	return user, err
+			// }
+			user.Interests = append(user.Interests, strItem)
 		}
 	}
 	// handle user birth and age
@@ -189,11 +189,11 @@ func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
 	if len(interests) > 2 {
 		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
 		for _, strItem := range strArr {
-			intItem, err := strconv.Atoi(strItem)
-			if err != nil {
-				return user, err
-			}
-			user.Interests = append(user.Interests, intItem)
+			// intItem, err := strconv.Atoi(strItem)
+			// if err != nil {
+			// 	return user, err
+			// }
+			user.Interests = append(user.Interests, strItem)
 		}
 	}
 	// handle user birth and age
@@ -239,11 +239,11 @@ func (db *ConnDB) GetUserForAuth(mail string, encryptedPass string) (config.User
 	if len(interests) > 2 {
 		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
 		for _, strItem := range strArr {
-			intItem, err := strconv.Atoi(strItem)
-			if err != nil {
-				return user, err
-			}
-			user.Interests = append(user.Interests, intItem)
+			// intItem, err := strconv.Atoi(strItem)
+			// if err != nil {
+			// 	return user, err
+			// }
+			user.Interests = append(user.Interests, strItem)
 		}
 	}
 	// handle user birth and age
@@ -300,11 +300,11 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 		if len(interests) > 2 {
 			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
 			for _, strItem := range strArr {
-				intItem, err := strconv.Atoi(strItem)
-				if err != nil {
-					return nil, err
-				}
-				user.Interests = append(user.Interests, intItem)
+				// intItem, err := strconv.Atoi(strItem)
+				// if err != nil {
+				// 	return nil, err
+				// }
+				user.Interests = append(user.Interests, strItem)
 			}
 		}
 		// handle user birth and age

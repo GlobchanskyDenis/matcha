@@ -25,6 +25,7 @@ const (
 	MESSAGE_MAX_LEN = 300
 	PHOTO_MAX_LEN   = 300
 	DEVICE_MAX_LEN  = 150
+	INTEREST_MAX_LEN = 100
 
 	RED       = "\033[31m"
 	GREEN     = "\033[32m"
@@ -52,7 +53,7 @@ type User struct {
 	AvaID         int       `json:"avaID,omitempty"`
 	Latitude	  float32   `json:"latitude,omitempty"`
 	Longitude	  float32   `json:"longitude,omitempty"`
-	Interests	  []int		`json:"interests,omitempty"`
+	Interests	  []string	`json:"interests,omitempty"`
 	Status        string    `json:"-"`
 	Rating        int       `json:"rating"`
 }
@@ -75,4 +76,9 @@ type Device struct {
 	Id     int    `json:"id"`
 	Uid    int    `json:"uid"`
 	Device string `json:"device"`
+}
+
+type Interest struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }

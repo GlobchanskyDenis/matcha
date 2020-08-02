@@ -25,8 +25,8 @@ var (
 	avaIDNew       = 42
 	latitudeNew	   = 3.1415
 	longitudeNew   = 56
-	interests1New  = [...]int{1, 2, 65}
-	interests2New  = []int{}
+	interests1New  = [...]string{"fun", "other", "football"}
+	interests2New  = []string{}
 
 	mailFail        = "mail@gmail@yandex.ru"
 	passFail        = "12345678"
@@ -41,7 +41,9 @@ var (
 	avaIDFail = -1
 	latitudeFail    = "123"
 	longitudeFail    = "asd"
-	// interestsFail   = nil
+	interests1Fail  = [...]string{"asdasdsadasdasdasdadasdasdadfsdfdsfsdfgfdgfgdfsdfsfsdsadasdasdsadsdasdasdasdasdasdasdasdasdasdasdadsdasddasdasdsadasdasd"}
+	interests2Fail  = []string{"", "", "football"}
+	interests3Fail  []string = nil
 )
 
 func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string) config.User {

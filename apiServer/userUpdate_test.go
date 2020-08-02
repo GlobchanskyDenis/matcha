@@ -113,14 +113,14 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid interests",
+			name: "valid interests #1",
 			payload: map[string]interface{}{
 				"interests":    interests1New,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid interests",
+			name: "valid interests #2",
 			payload: map[string]interface{}{
 				"interests":    interests2New,
 				"x-auth-token": token,
@@ -211,9 +211,23 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid interests",
+			name: "invalid interests #1",
 			payload: map[string]interface{}{
-				"interests":    nil,
+				"interests":    interests1Fail,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid interests #2",
+			payload: map[string]interface{}{
+				"interests":    interests2Fail,
+				"x-auth-token": token,
+			},
+			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid interests #3",
+			payload: map[string]interface{}{
+				"interests":    interests3Fail,
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
