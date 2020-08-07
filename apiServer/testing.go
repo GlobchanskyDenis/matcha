@@ -74,10 +74,7 @@ func (server *Server) TestTestUserAuthorize(t *testing.T, user config.User) stri
 	req := httptest.NewRequest("POST", url, requestBody)
 	server.HandlerUserAuth(rec, req)
 	if rec.Code != http.StatusOK {
-		println("Expected 200")
-		print("Got ")
-		println(rec.Code)
-		t.Errorf(config.RED_BG + "ERROR: wrong response status code while user authentication" + config.NO_COLOR + "\n")
+		t.Errorf(config.RED_BG + "ERROR: wrong response status in user authentication. Expected %d got %d" + config.NO_COLOR + "\n", http.StatusOK, rec.Code)
 		t.Fatal()
 	}
 	var response map[string]interface{}

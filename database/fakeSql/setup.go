@@ -9,8 +9,8 @@ type ConnFake struct {
 	devices  map[int]config.Device
 	messages map[int]config.Message
 	notif    map[int]config.Notif
-	photos   map[int]string
-	interests map[int]config.Interests
+	photos   map[int]config.Photo
+	interests map[int]config.Interest
 }
 
 func New() *ConnFake {
@@ -22,8 +22,8 @@ func (conn *ConnFake) Connect() error {
 	conn.devices = map[int]config.Device{}
 	conn.messages = map[int]config.Message{}
 	conn.notif = map[int]config.Notif{}
-	conn.photos = map[int]string{}
-	conn.interests = map[int]config.Interests{}
+	conn.photos = map[int]config.Photo{}
+	conn.interests = map[int]config.Interest{}
 	return nil
 }
 
@@ -89,15 +89,16 @@ func (conn *ConnFake) CreateMessageTable() error {
 }
 
 func (conn *ConnFake) CreatePhotoTable() error {
+	conn.photos = map[int]config.Photo{}
 	return nil
 }
 
-func (conn ConnFake) CreateDevicesTable() error {
+func (conn *ConnFake) CreateDevicesTable() error {
 	conn.devices = map[int]config.Device{}
 	return nil
 }
 
-func (conn ConnFake) CreateInterestsTable() error {
-	conn.interests = map[int]config.Interests{}
+func (conn *ConnFake) CreateInterestsTable() error {
+	conn.interests = map[int]config.Interest{}
 	return nil
 }

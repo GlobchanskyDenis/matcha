@@ -19,6 +19,7 @@ var (
 
 
 func TestUser(t *testing.T) {
+	print(NO_COLOR)
 
 	///////// INITIALIZE //////////
 
@@ -186,4 +187,5 @@ func TestUser(t *testing.T) {
 			t_.Log(GREEN_BG + "SUCCESS: IsUserExistsByUid is fine" + NO_COLOR + "\n")
 		}
 	})
+	print(YELLOW)
 }

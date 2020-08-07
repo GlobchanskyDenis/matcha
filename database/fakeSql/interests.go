@@ -4,29 +4,29 @@ import (
 	"MatchaServer/config"
 )
 
-func (conn ConnDB) AddInterests(unknownInterests []config.Interest) error {
+func (conn ConnFake) AddInterests(unknownInterests []config.Interest) error {
 	// var interests []config.Interest{}
 	var interest config.Interest
 	var lastId int
 
-	for _, knownInterest := range conn.Interests {
+	for _, knownInterest := range conn.interests {
 		lastId = knownInterest.Id
 	}
 	
-	for _, unknownInteres := range unknownInterests {
+	for _, unknownInterest := range unknownInterests {
 		interest.Name = unknownInterest.Name
 		lastId++
 		interest.Id = lastId
-		conn.Interests[lastId] = interest
+		conn.interests[lastId] = interest
 		// interests = append(interests, interest)
 	}
 	return nil
 	
 }
 
-func (conn ConnDB) GetInterests() ([]config.Interest, error) {
-	var interests = []config.Intersts{}
-	for _, interest := range conn.Interests {
+func (conn ConnFake) GetInterests() ([]config.Interest, error) {
+	var interests = []config.Interest{}
+	for _, interest := range conn.interests {
 		interests = append(interests, interest)
 	}
 	return interests, nil

@@ -89,3 +89,9 @@ type Interest struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
 }
+
+type Photo struct {
+	Pid  int	`json:"pid"`
+	Uid  int	`json:"uid"`
+	Body []byte `json:"body"`
+}

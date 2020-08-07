@@ -62,7 +62,7 @@ func (Conn ConnDB) DropAllTables() error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("DROP TABLE IF EXISTS photo")
+	_, err = db.Exec("DROP TABLE IF EXISTS photos")
 	if err != nil {
 		return err
 	}
@@ -165,10 +165,10 @@ func (conn ConnDB) CreateMessageTable() error {
 
 func (conn ConnDB) CreatePhotoTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE photo (pid SERIAL NOT NULL, " +
+	_, err := db.Exec("CREATE TABLE photos (pid SERIAL NOT NULL, " +
 		"PRIMARY KEY (pid), " +
 		"uid INT NOT NULL, " +
-		"body BIT(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!
+		"body bytea NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!    (" + strconv.Itoa(config.PHOTO_MAX_LEN) + ")
 	return err
 }
 
