@@ -7,14 +7,15 @@ import (
 type Storage interface {
 	// setup
 	Connect() error
+	Close()
 	TruncateAllTables() error
 	DropAllTables() error
 	DropEnumTypes() error
 	CreateEnumTypes() error
 	CreateUsersTable() error
-	CreateNotifTable() error
-	CreateMessageTable() error
-	CreatePhotoTable() error
+	CreateNotifsTable() error
+	CreateMessagesTable() error
+	CreatePhotosTable() error
 	CreateDevicesTable() error
 	CreateInterestsTable() error
 
@@ -35,7 +36,7 @@ type Storage interface {
 	DeleteDevice(id int) error
 	GetDevicesByUid(uid int) ([]config.Device, error)
 
-	// message
+	// messages
 	SetNewMessage(uidSender int, uidReceiver int, body string) (int, error)
 	DeleteMessage(nid int) error
 	GetMessagesFromChat(uidSender int, uidReceiver int) ([]config.Message, error)
@@ -48,4 +49,10 @@ type Storage interface {
 	// interests
 	AddInterests(unknownInterests []config.Interest) error
 	GetInterests() ([]config.Interest, error)
+
+	// photos
+	SetNewPhoto(uid int, body []byte) (int, error)
+	DeletePhoto(pid int) error
+	GetPhotosByUid(uid int) ([]config.Photo, error)
+	GetPhotoByPid(pid int) (config.Photo, error)
 }

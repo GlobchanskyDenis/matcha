@@ -12,6 +12,8 @@ func main() {
 	if err != nil {
 		println(config.RED + "Server cannot start - " + err.Error() + config.NO_COLOR)
 	} else {
+		http.HandleFunc("/photo/download/", server.HandlerPhotoDownload)
+		http.HandleFunc("/photo/upload/", server.HandlerPhotoUpload)
 		http.HandleFunc("/user/create/", server.HandlerUserCreate)
 		http.HandleFunc("/user/auth/", server.HandlerUserAuth)
 		http.HandleFunc("/user/update/status/", server.HandlerUserUpdateStatus)

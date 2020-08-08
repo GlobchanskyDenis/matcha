@@ -27,6 +27,9 @@ func (conn *ConnFake) Connect() error {
 	return nil
 }
 
+func (conn *ConnFake) Close() {
+}
+
 func (conn ConnFake) TruncateAllTables() error {
 	for key, _ := range conn.users {
 		delete(conn.users, key)
@@ -78,17 +81,17 @@ func (conn *ConnFake) CreateUsersTable() error {
 	return nil
 }
 
-func (conn *ConnFake) CreateNotifTable() error {
+func (conn *ConnFake) CreateNotifsTable() error {
 	conn.notif = map[int]config.Notif{}
 	return nil
 }
 
-func (conn *ConnFake) CreateMessageTable() error {
+func (conn *ConnFake) CreateMessagesTable() error {
 	conn.messages = map[int]config.Message{}
 	return nil
 }
 
-func (conn *ConnFake) CreatePhotoTable() error {
+func (conn *ConnFake) CreatePhotosTable() error {
 	conn.photos = map[int]config.Photo{}
 	return nil
 }

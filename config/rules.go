@@ -23,7 +23,7 @@ const (
 
 	NOTIF_MAX_LEN   = 250
 	MESSAGE_MAX_LEN = 300
-	PHOTO_MAX_LEN   = 300
+	PHOTO_MAX_LEN   = 10000000
 	DEVICE_MAX_LEN  = 150
 	INTEREST_MAX_LEN = 100
 
@@ -56,13 +56,6 @@ type User struct {
 	Interests	  []string	`json:"interests,omitempty"`
 	Status        string    `json:"-"`
 	Rating        int       `json:"rating"`
-}
-
-func (user User) IsEmpty() bool {
-	if user.Uid == 0 && user.Mail == "" && user.Pass == "" && user.EncryptedPass == "" {
-		return true
-	}
-	return false
 }
 
 type Notif struct {

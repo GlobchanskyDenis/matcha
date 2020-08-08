@@ -25,6 +25,10 @@ func (conn *ConnDB) Connect() error {
 	return err
 }
 
+func (conn *ConnDB) Close() {
+	conn.db.Close()
+}
+
 ///////////// SETUP FUNCTIONS //////////////////
 
 func (Conn ConnDB) TruncateAllTables() error {
@@ -54,11 +58,11 @@ func (Conn ConnDB) DropAllTables() error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("DROP TABLE IF EXISTS notif")
+	_, err = db.Exec("DROP TABLE IF EXISTS notifs")
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("DROP TABLE IF EXISTS message")
+	_, err = db.Exec("DROP TABLE IF EXISTS messages")
 	if err != nil {
 		return err
 	}
@@ -143,9 +147,9 @@ func (conn ConnDB) CreateUsersTable() error {
 	return err
 }
 
-func (conn ConnDB) CreateNotifTable() error {
+func (conn ConnDB) CreateNotifsTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE notif (nid SERIAL NOT NULL, " +
+	_, err := db.Exec("CREATE TABLE notifs (nid SERIAL NOT NULL, " +
 		"PRIMARY KEY (nid), " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
@@ -153,9 +157,9 @@ func (conn ConnDB) CreateNotifTable() error {
 	return err
 }
 
-func (conn ConnDB) CreateMessageTable() error {
+func (conn ConnDB) CreateMessagesTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE message (mid SERIAL NOT NULL, " +
+	_, err := db.Exec("CREATE TABLE messages (mid SERIAL NOT NULL, " +
 		"PRIMARY KEY (mid), " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
@@ -163,12 +167,12 @@ func (conn ConnDB) CreateMessageTable() error {
 	return err
 }
 
-func (conn ConnDB) CreatePhotoTable() error {
+func (conn ConnDB) CreatePhotosTable() error {
 	db := conn.db
 	_, err := db.Exec("CREATE TABLE photos (pid SERIAL NOT NULL, " +
 		"PRIMARY KEY (pid), " +
 		"uid INT NOT NULL, " +
-		"body bytea NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!    (" + strconv.Itoa(config.PHOTO_MAX_LEN) + ")
+		"body VARCHAR(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!      bytea
 	return err
 }
 

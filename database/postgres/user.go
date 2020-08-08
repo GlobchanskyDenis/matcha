@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"MatchaServer/config"
+	"MatchaServer/errDef"
 	"database/sql"
 	"errors"
 	"strconv"
@@ -131,6 +132,8 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 		if err != nil {
 			return user, err
 		}
+	} else {
+		return user, errDef.RecordNotFound
 	}
 	// handle user Interests
 	if len(interests) > 2 {
@@ -176,6 +179,8 @@ func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
 		if err != nil {
 			return user, err
 		}
+	} else {
+		return user, errDef.RecordNotFound
 	}
 	// handle user Interests
 	if len(interests) > 2 {
@@ -222,8 +227,11 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (config.Us
 		if err != nil {
 			return user, err
 		}
+	} else {
+		return user, errDef.RecordNotFound
 	}
 	// handle user Interests
+	// parse string of interests into []string
 	if len(interests) > 2 {
 		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
 		for _, strItem := range strArr {

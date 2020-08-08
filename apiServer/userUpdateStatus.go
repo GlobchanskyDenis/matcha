@@ -3,6 +3,7 @@ package apiServer
 import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
+	"MatchaServer/errDef"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -62,20 +63,25 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err = server.Db.GetUserByMail(mail)
-	if err != nil {
+	if errDef.IsRecordNotFoundError(err) {
+		consoleLogWarning(r, "/user/update/status/", "GetUserByMail - record not found")
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		return
+	} else if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "GetUserByMail returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
 		return
 	}
 
-	if user.Uid == 0 {
-		// it means that no such iser in database
-		consoleLogWarning(r, "/user/update/status/", "Mail doesnt exists in database")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + `Mail doesnt exists in database` + `"}`))
-		return
-	}
+	// if user.Uid == 0 {
+	// 	// it means that no such iser in database
+	// 	consoleLogWarning(r, "/user/update/status/", "Mail doesnt exists in database")
+	// 	w.WriteHeader(http.StatusUnauthorized) // 401
+	// 	w.Write([]byte(`{"error":"` + `Mail doesnt exists in database` + `"}`))
+	// 	return
+	// }
 
 	user.Status = "confirmed"
 
@@ -104,10 +110,10 @@ func (server *Server) HandlerUserUpdateStatus(w http.ResponseWriter, r *http.Req
 		server.userUpdateStatus(w, r)
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-		consoleLog(r, "/auth/", "client wants to know what methods are allowed")
+		consoleLog(r, "/user/update/status/", "client wants to know what methods are allowed")
 	} else {
 		// ALL OTHERS METHODS
-		consoleLogWarning(r, "/auth/", "wrong request method")
+		consoleLogWarning(r, "/user/update/status/", "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
 	}
 }

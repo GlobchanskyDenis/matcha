@@ -3,6 +3,7 @@ package apiServer
 import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
+	"MatchaServer/errDef"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -88,8 +89,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		if user.Age > 80 || user.Age < 16 {
 			return user, message, errors.New("forbidden age")
 		}
-		message += " birth=" + BLUE + birth + NO_COLOR + " age=" + BLUE + 
-		strconv.Itoa(user.Age) + NO_COLOR + strconv.Itoa(user.Age) + NO_COLOR
+		message += " birth=" + BLUE + birth + NO_COLOR + " age=" + BLUE + strconv.Itoa(user.Age) + NO_COLOR
 	}
 	arg, isExist = request["gender"]
 	if isExist {
@@ -298,7 +298,12 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err = server.Db.GetUserByUid(uid)
-	if err != nil {
+	if errDef.IsRecordNotFoundError(err) {
+		consoleLogWarning(r, "/user/update/", "GetUserByUid - record not found")
+		w.WriteHeader(http.StatusUnauthorized) // 401
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		return
+	} else if err != nil {
 		consoleLogError(r, "/user/update/", "GetUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))

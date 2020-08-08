@@ -1,418 +1,553 @@
 <html>
-	<head>
-		<title>Client to test</title>
-		<script>
 
-			function clearUserList() {
-				var list = document.getElementById("userList");
+<head>
+	<title>Client to test</title>
+	<script>
+		function b64DecodeUnicode(str) {
+			// Going backwards: from bytestream, to percent-encoding, to original string.
+			return decodeURIComponent(atob(str).split('').map(function (c) {
+				return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+			}).join(''));
+		}
 
-				while (list.firstChild) {
-					list.removeChild(list.firstChild);
-				}
+		function b64EncodeUnicode(str) {
+			// first we use encodeURIComponent to get percent-encoded UTF-8,
+			// then we convert the percent encodings into raw bytes which
+			// can be fed into btoa.
+			return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+				function toSolidBytes(match, p1) {
+					return String.fromCharCode('0x' + p1);
+				}));
+		}
 
+		function clearUserList() {
+			var list = document.getElementById("userList");
+
+			while (list.firstChild) {
+				list.removeChild(list.firstChild);
 			}
 
-			function setNewItem(uid, fname, lname) {
-				var list = document.getElementById("userList");
-				var newItem = document.createElement("div");
+		}
 
-				newItem.setAttribute("class", "item");
-				newItem.innerHTML = uid + " : " + fname + " " + lname;
+		function setNewItem(uid, fname, lname) {
+			var list = document.getElementById("userList");
+			var newItem = document.createElement("div");
 
-				list.appendChild(newItem);
-			}
+			newItem.setAttribute("class", "item");
+			newItem.innerHTML = uid + " : " + fname + " " + lname;
 
-			function getUsers() {
-				let xhr = new XMLHttpRequest();
-				var n = document.getElementById("filter1").options.selectedIndex;
-				var filter = document.getElementById("filter1").options[n].value;
-				xhr.open("GET", "http://localhost:3000/search/?filter=" + filter);
-				// xhr.responseType = 'json';
-				console.log("tx: get users, filter = " + filter)
-				xhr.send();
-				xhr.onload = function() {
-					if (xhr.response) {
-						var requestAsync = JSON.parse(xhr.response);
-					} else {
-						var requestAsync = "";
-					}
-					console.log("rx: " + xhr.status + " : " + xhr.response);
+			list.appendChild(newItem);
+		}
 
-					if (xhr.status != 200 && xhr.status != 201) {
-						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
-						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
-						document.getElementById("responseField").innerHTML = "";
-						return
-					}
-
-					if (requestAsync.error) {
-						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
-					} else {
-						document.getElementById("errorField").innerHTML = ""
-					}
-
-					clearUserList();
-
-					for (i=0; requestAsync[i]; i++) {
-						setNewItem(requestAsync[i].uid, requestAsync[i].fname, requestAsync[i].lname)
-					}
+		function getUsers() {
+			let xhr = new XMLHttpRequest();
+			var n = document.getElementById("filter1").options.selectedIndex;
+			var filter = document.getElementById("filter1").options[n].value;
+			xhr.open("GET", "http://localhost:3000/search/?filter=" + filter);
+			// xhr.responseType = 'json';
+			console.log("tx: get users, filter = " + filter)
+			xhr.send();
+			xhr.onload = function () {
+				if (xhr.response) {
+					var requestAsync = JSON.parse(xhr.response);
+				} else {
+					var requestAsync = "";
 				}
-			}
+				console.log("rx: " + xhr.status + " : " + xhr.response);
 
-			function wsConnect(uid, wsAuthToken) {
-				let socket = new WebSocket("ws://localhost:3000/ws/auth/?uid="+uid+"&ws-auth-token="+wsAuthToken)
-				console.log("attempting websocket connection")
-				console.log("ws://localhost:3000/ws/auth/?uid="+uid+"&ws-auth-token="+wsAuthToken)
-
-				socket.onopen = function() {
-					console.log("web socket successfully connected")
-					sendMessage()
-				}
-
-				socket.onclose = function(event) {
-					console.log("Socket was closed: ", event)
-				}
-
-				socket.onerror = function(error) {
-					console.log("socket error: ", error)
-				}
-
-				socket.onmessage = function(message) {
-					console.log("rx: ", message.data)
-				}
-
-				function sendMessage() {
-					message = `{"type":"message","uidReceiver":1,"body":"test message"}`
-					console.log("tx: " + message)
-					socket.send(message)
-				}
-
-				// setInterval(sendMessage, 7000)
-			}
-
-			function AuthUser() {
-
-				var mail = document.forms['auth']['mail'].value
-				var passwd = document.forms['auth']['passwd'].value
-				var request = JSON.stringify({ "mail": mail, "passwd": passwd })
-
-				let xhr = new XMLHttpRequest();
-				xhr.open("POST", "http://localhost:3000/user/auth/");
-				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-				console.log("tx: " + request)
-
-				xhr.send(request)
-
-				xhr.onload = function() {
-					if (xhr.response) {
-						var requestAsync = JSON.parse(xhr.response);
-					} else {
-						var requestAsync = "";
-					}
-					console.log("rx: " + xhr.status + " : " + xhr.response);
-
-					if (xhr.status != 200) {
-						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
-						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
-						document.getElementById("responseField").innerHTML = "";
-						return
-					}
-
-					if (!requestAsync) {
-						document.getElementById("errorField").innerHTML = "Empty request. Its not a valid case";
-						document.getElementById("responseField").innerHTML = "";
-						return
-					}
-					document.getElementById("errorField").innerHTML = ""
-
-					if (!requestAsync.uid || !requestAsync.mail || !requestAsync["x-auth-token"] || !requestAsync["ws-auth-token"]) {
-						document.getElementById("errorField").innerHTML += "uid or tokens are empty. Its not a valid case";
-						return
-					}
-
-					document.getElementById("responseField").innerHTML = "uid=" + requestAsync.uid +
-																		" mail=" + requestAsync.mail +
-																		" x-auth-token=hidden ws-auth-token=hidden"
-					document.forms['auth']['mail'].value = "";
-					document.forms['auth']['passwd'].value = "";
-					document.token = requestAsync["x-auth-token"]
-
-					wsConnect(requestAsync.uid, requestAsync["ws-auth-token"])
-				}
-
-				xhr.onerror = function() {
-					console.log("onError event")
-				}
-			}
-
-			function RegUser() {
-
-				var mail = document.forms['reg']['mail'].value
-				var passwd = document.forms['reg']['passwd'].value
-				var request = JSON.stringify({ "mail": mail, "passwd": passwd })
-
-				let xhr = new XMLHttpRequest();
-				xhr.open("POST", "http://localhost:3000/user/reg/");
-
-				console.log("tx: " + request)
-
-				xhr.send(request);
-
-				xhr.onload = function() {
-
-					if (xhr.response) {
-						var requestAsync = JSON.parse(xhr.response);
-					} else {
-						var requestAsync = "";
-					}
-					console.log("rx: " + xhr.status + " : " + xhr.response);
-
-					if (xhr.status != 201) {
-						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
-						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
-						document.getElementById("responseField").innerHTML = "";
-						return
-					}
-					document.getElementById("errorField").innerHTML = ""
-					document.getElementById("responseField").innerHTML = "registration was done. Check your email"
-					document.forms['reg']['mail'].value = "";
-					document.forms['reg']['passwd'].value = "";
-				}
-
-				xhr.onerror = function() {
-					console.log("onError event")
-				}
-			}
-
-			function UpdateUserStatus() {
-				var token = document.forms['updStatus']['x-reg-token'].value
-				var request = `{"x-reg-token":"`+token+`"}`
-				let xhr = new XMLHttpRequest();
-				xhr.open("PATCH", "http://localhost:3000/user/update/status/");
-				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-				console.log("tx: " + request)
-				xhr.send(request);
-
-				xhr.onload = function() {
-
-					if (xhr.response) {
-						var requestAsync = JSON.parse(xhr.response);
-					} else {
-						var requestAsync = "";
-					}
-					console.log("rx: " + xhr.status + " : " + xhr.response);
-
-					if (xhr.status != 200) {
-						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
-						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
-						document.getElementById("responseField").innerHTML = "";
-						return
-					}
-					document.getElementById("errorField").innerHTML = ""
-					document.getElementById("responseField").innerHTML = "Update was done successfully"
-					document.forms['updStatus']['x-reg-token'].value = "";
-				}
-
-				xhr.onerror = function() {
-					console.log("onError event")
-				}
-			}
-
-			function UpdateUser() {
-				var mail = document.forms['upd']['mail'].value
-				var passwd = document.forms['upd']['passwd'].value
-				var fname = document.forms['upd']['fname'].value
-				var lname = document.forms['upd']['lname'].value
-				var age = document.forms['upd']['age'].value
-				var gender = document.forms['upd']['gender'].value
-				var orientation = document.forms['upd']['orientation'].value
-				var biography = document.forms['upd']['biography'].value
-				var avaPhotoID = document.forms['upd']['avaPhotoID'].value
-				var request = ""
-
-				if (mail == "" && passwd == "" && fname == "" && lname == "" &&
-						age == "" && gender == "" && orientation == "" &&
-						biography == "" && avaPhotoID == "") {
-					console.log("update: all fields are empty")
+				if (xhr.status != 200 && xhr.status != 201) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
 					return
 				}
 
-				if (mail != "") {
-					request = "\"mail\":"+JSON.stringify(mail)
-				}
-				if (passwd != "") {
-					if (request != "") {
-						request += ","
-					}
-					request += "\"passwd\":"+JSON.stringify(passwd)
-				}
-				if (fname != "") {
-					if (request != "") {
-						request += ","
-					}
-					request += "\"fname\":"+JSON.stringify(fname)
-				}
-				if (lname != "") {
-					if (request != "") {
-						request += ","
-					}
-					request += "\"lname\":"+JSON.stringify(lname)
-				}
-				if (age != "") {
-					if (request != "") {
-						request += ","
-					}
-					var validAge = Number(age)
-					request += "\"age\":"+JSON.stringify(validAge)
-				}
-				if (gender != "") {
-					if (request != "") {
-						request += ","
-					}
-					request += "\"gender\":"+JSON.stringify(gender)
-				}
-				if (orientation != "") {
-					if (request != "") {
-						request += ","
-					}
-					request += "\"orientation\":"+JSON.stringify(orientation)
-				}
-				if (biography != "") {
-					if (request != "") {
-						request += ","
-					}
-					request += "\"biography\":"+JSON.stringify(biography)
-				}
-				if (avaPhotoID != "") {
-					if (request != "") {
-						request += ","
-					}
-					var validAvaID = Number(avaPhotoID)
-					request += "\"avaPhotoID\":"+JSON.stringify(validAvaID)
-				}
-				request = "{"+request+"}"
-
-				let xhr = new XMLHttpRequest();
-				xhr.open("PATCH", "http://localhost:3000/user/update/");
-				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-				xhr.setRequestHeader("x-auth-token", document.token);
-
-				console.log("tx: " + request)
-
-				xhr.send(request);
-
-				xhr.onload = function() {
-
-					if (xhr.response) {
-						var requestAsync = JSON.parse(xhr.response);
-					} else {
-						var requestAsync = "";
-					}
-					console.log("rx: " + xhr.status + " : " + xhr.response);
-
-					if (xhr.status != 200) {
-						document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
-						document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
-						document.getElementById("responseField").innerHTML = "";
-						return
-					}
+				if (requestAsync.error) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
+				} else {
 					document.getElementById("errorField").innerHTML = ""
-					document.getElementById("responseField").innerHTML = "Update was done successfully"
-					document.forms['upd']['mail'].value = "";
-					document.forms['upd']['passwd'].value = "";
-					document.forms['upd']['fname'].value = "";
-					document.forms['upd']['lname'].value = "";
-					document.forms['upd']['age'].value = "";
-					document.forms['upd']['gender'].value = "";
-					document.forms['upd']['orientation'].value = "";
-					document.forms['upd']['biography'].value = "";
-					document.forms['upd']['avaPhotoID'].value = "";
 				}
 
-				xhr.onerror = function() {
-					console.log("onError event")
+				clearUserList();
+
+				for (i = 0; requestAsync[i]; i++) {
+					setNewItem(requestAsync[i].uid, requestAsync[i].fname, requestAsync[i].lname)
+				}
+			}
+		}
+
+		function wsConnect(uid, wsAuthToken) {
+			let socket = new WebSocket("ws://localhost:3000/ws/auth/?uid=" + uid + "&ws-auth-token=" + wsAuthToken)
+			console.log("attempting websocket connection")
+			console.log("ws://localhost:3000/ws/auth/?uid=" + uid + "&ws-auth-token=" + wsAuthToken)
+
+			socket.onopen = function () {
+				console.log("web socket successfully connected")
+				sendMessage()
+			}
+
+			socket.onclose = function (event) {
+				console.log("Socket was closed: ", event)
+			}
+
+			socket.onerror = function (error) {
+				console.log("socket error: ", error)
+			}
+
+			socket.onmessage = function (message) {
+				console.log("rx: ", message.data)
+			}
+
+			function sendMessage() {
+				message = `{"type":"message","uidReceiver":1,"body":"test message"}`
+				console.log("tx: " + message)
+				socket.send(message)
+			}
+
+			// setInterval(sendMessage, 7000)
+		}
+
+		function AuthUser() {
+
+			var mail = document.forms['auth']['mail'].value
+			var pass = document.forms['auth']['pass'].value
+			var request = JSON.stringify({ "mail": mail, "pass": pass })
+
+			let xhr = new XMLHttpRequest();
+			xhr.open("POST", "http://localhost:3000/user/auth/");
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+			console.log("tx: " + request)
+
+			xhr.send(request)
+
+			xhr.onload = function () {
+				if (xhr.response) {
+					var requestAsync = JSON.parse(xhr.response);
+				} else {
+					var requestAsync = "";
+				}
+				console.log("rx: " + xhr.status + " : " + xhr.response);
+
+				if (xhr.status != 200) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+
+				if (!requestAsync) {
+					document.getElementById("errorField").innerHTML = "Empty request. Its not a valid case";
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+				document.getElementById("errorField").innerHTML = ""
+
+				if (!requestAsync.uid || !requestAsync.mail || !requestAsync["x-auth-token"] || !requestAsync["ws-auth-token"]) {
+					document.getElementById("errorField").innerHTML += "uid or tokens are empty. Its not a valid case";
+					return
+				}
+
+				document.getElementById("responseField").innerHTML = "uid=" + requestAsync.uid +
+					" mail=" + requestAsync.mail +
+					" x-auth-token=hidden ws-auth-token=hidden"
+				document.forms['auth']['mail'].value = "";
+				document.forms['auth']['pass'].value = "";
+				document.token = requestAsync["x-auth-token"]
+
+				wsConnect(requestAsync.uid, requestAsync["ws-auth-token"])
+			}
+
+			xhr.onerror = function () {
+				console.log("onError event")
+			}
+		}
+
+		function RegUser() {
+
+			var mail = document.forms['reg']['mail'].value
+			var pass = document.forms['reg']['pass'].value
+			var request = JSON.stringify({ "mail": mail, "pass": pass })
+
+			let xhr = new XMLHttpRequest();
+			xhr.open("POST", "http://localhost:3000/user/reg/");
+
+			console.log("tx: " + request)
+
+			xhr.send(request);
+
+			xhr.onload = function () {
+
+				if (xhr.response) {
+					var requestAsync = JSON.parse(xhr.response);
+				} else {
+					var requestAsync = "";
+				}
+				console.log("rx: " + xhr.status + " : " + xhr.response);
+
+				if (xhr.status != 201) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+				document.getElementById("errorField").innerHTML = ""
+				document.getElementById("responseField").innerHTML = "registration was done. Check your email"
+				document.forms['reg']['mail'].value = "";
+				document.forms['reg']['pass'].value = "";
+			}
+
+			xhr.onerror = function () {
+				console.log("onError event")
+			}
+		}
+
+		function UpdateUserStatus() {
+			var token = document.forms['updStatus']['x-reg-token'].value
+			var request = `{"x-reg-token":"` + token + `"}`
+			let xhr = new XMLHttpRequest();
+			xhr.open("PATCH", "http://localhost:3000/user/update/status/");
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			console.log("tx: " + request)
+			xhr.send(request);
+
+			xhr.onload = function () {
+
+				if (xhr.response) {
+					var requestAsync = JSON.parse(xhr.response);
+				} else {
+					var requestAsync = "";
+				}
+				console.log("rx: " + xhr.status + " : " + xhr.response);
+
+				if (xhr.status != 200) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+				document.getElementById("errorField").innerHTML = ""
+				document.getElementById("responseField").innerHTML = "Update was done successfully"
+				document.forms['updStatus']['x-reg-token'].value = "";
+			}
+
+			xhr.onerror = function () {
+				console.log("onError event")
+			}
+		}
+
+		function readURL(input) {
+			if (input.files && input.files[0]) {
+				var reader = new FileReader();
+				image = document.getElementById('uploadPhoto');
+				image.style.display = "block";
+				// document.getElementById('video').style.opacity = 0;
+				reader.onload = function (e) {
+					image.setAttribute('src', e.target.result);
+				};
+				reader.readAsDataURL(input.files[0]);
+			}
+			image_statut = true;
+		}
+
+		function Upload() {
+			var image = document.getElementById('uploadPhoto');
+
+			var request = `{"x-auth-token":"` + document.token + `","photo":"` + image.src + `"}` //btoa(image.src)
+			document.buffer = image.src
+
+
+			let xhr = new XMLHttpRequest();
+			xhr.open("POST", "http://localhost:3000/photo/upload/");
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+			console.log("request: " + image.src)
+			// console.log("tx: " + request)
+
+			xhr.send(request);
+
+			xhr.onload = function () {
+
+				if (xhr.response) {
+					var requestAsync = JSON.parse(xhr.response);
+				} else {
+					var requestAsync = "";
+				}
+				// console.log("rx: " + xhr.status + " : " + xhr.response);
+
+				if (xhr.status != 200) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+				document.getElementById("errorField").innerHTML = ""
+				document.getElementById("responseField").innerHTML = "Upload was done successfully"
+			}
+
+			xhr.onerror = function () {
+				console.log("onError event")
+			}
+		}
+
+		function Download() {
+			var image = document.getElementById('uploadPhoto');
+
+			var request = `{"x-auth-token":"` + document.token + `"}`
+
+
+			let xhr = new XMLHttpRequest();
+			xhr.open("POST", "http://localhost:3000/photo/download/");
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+			// console.log("tx: " + request)
+
+			xhr.send(request);
+
+			xhr.onload = function () {
+
+				if (xhr.response) {
+					var responseAsync = JSON.parse(xhr.response);
+				} else {
+					var responseAsync = "";
+				}
+				console.log("rx: " + xhr.status + " : " + xhr.response);
+
+				if (xhr.status != 200) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+				if (responseAsync && responseAsync[0]) {
+					if (document.buffer != responseAsync[0].body) {
+						document.getElementById("errorField").innerHTML = "INVALID"
+					} else {
+						document.getElementById("responseField").innerHTML = "VALID"
+					}
+					var body = atob(responseAsync[0].body)
+					console.log("rx body: " + body)
+					image.src = body
 				}
 			}
 
-			var token = ""
-
-		</script>
-		<style>
-			.userList {
-				border:		1px solid black;
-				width:		500px;
+			xhr.onerror = function () {
+				console.log("onError event")
 			}
-			.item {
-				border:		1px solid red;
-				width:		450px;
-				margin:		2px auto 2px auto;
+		}
+
+		function UpdateUser() {
+			var mail = document.forms['upd']['mail'].value
+			var pass = document.forms['upd']['pass'].value
+			var fname = document.forms['upd']['fname'].value
+			var lname = document.forms['upd']['lname'].value
+			var birth = document.forms['upd']['birth'].value
+			var gender = document.forms['upd']['gender'].value
+			var orientation = document.forms['upd']['orientation'].value
+			var bio = document.forms['upd']['bio'].value
+			var avaID = document.forms['upd']['avaID'].value
+			var request = ""
+
+			if (mail == "" && pass == "" && fname == "" && lname == "" &&
+				birth == "" && gender == "" && orientation == "" && bio == "" && avaID == "") {
+				console.log("update: all fields are empty")
+				return
 			}
-			#responseField	{
-				width:		600px;
-				text-align: center;
-				height:		22px;
-				border:		3px solid green;
-				margin:		10px auto 10px 10px;
+
+			if (mail != "") {
+				request = "\"mail\":" + JSON.stringify(mail)
 			}
-			#errorField {
-				width:		600px;
-				text-align: center;
-				height:		22px;
-				border:		3px solid red;
-				margin:		10px auto 10px 10px;
+			if (pass != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"pass\":" + JSON.stringify(pass)
 			}
-			input {
-				display: block;
-				margin:		10px;
+			if (fname != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"fname\":" + JSON.stringify(fname)
 			}
-		</style>
-	</head>
-	<body>
+			if (lname != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"lname\":" + JSON.stringify(lname)
+			}
+			if (birth != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"birth\":" + JSON.stringify(birth)
+			}
+			if (gender != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"gender\":" + JSON.stringify(gender)
+			}
+			if (orientation != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"orientation\":" + JSON.stringify(orientation)
+			}
+			if (bio != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"bio\":" + JSON.stringify(bio)
+			}
+			if (avaID != "") {
+				if (request != "") {
+					request += ","
+				}
+				var validAvaID = Number(avaID)
+				request += "\"avaID\":" + JSON.stringify(validAvaID)
+			}
+			if (request != "") {
+				request += ","
+			}
+			request += `"x-auth-token":"` + document.token + `"`
+			request = "{" + request + "}"
 
-		<div id="errorField">error Field</div>
-		<div id="responseField">response will be here</div>
-		<form name="auth">
-			<input type="text" name="mail" placeholder="mail">
-			<input type="password" name="passwd" placeholder="password">
-		</form>
-		<input type="submit" value="Авторизация" onclick="AuthUser()">
+			let xhr = new XMLHttpRequest();
+			xhr.open("PATCH", "http://localhost:3000/user/update/");
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-		<form name="reg">
-			<input type="text" name="mail" placeholder="mail">
-			<input type="password" name="passwd" placeholder="password">
-		</form>
-		<input type="submit" value="Регистрация" onclick="RegUser()">
+			console.log("tx: " + request)
 
-		<form name="updStatus">
-			<input type="text" name="x-reg-token" placeholder="x-reg-token">
-		</form>
-		<input type="submit" value="Валидация почты" onclick="UpdateUserStatus()">
+			xhr.send(request);
 
-		<form name="upd">
-			<input type="text" name="mail" placeholder="mail">
-			<input type="password" name="passwd" placeholder="password">
-			<input type="text" name="fname" placeholder="first name">
-			<input type="text" name="lname" placeholder="last name">
-			<input type="text" name="age" placeholder="age">
-			<input type="text" name="gender" placeholder="gender">
-			<input type="text" name="orientation" placeholder="orientation">
-			<input type="text" name="biography" placeholder="biography">
-			<input type="text" name="avaPhotoID" placeholder="avaPhotoID">
-		</form>
-		<input type="submit" value="Изменить данные" onclick="UpdateUser()">
+			xhr.onload = function () {
 
-		<p>
+				if (xhr.response) {
+					var requestAsync = JSON.parse(xhr.response);
+				} else {
+					var requestAsync = "";
+				}
+				console.log("rx: " + xhr.status + " : " + xhr.response);
+
+				if (xhr.status != 200) {
+					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("responseField").innerHTML = "";
+					return
+				}
+				document.getElementById("errorField").innerHTML = ""
+				document.getElementById("responseField").innerHTML = "Update was done successfully"
+				document.forms['upd']['mail'].value = "";
+				document.forms['upd']['pass'].value = "";
+				document.forms['upd']['fname'].value = "";
+				document.forms['upd']['lname'].value = "";
+				document.forms['upd']['birth'].value = "";
+				document.forms['upd']['gender'].value = "";
+				document.forms['upd']['orientation'].value = "";
+				document.forms['upd']['bio'].value = "";
+				document.forms['upd']['avaID'].value = "";
+			}
+
+			xhr.onerror = function () {
+				console.log("onError event")
+			}
+		}
+
+		var token = ""
+		var buffer = ""
+
+	</script>
+	<style>
+		.userList {
+			border: 1px solid black;
+			width: 500px;
+		}
+
+		.item {
+			border: 1px solid red;
+			width: 450px;
+			margin: 2px auto 2px auto;
+		}
+
+		#responseField {
+			width: 600px;
+			text-align: center;
+			height: 22px;
+			border: 3px solid green;
+			margin: 10px auto 10px 10px;
+		}
+
+		#errorField {
+			width: 600px;
+			text-align: center;
+			height: 22px;
+			border: 3px solid red;
+			margin: 10px auto 10px 10px;
+		}
+
+		input {
+			display: block;
+			margin: 10px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="errorField">error Field</div>
+	<div id="responseField">response will be here</div>
+
+	<form title="choose your file">
+		<input type="file" accept="image/*" onchange="readURL(this);">
+	</form>
+
+	<input type="submit" value="Upload" onclick="Upload()">
+	<input type="submit" value="Download" onclick="Download()">
+
+	<form name="auth">
+		<input type="text" name="mail" placeholder="mail">
+		<input type="password" name="pass" placeholder="password">
+	</form>
+	<input type="submit" value="Авторизация" onclick="AuthUser()">
+
+	<form name="reg">
+		<input type="text" name="mail" placeholder="mail">
+		<input type="password" name="pass" placeholder="password">
+	</form>
+	<input type="submit" value="Регистрация" onclick="RegUser()">
+
+	<form name="updStatus">
+		<input type="text" name="x-reg-token" placeholder="x-reg-token">
+	</form>
+	<input type="submit" value="Валидация почты" onclick="UpdateUserStatus()">
+
+	<form name="upd">
+		<input type="text" name="mail" placeholder="mail">
+		<input type="password" name="pass" placeholder="password">
+		<input type="text" name="fname" placeholder="first name">
+		<input type="text" name="lname" placeholder="last name">
+		<input type="text" name="birth" placeholder="birth date">
+		<input type="text" name="gender" placeholder="gender">
+		<input type="text" name="orientation" placeholder="orientation">
+		<input type="text" name="bio" placeholder="biography">
+		<input type="text" name="avaID" placeholder="avaID">
+	</form>
+	<input type="submit" value="Изменить данные" onclick="UpdateUser()">
+
+	<p>
 		<select size="1" id="filter1">
 			<option selected value="all">Всех пользователей</option>
 			<option value="logged">Только онлайн пользователей</option>
 		</select>
-		</p>
+	</p>
 
-		<input type="submit" value="Показать пользователей" onclick="getUsers()">
-		
-		<div class="userList" id="userList">
-		</div>
+	<input type="submit" value="Показать пользователей" onclick="getUsers()">
 
-	</body>
+	<div class="userList" id="userList">
+	</div>
+
+	<img id="uploadPhoto">
+
+</body>
+
 </html>

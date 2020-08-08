@@ -3,6 +3,7 @@ package apiServer
 import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
+	"MatchaServer/errDef"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -94,20 +95,25 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err = server.Db.GetUserForAuth(mail, handlers.PassHash(pass))
-	if err != nil {
+	if errDef.IsRecordNotFoundError(err) {
+		consoleLogWarning(r, "/user/auth/", "GetUserForAuth - record not found")
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
+		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		return
+	} else if err != nil {
 		consoleLogError(r, "/user/auth/", "GetUserForAuth returned error "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500
 		w.Write([]byte(`{"error":"` + "database request failed" + `"}`))
 		return
 	}
 
-	if user.Uid == 0 {
-		// it means that no such users in database
-		consoleLogWarning(r, "/user/auth/", "wrong mail or password")
-		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + "wrong mail or password" + `"}`))
-		return
-	}
+	// if user.Uid == 0 {
+	// 	// it means that no such users in database
+	// 	consoleLogWarning(r, "/user/auth/", "wrong mail or password")
+	// 	w.WriteHeader(http.StatusUnprocessableEntity) // 422
+	// 	w.Write([]byte(`{"error":"` + "wrong mail or password" + `"}`))
+	// 	return
+	// }
 
 	if user.Status == "not confirmed" {
 		consoleLogWarning(r, "/user/auth/", "user "+BLUE+user.Mail+NO_COLOR+" should confirm its email")

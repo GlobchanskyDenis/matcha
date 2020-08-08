@@ -33,19 +33,19 @@ func TestCreateTables_NotifTest(t *testing.T) {
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR + "\n")
-	err = connNotif.CreateMessageTable()
+	err = connNotif.CreateMessagesTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR + "\n")
-	err = connNotif.CreateNotifTable()
+	err = connNotif.CreateNotifsTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR + "\n")
-	err = connNotif.CreatePhotoTable()
+	err = connNotif.CreatePhotosTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return

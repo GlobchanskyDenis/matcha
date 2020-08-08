@@ -33,19 +33,19 @@ func TestCreateTables_MessageTest(t *testing.T) {
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR + "\n")
-	err = connMes.CreateMessageTable()
+	err = connMes.CreateMessagesTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR + "\n")
-	err = connMes.CreateNotifTable()
+	err = connMes.CreateNotifsTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR + "\n")
-	err = connMes.CreatePhotoTable()
+	err = connMes.CreatePhotosTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR + "\n")
 		return

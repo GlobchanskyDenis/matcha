@@ -48,7 +48,7 @@ func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK) // 200
-	w.Write([]byte(jsonUsers))
+	w.Write(jsonUsers)
 	consoleLogSuccess(r, "/users/", "array of "+BLUE+"logged"+NO_COLOR+
 		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }

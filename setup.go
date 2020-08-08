@@ -57,7 +57,7 @@ func main() {
 	}
 
 	print("Create notif table\t\t")
-	err = server.Db.CreateNotifTable()
+	err = server.Db.CreateNotifsTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -66,7 +66,7 @@ func main() {
 	}
 
 	print("Create message table\t\t")
-	err = server.Db.CreateMessageTable()
+	err = server.Db.CreateMessagesTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
@@ -75,7 +75,7 @@ func main() {
 	}
 
 	print("Create photo table\t\t")
-	err = server.Db.CreatePhotoTable()
+	err = server.Db.CreatePhotosTable()
 	if err != nil {
 		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
 		return
