@@ -90,12 +90,12 @@ func TestUserAuthenticate(t *testing.T) {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else {
 				if tc.name != "valid" {
-					t.Logf(GREEN_BG + "SUCCESS: user authentication was failed as it expected" + NO_COLOR + "\n")
+					t_.Logf(GREEN_BG + "SUCCESS: user authentication was failed as it expected" + NO_COLOR + "\n")
 				} else {
 					var response map[string]interface{}
 					err := json.NewDecoder(rec.Body).Decode(&response)
 					if err != nil {
-						t.Errorf(RED_BG+"ERROR: decoding response body error: %s, response body %s"+NO_COLOR+"\n", err.Error(), rec.Body)
+						t_.Errorf(RED_BG+"ERROR: decoding response body error: %s, response body %s"+NO_COLOR+"\n", err.Error(), rec.Body)
 						return
 					}
 					item, isExist := response["x-auth-token"]

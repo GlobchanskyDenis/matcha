@@ -95,6 +95,8 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err = server.Db.GetUserForAuth(mail, handlers.PassHash(pass))
+
+
 	if errDef.IsRecordNotFoundError(err) {
 		consoleLogWarning(r, "/user/auth/", "GetUserForAuth - record not found")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422

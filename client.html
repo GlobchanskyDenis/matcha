@@ -29,6 +29,15 @@
 
 		}
 
+		function clearPhotoList() {
+			var list = document.getElementById("photoList");
+
+			while (list.firstChild) {
+				list.removeChild(list.firstChild);
+			}
+
+		}
+
 		function setNewItem(uid, fname, lname) {
 			var list = document.getElementById("userList");
 			var newItem = document.createElement("div");
@@ -37,6 +46,15 @@
 			newItem.innerHTML = uid + " : " + fname + " " + lname;
 
 			list.appendChild(newItem);
+		}
+
+		function setNewPhoto(body) {
+			var list = document.getElementById("photoList");
+			var newPhoto = document.createElement("img");
+			newPhoto.setAttribute("class", "photo");
+			newPhoto.src = body
+
+			list.appendChild(newPhoto);
 		}
 
 		function getUsers() {
@@ -253,7 +271,7 @@
 		function Upload() {
 			var image = document.getElementById('uploadPhoto');
 
-			var request = `{"x-auth-token":"` + document.token + `","photo":"` + image.src + `"}` //btoa(image.src)
+			var request = `{"x-auth-token":"` + document.token + `","src":"` + image.src + `"}` //btoa(image.src)
 			document.buffer = image.src
 
 
@@ -261,9 +279,7 @@
 			xhr.open("POST", "http://localhost:3000/photo/upload/");
 			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-			console.log("request: " + image.src)
-			// console.log("tx: " + request)
-
+			console.log("upload tx (not display img source)")
 			xhr.send(request);
 
 			xhr.onload = function () {
@@ -273,7 +289,7 @@
 				} else {
 					var requestAsync = "";
 				}
-				// console.log("rx: " + xhr.status + " : " + xhr.response);
+				console.log("upload rx: " + xhr.status + " : " + xhr.response);
 
 				if (xhr.status != 200) {
 					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
@@ -291,17 +307,14 @@
 		}
 
 		function Download() {
-			var image = document.getElementById('uploadPhoto');
-
-			var request = `{"x-auth-token":"` + document.token + `"}`
-
+			var uid = document.forms['dload']['uid'].value
+			var request = `{"x-auth-token":"` + document.token + `","uid":` + uid + `}`
 
 			let xhr = new XMLHttpRequest();
 			xhr.open("POST", "http://localhost:3000/photo/download/");
 			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-			// console.log("tx: " + request)
-
+			console.log("download tx: " + request)
 			xhr.send(request);
 
 			xhr.onload = function () {
@@ -311,23 +324,19 @@
 				} else {
 					var responseAsync = "";
 				}
-				console.log("rx: " + xhr.status + " : " + xhr.response);
 
 				if (xhr.status != 200) {
 					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
-					document.getElementById("errorField").innerHTML += ((requestAsync.error) ? requestAsync.error : xhr.statusText)
+					document.getElementById("errorField").innerHTML += ((responseAsync.error) ? responseAsync.error : xhr.statusText)
 					document.getElementById("responseField").innerHTML = "";
 					return
 				}
-				if (responseAsync && responseAsync[0]) {
-					if (document.buffer != responseAsync[0].body) {
-						document.getElementById("errorField").innerHTML = "INVALID"
-					} else {
-						document.getElementById("responseField").innerHTML = "VALID"
+				if (responseAsync) {//atob()
+					clearPhotoList()
+					for (i = 0; responseAsync[i]; i++) {
+						console.log("download rx: pid=" + JSON.stringify(responseAsync[i].pid) + " uid=" + JSON.stringify(responseAsync[i].uid))
+						setNewPhoto(responseAsync[i].src)
 					}
-					var body = atob(responseAsync[0].body)
-					console.log("rx body: " + body)
-					image.src = body
 				}
 			}
 
@@ -463,6 +472,17 @@
 			width: 500px;
 		}
 
+		.photoList {
+			border: 3px solid brown;
+			width: 500px;
+		}
+
+		.photo {
+			display: block;
+			width: 400px;
+			margin: 2px auto 2px auto;
+		}
+
 		.item {
 			border: 1px solid red;
 			width: 450px;
@@ -502,6 +522,11 @@
 	</form>
 
 	<input type="submit" value="Upload" onclick="Upload()">
+
+	<form name="dload">
+		<input type="text" name="uid" placeholder="uid of photo author">
+	</form>
+
 	<input type="submit" value="Download" onclick="Download()">
 
 	<form name="auth">
@@ -544,6 +569,8 @@
 	<input type="submit" value="Показать пользователей" onclick="getUsers()">
 
 	<div class="userList" id="userList">
+	</div>
+	<div class="photoList" id="photoList">
 	</div>
 
 	<img id="uploadPhoto">

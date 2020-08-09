@@ -3,6 +3,7 @@ package postgres
 import (
 	. "MatchaServer/config"
 	"MatchaServer/handlers"
+	"MatchaServer/errDef"
 	"testing"
 )
 
@@ -57,13 +58,13 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run("invalid GetUserByUid", func(t_ *testing.T) {
-		tempUser, err := conn.GetUserByUid(0)
-		if err != nil {
+		_, err := conn.GetUserByUid(0)
+		if !errDef.IsRecordNotFoundError(err) {
+			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR + "\n")
+		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
-		} else if !tempUser.IsEmpty() {
-			t_.Errorf(RED_BG + "ERROR: user should be empty" + NO_COLOR + "\n")
 		} else {
-			t_.Log(GREEN_BG + "SUCCESS: user is empty as it expected" + NO_COLOR + "\n")
+			t_.Log(GREEN_BG + "SUCCESS: record not found as it expected" + NO_COLOR + "\n")
 		}
 	})
 
@@ -71,7 +72,7 @@ func TestUser(t *testing.T) {
 		tempUser, err := conn.GetUserByUid(user.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
-		} else if tempUser.IsEmpty() || tempUser.Mail != user.Mail {
+		} else if tempUser.Mail != user.Mail {
 			t_.Errorf(RED_BG + "ERROR: returned wrong user" + NO_COLOR + "\n")
 		} else {
 			t_.Log(GREEN_BG + "SUCCESS: GetUserByUid is fine" + NO_COLOR + "\n")
@@ -79,13 +80,13 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run("invalid GetUserByMail", func(t_ *testing.T) {
-		tempUser, err := conn.GetUserByMail(mailFail)
-		if err != nil {
+		_, err := conn.GetUserByMail(mailFail)
+		if !errDef.IsRecordNotFoundError(err) {
+			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR + "\n")
+		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
-		} else if !tempUser.IsEmpty() {
-			t_.Errorf(RED_BG + "ERROR: user should be empty" + NO_COLOR + "\n")
 		} else {
-			t_.Log(GREEN_BG + "SUCCESS: user is empty as it expected" + NO_COLOR + "\n")
+			t_.Log(GREEN_BG + "SUCCESS: record not found as it expected" + NO_COLOR + "\n")
 		}
 	})
 
@@ -93,7 +94,7 @@ func TestUser(t *testing.T) {
 		tempUser, err := conn.GetUserByMail(user.Mail)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
-		} else if tempUser.IsEmpty() || tempUser.Mail != user.Mail {
+		} else if tempUser.Mail != user.Mail {
 			t_.Errorf(RED_BG + "ERROR: returned wrong user" + NO_COLOR + "\n")
 		} else {
 			t_.Log(GREEN_BG + "SUCCESS: GetUserByMail is fine" + NO_COLOR + "\n")
@@ -101,13 +102,13 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run("invalid GetUserForAuth", func(t_ *testing.T) {
-		tempUser, err := conn.GetUserForAuth(user.Mail, passFail)
-		if err != nil {
+		_, err := conn.GetUserForAuth(user.Mail, passFail)
+		if !errDef.IsRecordNotFoundError(err) {
+			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR + "\n")
+		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
-		} else if !tempUser.IsEmpty() {
-			t_.Errorf(RED_BG + "ERROR: user should be empty" + NO_COLOR + "\n")
 		} else {
-			t_.Log(GREEN_BG + "SUCCESS: user is empty as it expected" + NO_COLOR + "\n")
+			t_.Log(GREEN_BG + "SUCCESS: record not found as it expected" + NO_COLOR + "\n")
 		}
 	})
 
@@ -115,7 +116,7 @@ func TestUser(t *testing.T) {
 		tempUser, err := conn.GetUserForAuth(user.Mail, user.EncryptedPass)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
-		} else if tempUser.IsEmpty() || tempUser.Mail != user.Mail {
+		} else if tempUser.Mail != user.Mail {
 			t_.Errorf(RED_BG + "ERROR: returned wrong user" + NO_COLOR + "\n")
 		} else {
 			t_.Log(GREEN_BG + "SUCCESS: GetUserForAuth is fine" + NO_COLOR + "\n")

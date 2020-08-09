@@ -6,11 +6,11 @@ import (
 	// "errors"
 )
 
-func (conn ConnFake) SetNewPhoto(uid int, body string) (int, error) {
+func (conn ConnFake) SetNewPhoto(uid int, src string) (int, error) {
 	var photo config.Photo
 
 	photo.Uid = uid
-	photo.Body = body
+	photo.Src = src
 
 	for key := 1; ; key++ {
 		if _, isExists := conn.photos[key]; !isExists {

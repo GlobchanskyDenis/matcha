@@ -51,7 +51,7 @@ type Storage interface {
 	GetInterests() ([]config.Interest, error)
 
 	// photos
-	SetNewPhoto(uid int, body []byte) (int, error)
+	SetNewPhoto(uid int, src string) (int, error)
 	DeletePhoto(pid int) error
 	GetPhotosByUid(uid int) ([]config.Photo, error)
 	GetPhotoByPid(pid int) (config.Photo, error)

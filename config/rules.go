@@ -86,5 +86,5 @@ type Interest struct {
 type Photo struct {
 	Pid  int	`json:"pid"`
 	Uid  int	`json:"uid"`
-	Body []byte `json:"body"`
+	Src string	`json:"src"`
 }

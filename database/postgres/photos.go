@@ -6,14 +6,14 @@ import (
 	"errors"
 )
 
-func (conn ConnDB) SetNewPhoto(uid int, body []byte) (int, error) {
+func (conn ConnDB) SetNewPhoto(uid int, src string) (int, error) {
 	var pid int
-	stmt, err := conn.db.Prepare("INSERT INTO photos (uid, body) VALUES ($1, $2) RETURNING pid")
+	stmt, err := conn.db.Prepare("INSERT INTO photos (uid, src) VALUES ($1, $2) RETURNING pid")
 	if err != nil {
 		return pid, errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
-	row, err := stmt.Query(uid, body)
+	row, err := stmt.Query(uid, src)
 	if err != nil {
 		return pid, errors.New(err.Error() + " in executing")
 	}
@@ -52,7 +52,7 @@ func (conn ConnDB) GetPhotosByUid(uid int) ([]config.Photo, error) {
 		return photos, errors.New(err.Error() + " in executing")
 	}
 	for rows.Next() {
-		err = rows.Scan(&(photo.Pid), &(photo.Uid), &(photo.Body))
+		err = rows.Scan(&(photo.Pid), &(photo.Uid), &(photo.Src))
 		if err != nil {
 			return photos, errors.New(err.Error() + " in rows")
 		}
@@ -73,7 +73,7 @@ func (conn ConnDB) GetPhotoByPid(pid int) (config.Photo, error) {
 		return photo, errors.New(err.Error() + " in executing")
 	}
 	if row.Next() {
-		err = row.Scan(&(photo.Pid), &(photo.Uid), &(photo.Body))
+		err = row.Scan(&(photo.Pid), &(photo.Uid), &(photo.Src))
 		if err != nil {
 			return photo, errors.New(err.Error() + " in rows")
 		}

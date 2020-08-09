@@ -12,9 +12,9 @@ func TestPhotos(t *testing.T) {
 		repo = New()
 		uid1 = 1000
 		uid2 = 1002
-		body1 = []byte("qwerty")
-		body2 = []byte("ytrewq")
-		body3 = []byte("asd")
+		body1 = "qwerty"//[]byte("qwerty")
+		body2 = "ytrewq"//[]byte("ytrewq")
+		body3 = "asd"//[]byte("asd")
 	)
 	_ = repo.Connect()
 

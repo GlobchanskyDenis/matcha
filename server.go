@@ -24,5 +24,6 @@ func main() {
 
 		println(config.GREEN + "starting server at :3000" + config.NO_COLOR)
 		http.ListenAndServe(":3000", nil)
+		println(config.RED + "Порт 3000 занят" + config.NO_COLOR)
 	}
 }

@@ -62,19 +62,19 @@ func (server *Server) photoUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item, isExist = request["photo"]
+	item, isExist = request["src"]
 	if !isExist {
-		consoleLogError(r, "/photo/upload/", "x-auth-token not exist in request")
+		consoleLogError(r, "/photo/upload/", "src not exist in request")
 		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "x-auth-token not exist in request" + `"}`))
+		w.Write([]byte(`{"error":"` + "src not exist in request" + `"}`))
 		return
 	}
 
 	body, ok = item.(string)
 	if !ok {
-		consoleLogError(r, "/photo/upload/", "photo has wrong type")
+		consoleLogError(r, "/photo/upload/", "src has wrong type")
 		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + "photo has wrong type" + `"}`))
+		w.Write([]byte(`{"error":"` + "src has wrong type" + `"}`))
 		return
 	}
 
@@ -92,7 +92,7 @@ func (server *Server) photoUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pid, err = server.Db.SetNewPhoto(uid, []byte(body))
+	pid, err = server.Db.SetNewPhoto(uid, body)
 	if err != nil {
 		consoleLogWarning(r, "/photo/upload/", "UpdateUser returned error - "+err.Error())
 		w.WriteHeader(http.StatusInternalServerError) // 500

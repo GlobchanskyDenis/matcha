@@ -54,60 +54,6 @@ func TestInitTables(t * testing.T) {
 			t_.Log(config.GREEN_BG + "SUCCESS" + config.NO_COLOR + "\n")
 		})
 	}
-
-	// t.Run("Drop tables", func(t_ *testing.T) {
-	// 	err := connDev.DropAllTables()
-	// 	if err != nil {
-	// 		t_.Errorf(config.RED_BG + "ERROR: Cannot connect to database - " + err.Error() + config.NO_COLOR + "\n")
-	// 		return
-	// 	}
-	// 	t_.Log(config.GREEN_BG + "SUCCESS: all tables was droped" + config.NO_COLOR + "\n")
-	// })
-
-	// t.Run("Create users table", func(t_ *testing.T) {
-	// 	err := connDev.CreateUsersTable()
-	// 	if err != nil {
-	// 		t_.Errorf(config.RED_BG + "ERROR: " + err.Error() + config.NO_COLOR + "\n")
-	// 		return
-	// 	}
-	// 	t_.Log(config.GREEN_BG + "SUCCESS: users table was created" + config.NO_COLOR + "\n")
-	// })
-
-	// t.Run("Create  messages table", func(t_ *testing.T) {
-	// 	err := connDev.CreateMessageTable()
-	// 	if err != nil {
-	// 		t_.Errorf(config.RED_BG + "ERROR: " + err.Error() + config.NO_COLOR + "\n")
-	// 		return
-	// 	}
-	// 	t_.Log(config.GREEN_BG + "SUCCESS: messages table was created" + config.NO_COLOR + "\n")
-	// })
-
-	// t.Run("Create notifications table", func(t_ *testing.T) {
-	// 	err := connDev.CreateNotifTable()
-	// 	if err != nil {
-	// 		t_.Errorf(config.RED_BG + "ERROR: " + err.Error() + config.NO_COLOR + "\n")
-	// 		return
-	// 	}
-	// 	t_.Log(config.GREEN_BG + "SUCCESS: notifications table was created" + config.NO_COLOR + "\n")
-	// })
-
-	// t.Run("Create photos table", func(t_ *testing.T) {
-	// 	err := connDev.CreatePhotoTable()
-	// 	if err != nil {
-	// 		t_.Errorf(config.RED_BG + "ERROR: " + err.Error() + config.NO_COLOR + "\n")
-	// 		return
-	// 	}
-	// 	t_.Log(config.GREEN_BG + "SUCCESS: photos table was created" + config.NO_COLOR + "\n")
-	// })
-
-	// t.Run("Create devices table", func(t_ *testing.T) {
-	// 	err := connDev.CreateDevicesTable()
-	// 	if err != nil {
-	// 		t_.Errorf(config.RED_BG + "ERROR: " + err.Error() + config.NO_COLOR + "\n")
-	// 		return
-	// 	}
-	// 	t_.Log(config.GREEN_BG + "SUCCESS: devices table was created" + config.NO_COLOR + "\n")
-	// })
 }
 
 func TestDevice(t *testing.T) {

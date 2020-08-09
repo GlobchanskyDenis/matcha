@@ -9,7 +9,10 @@ var (
 )
 
 func IsRecordNotFoundError(err error) bool {
-	if err == RecordNotFound {
+	if err == nil {
+		return false
+	}
+	if err.Error() == RecordNotFound.Error() {
 		return true
 	}
 	return false

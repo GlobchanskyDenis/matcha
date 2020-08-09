@@ -172,7 +172,7 @@ func (conn ConnDB) CreatePhotosTable() error {
 	_, err := db.Exec("CREATE TABLE photos (pid SERIAL NOT NULL, " +
 		"PRIMARY KEY (pid), " +
 		"uid INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!      bytea
+		"src VARCHAR(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!      bytea
 	return err
 }
 
