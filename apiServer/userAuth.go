@@ -51,11 +51,9 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			println("PANIC!!!!! " + err.(error).Error())
+			println(RED_BG + "PANIC!!!!! " + err.(error).Error() + NO_COLOR)
 		}
 	}()
-
-	
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
