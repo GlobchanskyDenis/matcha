@@ -160,7 +160,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		if !ok {
 			return user, message, errors.New("wrong type of param")
 		}
-		user.Latitude = float32(tmpFloat)
+		user.Longitude = float32(tmpFloat)
 		message += " longitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
 	}
 	arg, isExist = request["interests"]

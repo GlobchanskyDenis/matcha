@@ -355,10 +355,13 @@
 			var orientation = document.forms['upd']['orientation'].value
 			var bio = document.forms['upd']['bio'].value
 			var avaID = document.forms['upd']['avaID'].value
+			var latitude = document.forms['upd']['latitude'].value
+			var longitude = document.forms['upd']['longitude'].value
 			var request = ""
 
 			if (mail == "" && pass == "" && fname == "" && lname == "" &&
-				birth == "" && gender == "" && orientation == "" && bio == "" && avaID == "") {
+				birth == "" && gender == "" && orientation == "" && bio == "" &&
+				avaID == "" && latitude == "" && longitude == "") {
 				console.log("update: all fields are empty")
 				return
 			}
@@ -415,6 +418,18 @@
 				var validAvaID = Number(avaID)
 				request += "\"avaID\":" + JSON.stringify(validAvaID)
 			}
+			if (latitude != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"latitude\":" + latitude
+			}
+			if (longitude != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"longitude\":" + longitude
+			}
 			if (request != "") {
 				request += ","
 			}
@@ -455,6 +470,8 @@
 				document.forms['upd']['orientation'].value = "";
 				document.forms['upd']['bio'].value = "";
 				document.forms['upd']['avaID'].value = "";
+				document.forms['upd']['latitude'].value = "";
+				document.forms['upd']['longitude'].value = "";
 			}
 
 			xhr.onerror = function () {
@@ -556,6 +573,8 @@
 		<input type="text" name="orientation" placeholder="orientation">
 		<input type="text" name="bio" placeholder="biography">
 		<input type="text" name="avaID" placeholder="avaID">
+		<input type="text" name="latitude" placeholder="latitude">
+		<input type="text" name="longitude" placeholder="longitude">
 	</form>
 	<input type="submit" value="Изменить данные" onclick="UpdateUser()">
 
