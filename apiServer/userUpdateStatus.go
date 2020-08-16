@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
+	// . "MatchaServer/config"
 	"MatchaServer/handlers"
 	"MatchaServer/errDef"
 	"encoding/json"
@@ -14,7 +14,7 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, token string
 		err                  error
-		user                 User
+		// user                 User
 		request              map[string]interface{}
 		item                 interface{}
 		isExist, ok          bool
@@ -62,8 +62,8 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err = server.Db.GetUserByMail(mail)
-	if errDef.IsRecordNotFoundError(err) {
+	user, err := server.Db.GetUserByMail(mail)
+	if errDef.RecordNotFound.IsOverlapWithError(err) {
 		consoleLogWarning(r, "/user/update/status/", "GetUserByMail - record not found")
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		w.Write([]byte(`{"error":"` + err.Error() + `"}`))

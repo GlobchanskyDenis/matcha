@@ -1,7 +1,6 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
 	"MatchaServer/handlers"
 	"MatchaServer/errDef"
 	"encoding/json"
@@ -18,7 +17,7 @@ func (server *Server) photoDownload(w http.ResponseWriter, r *http.Request) {
 		err          error
 		request      map[string]interface{}
 		item         interface{}
-		isExist, ok  bool
+		isExist, isLogged, ok  bool
 	)
 
 	message = "request for PHOTO DOWNLOAD was recieved"
@@ -27,79 +26,63 @@ func (server *Server) photoDownload(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/photo/download/", "request json decode failed - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
+		server.error(w, errDef.InvalidRequestBody)
 		return
 	}
 
 	item, isExist = request["uid"]
 	if !isExist {
-		consoleLogError(r, "/photo/download/", "uid not exist in request")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "uid not exist in request" + `"}`))
+		consoleLogWarning(r, "/photo/download/", "uid not exist in request")
+		server.error(w, errDef.NoArgument.WithArguments("Поле uid отсутствует", "uid field expected"))
 		return
 	}
 
 	tmpFloat64, ok = item.(float64)
 	if !ok {
-		consoleLogError(r, "/photo/download/", "uid has wrong type")
-		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + "uid has wrong type" + `"}`))
+		consoleLogWarning(r, "/photo/download/", "uid has wrong type")
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле uid имеет неверный тип", "uid field has wrong type"))
 		return
 	}
 	authorUid = int(tmpFloat64)
 
 	item, isExist = request["x-auth-token"]
 	if !isExist {
-		consoleLogError(r, "/photo/download/", "x-auth-token not exist in request")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "x-auth-token not exist in request" + `"}`))
+		consoleLogWarning(r, "/photo/download/", "x-auth-token not exist in request")
+		server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 		return
 	}
 
 	token, ok = item.(string)
 	if !ok {
-		consoleLogError(r, "/photo/download/", "x-auth-token has wrong type")
-		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + "x-auth-token has wrong type" + `"}`))
+		consoleLogWarning(r, "/photo/download/", "x-auth-token has wrong type")
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
-		consoleLogError(r, "/photo/download/", "x-auth-token is empty")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "x-auth-token is empty" + `"}`))
+		consoleLogWarning(r, "/photo/download/", "x-auth-token is empty")
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	myUid, err = handlers.TokenUidDecode(token)
 	if err != nil {
 		consoleLogWarning(r, "/photo/download/", "TokenUidDecode returned error - "+err.Error())
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
-	isExist, err = server.Db.IsUserExistsByUid(myUid)
-	if err != nil {
-		consoleLogWarning(r, "/photo/download/", "IsUserExistsByUid returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
+	isLogged = server.session.IsUserLoggedByUid(myUid)
+	if !isLogged {
+		consoleLogWarning(r, "/photo/download/", "User #"+strconv.Itoa(myUid)+" is not logged")
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
-	if !isExist {
-		consoleLogWarning(r, "/photo/download/", "user record not found")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + errDef.RecordNotFound.Error() + `"}`))
-		return
-	}
-	// Проверить чтобы пользователь был залогинен
 
 	photos, err := server.Db.GetPhotosByUid(authorUid)
 	if err != nil {
-		consoleLogWarning(r, "/photo/download/", "UpdateUser returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
+		consoleLogError(r, "/photo/download/", "GetPhotosByUid returned error - "+err.Error())
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 

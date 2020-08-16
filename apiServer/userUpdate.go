@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
+	"MatchaServer/config"
 	"MatchaServer/handlers"
 	"MatchaServer/errDef"
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func fillUserStruct(request map[string]interface{}, user User) (User, string, error) {
+func fillUserStruct(request map[string]interface{}, user config.User) (config.User, string, error) {
 	var usefullFieldsExists, ok, isExist bool
 	var message string
 	var err error
@@ -26,11 +26,13 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Mail, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message, 
+				errDef.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type")
 		}
 		err = handlers.CheckMail(user.Mail)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " mail=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -39,7 +41,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Pass, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message, 
+				errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type")
 		}
 		user.EncryptedPass = handlers.PassHash(user.Pass)
 		err = handlers.CheckPass(user.Pass)
@@ -53,7 +56,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Fname, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message, 
+				errDef.InvalidArgument.WithArguments("Поле fname имеет неверный тип", "fname field has wrong type")
 		}
 		err = handlers.CheckName(user.Fname)
 		if err != nil {
@@ -66,7 +70,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Lname, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле lname имеет неверный тип", "lname field has wrong type")
 		}
 		err = handlers.CheckName(user.Lname)
 		if err != nil {
@@ -79,11 +84,13 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		birth, ok := arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message, 
+				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
 		}
 		user.Birth, err = time.Parse("2006-01-02", birth)
 		if err != nil {
-			return user, message, err
+			return user, message, 
+				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
 		}
 		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
 		if user.Age > 80 || user.Age < 16 {
@@ -96,7 +103,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Gender, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле gender имеет неверный тип", "gender field has wrong type")
 		}
 		err = handlers.CheckGender(user.Gender)
 		if err != nil {
@@ -109,7 +117,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Orientation, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле orientation имеет неверный тип", "orientation field has wrong type")
 		}
 		err = handlers.CheckOrientation(user.Orientation)
 		if err != nil {
@@ -122,7 +131,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		user.Bio, ok = arg.(string)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле bio имеет неверный тип", "bio field has wrong type")
 		}
 		err = handlers.CheckBio(user.Bio)
 		if err != nil {
@@ -136,7 +146,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		tmpFloat, ok = arg.(float64)
 		user.AvaID = int(tmpFloat)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип", "avaID field has wrong type")
 		}
 		if user.AvaID < 0 {
 			return user, message, errors.New("this id is forbidden")
@@ -148,7 +159,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		tmpFloat, ok = arg.(float64)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле latitude имеет неверный тип", "latitude field has wrong type")
 		}
 		user.Latitude = float32(tmpFloat)
 		message += " latitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
@@ -158,7 +170,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		tmpFloat, ok = arg.(float64)
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле longitude имеет неверный тип", "longitude field has wrong type")
 		}
 		user.Longitude = float32(tmpFloat)
 		message += " longitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
@@ -168,7 +181,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		usefullFieldsExists = true
 		interfaceArr, ok = arg.([]interface{})
 		if !ok {
-			return user, message, errors.New("wrong type of param")
+			return user, message,
+				errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type")
 		}
 		for _, item := range interfaceArr {
 			tmpStr, ok := item.(string)
@@ -202,7 +216,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid            int
 		err            error
-		user           User
+		user           config.User
 		message, token string
 		request        map[string]interface{}
 	)
@@ -298,7 +312,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err = server.Db.GetUserByUid(uid)
-	if errDef.IsRecordNotFoundError(err) {
+	if errDef.RecordNotFound.IsOverlapWithError(err) {
 		consoleLogWarning(r, "/user/update/", "GetUserByUid - record not found")
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		w.Write([]byte(`{"error":"` + err.Error() + `"}`))

@@ -1,7 +1,6 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
 	"log"
 	"net/http"
 )

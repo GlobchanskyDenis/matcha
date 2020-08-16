@@ -1,7 +1,6 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
 	"encoding/json"
 	"net/http"
 	"strconv"

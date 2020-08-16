@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
+	"MatchaServer/errDef"
 	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
@@ -14,10 +14,10 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, token      string
 		err                 error
-		user                User
 		request             map[string]interface{}
 		pass, encryptedPass string
 		uid                 int
+		isLogged, isExist, ok bool
 	)
 
 	message = "request for DELETE was recieved"
@@ -26,72 +26,70 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/user/delete/", "request json decode failed - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
+		server.error(w, errDef.InvalidRequestBody)
 		return
 	}
 
 	arg, isExist := request["x-auth-token"]
 	if !isExist {
-		consoleLogWarning(r, "/user/delete/", "token not exist")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "token not exist" + `"}`))
+		consoleLogWarning(r, "/user/delete/", "x-auth-token not exist")
+		server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 		return
 	}
 
-	token, ok := arg.(string)
+	token, ok = arg.(string)
 	if !ok {
 		consoleLogWarning(r, "/user/delete/", "token have wrong type")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "token have wrong type" + `"}`))
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
 		consoleLogWarning(r, "/user/delete/", "token is empty")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "token is empty" + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
 		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - "+err.Error())
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, errDef.UserNotLogged)
+		return
+	}
+
+	isLogged = server.session.IsUserLoggedByUid(uid)
+	if !isLogged {
+		consoleLogWarning(r, "/photo/upload/", "User #"+strconv.Itoa(uid)+" is not logged")
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	arg, isExist = request["pass"]
 	if !isExist {
 		consoleLogWarning(r, "/user/delete/", "password not exist")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "password not exist" + `"}`))
+		server.error(w, errDef.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
 		return
 	}
 
 	pass, ok = arg.(string)
 	if !ok {
 		consoleLogWarning(r, "/user/delete/", "password have wrong type")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "token have wrong type" + `"}`))
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
 		return
 	}
 
 	encryptedPass = handlers.PassHash(pass)
 
-	user, err = server.Db.GetUserByUid(uid)
+	user, err := server.Db.GetUserByUid(uid)
 	if err != nil {
 		consoleLogError(r, "/user/delete/", "GetUserByUid returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	if encryptedPass != user.EncryptedPass {
 		consoleLogWarning(r, "/user/delete/", "password is incorrect")
-		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + "wrong password" + `"}`))
+		server.error(w, errDef.InvalidArgument.WithArguments("неверный пароль", "password is wrong"))
 		return
 	}
 
@@ -100,8 +98,7 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		consoleLogError(r, "/user/delete/", "DeleteUser returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 

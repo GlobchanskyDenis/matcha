@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/errDef"
 	"strconv"
 	"encoding/json"
 	"net/http"
@@ -12,32 +12,29 @@ func (server *Server) interestsGet(w http.ResponseWriter, r *http.Request) {
 	var (
 		message    string
 		err        error
-		interests  []config.Interest
 	)
 
 	defer func() {
 		if err := recover(); err != nil {
-			println(config.RED_BG + "PANIC!!!!! " + err.(error).Error() + config.NO_COLOR)
+			println(RED_BG + "PANIC!!!!! " + err.(error).Error() + NO_COLOR)
 		}
 	}()
 
 	message = "request for interests array was recieved"
 	consoleLog(r, "/interests/get/", message)
 
-	interests, err = server.Db.GetInterests()
+	interests, err := server.Db.GetInterests()
 	if err != nil {
 		consoleLogError(r, "/interests/get/", "database returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "database error" + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	jsonInterests, err := json.Marshal(interests)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
-		consoleLogWarning(r, "/interests/get/", "Marshal returned error "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "cannot convert to json" + `"}`))
+		consoleLogError(r, "/interests/get/", "Marshal returned error "+err.Error())
+		server.error(w, errDef.MarshalError)
 		return
 	}
 
