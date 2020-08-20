@@ -18,9 +18,10 @@ type ApiError struct {
 type ApiErrorArgument struct {
 	ru	    string
 	eng 	string
+	err		error
 }
 
-func NewArgument(ru string, eng string) ApiErrorArgument {
+func NewArg(ru string, eng string) ApiErrorArgument {
 	var err ApiErrorArgument
 
 	err.ru = ru
@@ -29,7 +30,15 @@ func NewArgument(ru string, eng string) ApiErrorArgument {
 }
 
 func (err ApiErrorArgument) Error() string {
+	if err.err != nil {
+		return err.err.Error()
+	}
 	return err.eng
+}
+
+func (err ApiErrorArgument) AddOriginalError(newErr error) ApiErrorArgument {
+	err.err = newErr
+	return err
 }
 
 func new(code int, httpStatus int, ruPattern string, engPattern string) ApiError {

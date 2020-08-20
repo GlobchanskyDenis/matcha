@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"MatchaServer/errDef"
 )
 
 func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
@@ -12,16 +13,14 @@ func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
 	users, err := server.Db.SearchUsersByOneFilter(filter)
 	if err != nil {
 		consoleLogError(r, "/users/", "SearchUsersByOneFilter returned error "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
 		consoleLogError(r, "/users/", "Marshal returned error"+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "json convert error" + `"}`))
+		server.error(w, errDef.MarshalError)
 		return
 	}
 	w.WriteHeader(http.StatusOK) // 200
@@ -35,15 +34,13 @@ func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
 	users, err := server.Db.GetLoggedUsers(server.session.GetLoggedUsersUidSlice())
 	if err != nil {
 		consoleLogError(r, "/users/", "GetLoggedUsers returned error"+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "database request failed" + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
 		consoleLogError(r, "/users/", "Marshal returned error"+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "json convert error" + `"}`))
+		server.error(w, errDef.MarshalError)
 		return
 	}
 	w.WriteHeader(http.StatusOK) // 200
@@ -59,8 +56,7 @@ func (server *Server) search(w http.ResponseWriter, r *http.Request) {
 
 	if filter != "all" && filter != "logged" {
 		consoleLogWarning(r, "/users/", "filter "+BLUE+filter+NO_COLOR+" not exist")
-		w.WriteHeader(http.StatusResetContent) // 205
-		w.Write([]byte(`{"error":"` + "no such filter - " + filter + `"}`))
+		errDef.InvalidArgument.WithArguments("Значение поля filter недопустимо", "filter field has wrong value")
 		return
 	}
 

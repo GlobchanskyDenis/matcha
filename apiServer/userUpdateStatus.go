@@ -1,7 +1,6 @@
 package apiServer
 
 import (
-	// . "MatchaServer/config"
 	"MatchaServer/handlers"
 	"MatchaServer/errDef"
 	"encoding/json"
@@ -14,7 +13,6 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, token string
 		err                  error
-		// user                 User
 		request              map[string]interface{}
 		item                 interface{}
 		isExist, ok          bool
@@ -26,70 +24,54 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/user/update/status/", "request json decode failed - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
+		server.error(w, errDef.InvalidRequestBody)
 		return
 	}
 
 	item, isExist = request["x-reg-token"]
 	if !isExist {
 		consoleLogError(r, "/user/update/status/", "x-reg-token not exist in request")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "x-reg-token not exist in request" + `"}`))
+		server.error(w, errDef.NoArgument.WithArguments("Поле x-reg-token отсутствует", "x-reg-token field expected"))
 		return
 	}
 
 	token, ok = item.(string)
 	if !ok {
 		consoleLogError(r, "/user/update/status/", "x-reg-token has wrong type")
-		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + "x-reg-token has wrong type" + `"}`))
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-reg-token имеет неверный тип", "x-reg-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
 		consoleLogError(r, "/user/update/status/", "x-reg-token is empty")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "x-reg-token is empty" + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	mail, err = handlers.TokenMailDecode(token)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "TokenMailDecode returned error - "+err.Error())
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	user, err := server.Db.GetUserByMail(mail)
 	if errDef.RecordNotFound.IsOverlapWithError(err) {
 		consoleLogWarning(r, "/user/update/status/", "GetUserByMail - record not found")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, errDef.UserNotExist)
 		return
 	} else if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "GetUserByMail returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
-
-	// if user.Uid == 0 {
-	// 	// it means that no such iser in database
-	// 	consoleLogWarning(r, "/user/update/status/", "Mail doesnt exists in database")
-	// 	w.WriteHeader(http.StatusUnauthorized) // 401
-	// 	w.Write([]byte(`{"error":"` + `Mail doesnt exists in database` + `"}`))
-	// 	return
-	// }
 
 	user.Status = "confirmed"
 
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/status/", "UpdateUser returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + `database returned error` + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 

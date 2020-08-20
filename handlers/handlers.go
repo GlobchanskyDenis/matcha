@@ -2,7 +2,8 @@ package handlers
 
 import (
 	"MatchaServer/config"
-	"errors"
+	"MatchaServer/errDef"
+	// "errors"
 	"hash/crc32"
 	"net/smtp"
 	"strconv"
@@ -78,7 +79,7 @@ func CheckPass(pass string) error {
 		buf            = []rune(pass)
 	)
 	if utf8.RuneCountInString(pass) < config.PASS_MIN_LEN {
-		return errors.New("too short password")
+		return errDef.NewArg("слишком короткий пароль", "too short password")
 	}
 
 	for i := 0; i < len(buf); i++ {
@@ -94,13 +95,13 @@ func CheckPass(pass string) error {
 		}
 	}
 	if !wasLetter {
-		return errors.New("Password should contain letters")
+		return errDef.NewArg("пароль должен содержать буквы", "Password should contain letters")
 	}
 	if !wasDigit {
-		return errors.New("Password should contain digits")
+		return errDef.NewArg("пароль должен содержать цифры", "Password should contain digits")
 	}
 	if !wasSpacialChar {
-		return errors.New("Password should contain special chars")
+		return errDef.NewArg("пароль должен содержать специальные символы", "Password should contain special chars")
 	}
 	return nil
 }
@@ -114,44 +115,49 @@ func CheckMail(mail string) error {
 	)
 
 	if utf8.RuneCountInString(mail) < config.MAIL_MIN_LEN {
-		return errors.New("too short mail address")
+		return errDef.NewArg("слишком короткий почтовый адрес", "too short mail address")
 	}
 	if utf8.RuneCountInString(mail) > config.MAIL_MAX_LEN {
-		return errors.New("too long mail address")
+		return errDef.NewArg("слишком длинный почтовый адрес", "too long mail address")
 	}
 
 	if buf[0] == '_' || buf[0] == '-' || buf[0] == '@' ||
 		buf[0] == '.' || (buf[0] >= '0' && buf[0] <= '9') {
-		return errors.New("invalid first mail address symbol")
+		return errDef.NewArg("первый символ почтового адреса невалиден",
+			"invalid first mail address symbol")
 	}
 
 	if buf[length-1] == '_' || buf[length-1] == '-' || buf[length-1] == '@' ||
 		buf[length-1] == '.' || (buf[length-1] >= '0' && buf[length-1] <= '9') {
-		return errors.New("invalid last mail address symbol")
+		return errDef.NewArg("последний символ почтового адреса невалиден",
+			"invalid last mail address symbol")
 	}
 
 	for i := 0; i < length; i++ {
 		if !isMailRunePermitted(buf[i]) {
-			return errors.New("forbidden symbol in mail")
+			return errDef.NewArg("найден запрещенный символ почтового адреса",
+				"forbidden symbol in mail")
 		}
 		if buf[i] == '@' {
 			doggyCount++
 			if i > 0 && buf[i-1] == '.' {
-				return errors.New("invalid mail address")
+				return errDef.NewArg("почтовый адрес невалиден", "invalid mail address")
 			}
 		}
 		if buf[i] == '.' && doggyCount > 0 {
 			dots++
 			if buf[i-1] == '.' || buf[i-1] == '@' {
-				return errors.New("invalid mail address")
+				return errDef.NewArg("почтовый адрес невалиден", "invalid mail address")
 			}
 		}
 	}
 	if doggyCount != 1 {
-		return errors.New("invalid amount of '@' symbols in mail address")
+		return errDef.NewArg("невалидное количество символов '@' в почтовом адресе",
+			"invalid amount of '@' symbols in mail address")
 	}
 	if dots != 1 && dots != 2 {
-		return errors.New("invalid amount of '.' symbols in mail address")
+		return errDef.NewArg("невалидное количество символов '.' в почтовом адресе",
+			"invalid amount of '.' symbols in mail address")
 	}
 	return nil
 }
@@ -160,20 +166,22 @@ func CheckName(name string) error {
 	var runeSlice = []rune(name)
 
 	if len(name) > config.NAME_MAX_LEN {
-		return errors.New("too long name length")
+		return errDef.NewArg("слишком длинное поле имени", "too long name length")
 	}
 	if utf8.RuneCountInString(name) < 1 {
-		return errors.New("name is empty")
+		return errDef.NewArg("поле имени пустое", "name is empty")
 	}
 	if !isLetter(runeSlice[0]) {
-		return errors.New("first name symbol should be letter")
+		return errDef.NewArg("первый символ поля имени должен быть буквой", "first name symbol should be letter")
 	}
 	if !isLetter(runeSlice[(len(runeSlice)-1)]) && !isDigit(runeSlice[(len(runeSlice)-1)]) {
-		return errors.New("last name symbol should be letter or digit")
+		return errDef.NewArg("последний символ поля имени должен быть буквой или цифрой",
+			"last name symbol should be letter or digit")
 	}
 	for i := 0; i < len(runeSlice); i++ {
 		if !isNameRunePermitted(runeSlice[i]) {
-			return errors.New("name letter '" + string(runeSlice[i]) + "' is not permitted")
+			return errDef.NewArg("символ поля имени " + string(runeSlice[i]) + " запрещен", 
+				"name letter '" + string(runeSlice[i]) + "' is not permitted")
 		}
 	}
 	return nil
@@ -181,21 +189,21 @@ func CheckName(name string) error {
 
 func CheckGender(gender string) error {
 	if gender != "male" && gender != "female" {
-		return errors.New("gender '" + gender + "' not exist in database")
+		return errDef.NewArg("гендер " + gender + " неизвестен", "gender '" + gender + "' is not known")
 	}
 	return nil
 }
 
 func CheckOrientation(orientation string) error {
 	if orientation != "hetero" && orientation != "bi" && orientation != "homo" {
-		return errors.New("orientation '" + orientation + "' not exist in database")
+		return errDef.NewArg("ориентация " + orientation + " неизвестна", "orientation '" + orientation + "' not exist in database")
 	}
 	return nil
 }
 
 func CheckBio(bio string) error {
 	if len(bio) > config.BIO_MAX_LEN {
-		return errors.New("too long biography length")
+		return errDef.NewArg("слишком длинная биография", "too long biography length")
 	}
 	return nil
 }
@@ -221,10 +229,10 @@ func FindUnknownInterests(knownInterests []config.Interest, interestsNameArr []s
 
 func CheckInterest(interest string) error {
 	if interest == "" {
-		return errors.New("empty interest")
+		return errDef.NewArg("поле интересов пустое", "empty interest")
 	}
 	if len(interest) > config.INTEREST_MAX_LEN {
-		return errors.New("too big interest length")
+		return errDef.NewArg("поле интересов слишком длинное", "too big interest length")
 	}
 	return nil
 }
@@ -262,7 +270,7 @@ func TokenUidEncode(uid int) (string, error) {
 	c, err := aes.NewCipher([]byte(masterKey))
 	// if there are any errors, handle them
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка кодирования токена", "token encode error").AddOriginalError(err)
 	}
 
 	// gcm or Galois/Counter Mode, is a mode of operation
@@ -272,7 +280,7 @@ func TokenUidEncode(uid int) (string, error) {
 	// if any error generating new GCM
 	// handle them
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка кодирования токена", "token encode error").AddOriginalError(err)
 	}
 
 	// creates a new byte array the size of the nonce
@@ -281,7 +289,7 @@ func TokenUidEncode(uid int) (string, error) {
 	// populates our nonce with a cryptographically secure
 	// random sequence
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка кодирования токена", "token encode error").AddOriginalError(err)
 	}
 
 	// here we encrypt our text using the Seal function
@@ -296,15 +304,15 @@ func TokenUidEncode(uid int) (string, error) {
 func TokenMailEncode(mail string) (string, error) {
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка кодирования токена", "token encode error").AddOriginalError(err)
 	}
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка кодирования токена", "token encode error").AddOriginalError(err)
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка кодирования токена", "token encode error").AddOriginalError(err)
 	}
 	token := gcm.Seal(nonce, nonce, []byte(mail), nil)
 	return base64.URLEncoding.EncodeToString(token), nil
@@ -315,17 +323,17 @@ func TokenUidDecode(token string) (int, error) {
 
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
-		return 0, err
+		return 0, errDef.NewArg("ошибка декодирования токена", "token decode error").AddOriginalError(err)
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return 0, err
+		return 0, errDef.NewArg("ошибка декодирования токена", "token decode error").AddOriginalError(err)
 	}
 
 	nonceSize := gcm.NonceSize()
 	if len(encodedToken) < nonceSize {
-		return 0, errors.New("size error in decoding")
+		return 0, errDef.NewArg("ошибка размера при декодировании токена", "size error in decoding")
 	}
 
 	nonce, encodedToken := encodedToken[:nonceSize], encodedToken[nonceSize:]
@@ -335,7 +343,7 @@ func TokenUidDecode(token string) (int, error) {
 	}
 	uid, err := strconv.Atoi(string(desired))
 	if err != nil {
-		return 0, err
+		return 0, errDef.NewArg("ошибка декодирования токена", "token decode error").AddOriginalError(err)
 	}
 	return uid, nil
 }
@@ -344,20 +352,20 @@ func TokenMailDecode(token string) (string, error) {
 	encodedToken, _ := base64.URLEncoding.DecodeString(token)
 	c, err := aes.NewCipher([]byte(masterKey))
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка декодирования токена", "token decode error").AddOriginalError(err)
 	}
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка декодирования токена", "token decode error").AddOriginalError(err)
 	}
 	nonceSize := gcm.NonceSize()
 	if len(encodedToken) < nonceSize {
-		return "", errors.New("size error in decoding")
+		return "", errDef.NewArg("ошибка размера при декодировании токена", "size error in decoding")
 	}
 	nonce, encodedToken := encodedToken[:nonceSize], encodedToken[nonceSize:]
 	desired, err := gcm.Open(nil, nonce, encodedToken, nil)
 	if err != nil {
-		return "", err
+		return "", errDef.NewArg("ошибка декодирования токена", "token decode error").AddOriginalError(err)
 	}
 	mail := string(desired)
 	return mail, nil
@@ -375,7 +383,7 @@ Hello, ` + to + `, I have registration code for you!
 
 	if err := smtp.SendMail(config.MAIL_HOST+":587",
 		auth, config.MAIL_FROM, []string{to}, []byte(message)); err != nil {
-		return err
+		return errDef.NewArg("не смог отправить письмо", "could not sent letter").AddOriginalError(err)
 	}
 	return nil
 }

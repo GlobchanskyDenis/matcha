@@ -5,7 +5,7 @@ import (
 	"MatchaServer/handlers"
 	"MatchaServer/errDef"
 	"encoding/json"
-	"errors"
+	// "errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -41,13 +41,14 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		usefullFieldsExists = true
 		user.Pass, ok = arg.(string)
 		if !ok {
-			return user, message, 
+			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type")
 		}
 		user.EncryptedPass = handlers.PassHash(user.Pass)
 		err = handlers.CheckPass(user.Pass)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " password=hidden"
 	}
@@ -61,7 +62,8 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		}
 		err = handlers.CheckName(user.Fname)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " fname=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -75,7 +77,8 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		}
 		err = handlers.CheckName(user.Lname)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " lname=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -94,7 +97,7 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		}
 		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
 		if user.Age > 80 || user.Age < 16 {
-			return user, message, errors.New("forbidden age")
+			return user, message, errDef.InvalidArgument.WithArguments("Значение поля birth недопустимо", "birth field has wrong value")
 		}
 		message += " birth=" + BLUE + birth + NO_COLOR + " age=" + BLUE + strconv.Itoa(user.Age) + NO_COLOR
 	}
@@ -108,7 +111,8 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		}
 		err = handlers.CheckGender(user.Gender)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " gender=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -122,7 +126,8 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		}
 		err = handlers.CheckOrientation(user.Orientation)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " orientation=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -136,7 +141,8 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		}
 		err = handlers.CheckBio(user.Bio)
 		if err != nil {
-			return user, message, err
+			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " bio=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -150,7 +156,7 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип", "avaID field has wrong type")
 		}
 		if user.AvaID < 0 {
-			return user, message, errors.New("this id is forbidden")
+			return user, message, errDef.InvalidArgument.WithArguments("Значение поля avaID недопустимо", "avaID field has wrong value")
 		}
 		message += " avaID=" + BLUE + strconv.Itoa(user.AvaID) + NO_COLOR
 	}
@@ -187,11 +193,12 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		for _, item := range interfaceArr {
 			tmpStr, ok := item.(string)
 			if !ok {
-				return user, message, errors.New("wrong type of param")
+				return user, message, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type")
 			}
 			err = handlers.CheckInterest(tmpStr)
 			if err != nil {
-				return user, message, errors.New("invalid interest - " + err.Error())
+				// handlers - привести все ошибки к типу errDef.ApiErrorArgument
+				return user, message, errDef.InvalidArgument.WithArguments(err)
 			}
 			user.Interests = append(user.Interests, tmpStr)
 			interestsStr += tmpStr + ", "
@@ -203,7 +210,7 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 	}
 
 	if !usefullFieldsExists {
-		return user, message, errors.New("no usefull fields found")
+		return user, message, errDef.NoArgument//.WithArguments("Нет ни одного полезного поля", "no usefull fields found")
 	}
 	return user, message, nil
 }
@@ -224,31 +231,27 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		consoleLogError(r, "/user/update/", "request json decode failed - "+err.Error())
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "json decode failed" + `"}`))
+		server.error(w, errDef.InvalidRequestBody)
 		return
 	}
 
 	arg, isExist := request["x-auth-token"]
 	if !isExist {
-		consoleLogWarning(r, "/user/update/", "token not exists")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "token not exists" + `"}`))
+		consoleLogWarning(r, "/user/update/", "x-auth-token not exists")
+		server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 		return
 	}
 
 	token, ok := arg.(string)
 	if !ok {
 		consoleLogWarning(r, "/user/update/", "token have wrong type")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		w.Write([]byte(`{"error":"` + "token have wrong type" + `"}`))
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
 		consoleLogWarning(r, "/user/update/", "token is empty")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "token is empty" + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
@@ -258,30 +261,26 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		knownInterests, err := server.Db.GetInterests()
 		if err != nil {
 			consoleLogWarning(r, "/user/update/", "GetInterests returned error - " + err.Error())
-			w.WriteHeader(http.StatusInternalServerError) // 500
-			w.Write([]byte(`{"error":"` + "database error" + `"}`))
+			server.error(w, errDef.DatabaseError)
 			return
 		}
 		interfaceArr, ok := arg.([]interface{})
 		if !ok {
 			consoleLogWarning(r, "/user/update/", "wrong argument type (interests)")
-			w.WriteHeader(http.StatusUnprocessableEntity) // 422
-			w.Write([]byte(`{"error":"` + "wrong argument type (interests)" + `"}`))
+			server.error(w, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type"))
 			return
 		}
 		for _, item := range interfaceArr {
 			interest, ok := item.(string)
 			if !ok {
 				consoleLogWarning(r, "/user/update/", "wrong argument type (interests item)")
-				w.WriteHeader(http.StatusUnprocessableEntity) // 422
-				w.Write([]byte(`{"error":"` + "wrong argument type (interests item)" + `"}`))
+				server.error(w, errDef.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип", "interests (item) field has wrong type"))
 				return
 			}
 			err = handlers.CheckInterest(interest)
 			if err != nil {
 				consoleLogWarning(r, "/user/update/", "invalid interest - " + err.Error())
-				w.WriteHeader(http.StatusUnprocessableEntity) // 422
-				w.Write([]byte(`{"error":"` + "invalid interest - " + err.Error() + `"}`))
+				errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо", "interests (item) field has wrong value")
 				return
 			}
 			interestsNameArr = append(interestsNameArr, interest)
@@ -290,8 +289,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		err = server.Db.AddInterests(unknownInterests)
 		if err != nil {
 			consoleLogError(r, "/user/update/", "AddInterests returned error - " + err.Error())
-			w.WriteHeader(http.StatusInternalServerError) // 500
-			w.Write([]byte(`{"error":"` + "database error" + `"}`))
+			server.error(w, errDef.DatabaseError)
 			return
 		}
 	}
@@ -299,48 +297,40 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/", "TokenUidDecode returned error - "+err.Error())
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "token decoding error" + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	if !server.session.IsUserLoggedByUid(uid) {
 		consoleLogWarning(r, "/user/update/", "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + "user is not logged" + `"}`))
+		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	user, err = server.Db.GetUserByUid(uid)
 	if errDef.RecordNotFound.IsOverlapWithError(err) {
 		consoleLogWarning(r, "/user/update/", "GetUserByUid - record not found")
-		w.WriteHeader(http.StatusUnauthorized) // 401
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, errDef.UserNotExist)
 		return
 	} else if err != nil {
 		consoleLogError(r, "/user/update/", "GetUser returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	user, message, err = fillUserStruct(request, user)
 	if err != nil {
 		consoleLogWarning(r, "/user/update/", err.Error())
-		w.WriteHeader(http.StatusUnprocessableEntity) // 422
-		w.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		server.error(w, err.(errDef.ApiError))
 		return
 	}
 
 	consoleLog(r, "/user/update/", message)
 
-
-
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		consoleLogError(r, "/user/update/", "UpdateUser returned error - "+err.Error())
-		w.WriteHeader(http.StatusInternalServerError) // 500
-		w.Write([]byte(`{"error":"` + "database request returned error" + `"}`))
+		server.error(w, errDef.DatabaseError)
 		return
 	}
 
