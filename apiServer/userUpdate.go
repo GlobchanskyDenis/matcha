@@ -5,7 +5,6 @@ import (
 	"MatchaServer/handlers"
 	"MatchaServer/errDef"
 	"encoding/json"
-	// "errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -280,7 +279,8 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 			err = handlers.CheckInterest(interest)
 			if err != nil {
 				consoleLogWarning(r, "/user/update/", "invalid interest - " + err.Error())
-				errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо", "interests (item) field has wrong value")
+				server.error(w, errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо", 
+					"interests (item) field has wrong value"))
 				return
 			}
 			interestsNameArr = append(interestsNameArr, interest)

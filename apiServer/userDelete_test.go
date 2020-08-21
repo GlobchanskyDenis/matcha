@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
+	// . "MatchaServer/config"
 	// "MatchaServer/database/fakeSql"
 
 	"MatchaServer/database/postgres"
@@ -82,7 +82,7 @@ func TestUserDelete(t *testing.T) {
 			payload: map[string]string{
 				"pass": pass,
 			},
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid broken json",
 			requestBody:    strings.NewReader(`{"pass":` + passNew + `","x-auth-token":"` + token + `"}`),
@@ -117,9 +117,9 @@ func TestUserDelete(t *testing.T) {
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if rec.Code != http.StatusOK {
-				t.Logf(GREEN_BG + "SUCCESS: user removing was failed as it expected" + NO_COLOR + "\n")
+				t_.Logf(GREEN_BG + "SUCCESS: user removing was failed as it expected" + NO_COLOR + "\n")
 			} else {
-				t.Logf(GREEN_BG + "SUCCESS: user was removed" + NO_COLOR + "\n")
+				t_.Logf(GREEN_BG + "SUCCESS: user was removed" + NO_COLOR + "\n")
 			}
 		})
 	}

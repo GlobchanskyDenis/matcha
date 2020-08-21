@@ -99,7 +99,7 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := server.Db.GetUserForAuth(mail, handlers.PassHash(pass))
-	if errDef.AuthFail.IsOverlapWithError(err) {
+	if errDef.RecordNotFound.IsOverlapWithError(err) {
 		consoleLogWarning(r, "/user/auth/", "Authorization for user "+BLUE+mail+NO_COLOR+" failed")
 		server.error(w, errDef.AuthFail)
 		return

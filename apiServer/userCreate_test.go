@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
+	// . "MatchaServer/config"
 	// "MatchaServer/database/fakeSql"
 
 	"MatchaServer/database/postgres"
@@ -109,9 +109,9 @@ func TestUserCreate(t *testing.T) {
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if tc.expectedStatus != http.StatusOK {
-				t.Logf(GREEN_BG + "SUCCESS: user create was failed as it expected" + NO_COLOR + "\n")
+				t_.Logf(GREEN_BG + "SUCCESS: user create was failed as it expected" + NO_COLOR + "\n")
 			} else {
-				t.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
+				t_.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
 			}
 		})
 	}

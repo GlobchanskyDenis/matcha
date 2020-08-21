@@ -111,7 +111,7 @@ func TestPhotos(t *testing.T) {
 			return
 		}
 		_, err = repo.GetPhotoByPid(pid)
-		if errDef.IsRecordNotFoundError(err) {
+		if errDef.RecordNotFound.IsOverlapWithError(err) {
 			t_.Log(config.GREEN_BG + "Success: there if `RecordNotFoundError` as it expected" + config.NO_COLOR + "\n")
 		} else if err != nil {
 			t_.Errorf(config.RED_BG + "Error: it should be RecordNotFound but it dont - " + err.Error() + config.NO_COLOR + "\n")

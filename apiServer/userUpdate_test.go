@@ -1,8 +1,6 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
-	// "MatchaServer/database/fakeSql"
 	"MatchaServer/database/postgres"
 	"bytes"
 	"encoding/json"
@@ -279,7 +277,7 @@ func TestUserUpdate(t *testing.T) {
 				"asd":          "asddasda",
 				"x-auth-token": token,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: http.StatusBadRequest,
 		}, {
 			name: "invalid token",
 			payload: map[string]string{
@@ -292,7 +290,7 @@ func TestUserUpdate(t *testing.T) {
 			payload: map[string]string{
 				"fname": fnameNew,
 			},
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus: http.StatusBadRequest,
 		}, {
 			name:           "invalid broken json",
 			requestBody:    strings.NewReader(`[{"mail":"` + mailNew + `","x-auth-token":"` + token + `"}`),

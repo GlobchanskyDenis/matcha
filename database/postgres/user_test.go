@@ -59,7 +59,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("invalid GetUserByUid", func(t_ *testing.T) {
 		_, err := conn.GetUserByUid(0)
-		if !errDef.IsRecordNotFoundError(err) {
+		if !errDef.RecordNotFound.IsOverlapWithError(err) {
 			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR + "\n")
 		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
@@ -81,7 +81,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("invalid GetUserByMail", func(t_ *testing.T) {
 		_, err := conn.GetUserByMail(mailFail)
-		if !errDef.IsRecordNotFoundError(err) {
+		if !errDef.RecordNotFound.IsOverlapWithError(err) {
 			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR + "\n")
 		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")
@@ -103,7 +103,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("invalid GetUserForAuth", func(t_ *testing.T) {
 		_, err := conn.GetUserForAuth(user.Mail, passFail)
-		if !errDef.IsRecordNotFoundError(err) {
+		if !errDef.RecordNotFound.IsOverlapWithError(err) {
 			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR + "\n")
 		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR + "\n")

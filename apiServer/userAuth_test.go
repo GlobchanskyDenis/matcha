@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	. "MatchaServer/config"
+	// "MatchaServer/config"
 	// "MatchaServer/database/fakeSql"
 
 	"MatchaServer/database/postgres"

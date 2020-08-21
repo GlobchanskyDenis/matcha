@@ -58,7 +58,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 
 	if mail == "" || pass == "" {
 		consoleLogWarning(r, "/user/create/", "mail or password is empty")
-		server.error(w, errDef.RegFailUserExists)
+		server.error(w, errDef.InvalidArgument.WithArguments("логин или пароль пусты", "login or password is empty"))
 		return
 	}
 
