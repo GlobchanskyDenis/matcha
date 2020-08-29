@@ -189,6 +189,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type")
 		}
+		// вытираю старые интересы - чтобы не было дублирования
+		user.Interests = nil
 		for _, item := range interfaceArr {
 			tmpStr, ok := item.(string)
 			if !ok {

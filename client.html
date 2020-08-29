@@ -357,11 +357,13 @@
 			var avaID = document.forms['upd']['avaID'].value
 			var latitude = document.forms['upd']['latitude'].value
 			var longitude = document.forms['upd']['longitude'].value
+			var interestsString = document.forms['upd']['interests'].value
+			var interestsArr = interestsString.split(" ")
 			var request = ""
 
 			if (mail == "" && pass == "" && fname == "" && lname == "" &&
 				birth == "" && gender == "" && orientation == "" && bio == "" &&
-				avaID == "" && latitude == "" && longitude == "") {
+				avaID == "" && latitude == "" && longitude == "" && interestsString == "") {
 				console.log("update: all fields are empty")
 				return
 			}
@@ -429,6 +431,12 @@
 					request += ","
 				}
 				request += "\"longitude\":" + longitude
+			}
+			if (interestsString != "") {
+				if (request != "") {
+					request += ","
+				}
+				request += "\"interests\":" + JSON.stringify(interestsArr)
 			}
 			if (request != "") {
 				request += ","
@@ -575,6 +583,7 @@
 		<input type="text" name="avaID" placeholder="avaID">
 		<input type="text" name="latitude" placeholder="latitude">
 		<input type="text" name="longitude" placeholder="longitude">
+		<input type="text" name="interests" placeholder="interests">
 	</form>
 	<input type="submit" value="Изменить данные" onclick="UpdateUser()">
 
