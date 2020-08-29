@@ -2,6 +2,7 @@ package fakeSql
 
 import (
 	"MatchaServer/common"
+	"MatchaServer/config"
 	"testing"
 )
 
@@ -13,7 +14,16 @@ func TestUser(t *testing.T) {
 	var mailNew = "email@mail.ru"
 	var encryptedPassNew = "NewEncryptedPass"
 
-	_ = repo.Connect()
+	conf, err := config.Create("../../config/")
+	if err != nil {
+		t.Errorf(common.RED_BG + "ERROR: Cannot get config file - " + err.Error() + common.NO_COLOR)
+		return
+	}
+	err = repo.Connect(&conf.Sql)
+	if err != nil {
+		t.Errorf(common.RED_BG + "ERROR: Cannot connect to database - " + err.Error() + common.NO_COLOR)
+		return
+	}
 
 	user1, _ := repo.SetNewUser(mail, encryptedPass)
 	user2, _ := repo.SetNewUser(mailNew, encryptedPassNew)

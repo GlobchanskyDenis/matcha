@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	. "MatchaServer/config"
+	. "MatchaServer/common"
 	"testing"
 )
 

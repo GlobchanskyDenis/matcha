@@ -2,6 +2,7 @@ package fakeSql
 
 import (
 	"MatchaServer/common"
+	"MatchaServer/config"
 	"MatchaServer/errDef"
 	"testing"
 )
@@ -16,7 +17,16 @@ func TestPhotos(t *testing.T) {
 		body2 = "ytrewq"
 		body3 = "asd"
 	)
-	_ = repo.Connect()
+	conf, err := config.Create("../../config/")
+	if err != nil {
+		t.Errorf(common.RED_BG + "ERROR: Cannot get config file - " + err.Error() + common.NO_COLOR)
+		return
+	}
+	err = repo.Connect(&conf.Sql)
+	if err != nil {
+		t.Errorf(common.RED_BG + "ERROR: Cannot connect to database - " + err.Error() + common.NO_COLOR)
+		return
+	}
 
 	t.Run("Create Photo #1", func(t_ *testing.T) {
 		_, err := repo.SetNewPhoto(uid1, body1)

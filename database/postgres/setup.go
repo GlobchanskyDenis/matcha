@@ -22,8 +22,11 @@ func (conn *ConnDB) Connect(conf *config.Sql) error {
 
 	dsn = "user=" + conf.User + " password=" + conf.Pass + " dbname=" + conf.DBName + " host=" + conf.Host + " sslmode=disable"
 	db, err := sql.Open(conf.DBType, dsn)
+	if err != nil {
+		return err
+	}
 	conn.db = db
-	return err
+	return conn.db.Ping()
 }
 
 func (conn *ConnDB) Close() {

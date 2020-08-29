@@ -4,10 +4,11 @@ import (
 	"MatchaServer/apiServer"
 	"MatchaServer/common"
 	"net/http"
+	"strconv"
 )
 
 func main() {
-	server, err := apiServer.New()
+	server, err := apiServer.New("config/")
 	if err != nil {
 		println(common.RED + "Server cannot start - " + err.Error() + common.NO_COLOR)
 	} else {
@@ -22,8 +23,8 @@ func main() {
 		http.HandleFunc("/search/", server.HandlerSearch)
 		http.HandleFunc("/ws/auth/", server.WebSocketHandlerAuth)
 
-		println(common.GREEN + "starting server at :3000" + common.NO_COLOR)
-		http.ListenAndServe(":3000", nil)
-		println(common.RED + "Порт 3000 занят" + common.NO_COLOR)
+		println(common.GREEN + "starting server at :" + strconv.Itoa(server.Port) + common.NO_COLOR)
+		http.ListenAndServe(":"+strconv.Itoa(server.Port), nil)
+		println(common.RED + "Порт " + strconv.Itoa(server.Port) + " занят" + common.NO_COLOR)
 	}
 }

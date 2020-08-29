@@ -2,6 +2,7 @@ package fakeSql
 
 import (
 	"MatchaServer/common"
+	"MatchaServer/errDef"
 )
 
 func (conn ConnFake) SetNewUser(mail string, encryptedPass string) (common.User, error) {
@@ -37,7 +38,10 @@ func (conn ConnFake) SearchUsersByOneFilter(filter string) ([]common.User, error
 }
 
 func (conn *ConnFake) GetUserByUid(uid int) (common.User, error) {
-	user, _ := conn.users[uid]
+	user, isExists := conn.users[uid]
+	if !isExists {
+		return user, errDef.RecordNotFound
+	}
 	return user, nil
 }
 
@@ -47,7 +51,7 @@ func (conn *ConnFake) GetUserByMail(mail string) (common.User, error) {
 			return user, nil
 		}
 	}
-	return common.User{}, nil
+	return common.User{}, errDef.RecordNotFound
 }
 
 func (conn *ConnFake) GetUserForAuth(mail string, encryptedPass string) (common.User, error) {
@@ -56,7 +60,7 @@ func (conn *ConnFake) GetUserForAuth(mail string, encryptedPass string) (common.
 			return user, nil
 		}
 	}
-	return common.User{}, nil
+	return common.User{}, errDef.RecordNotFound
 }
 
 func (conn *ConnFake) GetLoggedUsers(uid []int) ([]common.User, error) {

@@ -22,59 +22,59 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	)
 
 	message = "request for DELETE was recieved"
-	consoleLog(r, "/user/delete/", message)
+	server.Log(r, "/user/delete/", message)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/delete/", "request json decode failed - "+err.Error())
+		server.LogError(r, "/user/delete/", "request json decode failed - "+err.Error())
 		server.error(w, errDef.InvalidRequestBody)
 		return
 	}
 
 	arg, isExist := request["x-auth-token"]
 	if !isExist {
-		consoleLogWarning(r, "/user/delete/", "x-auth-token not exist")
+		server.LogWarning(r, "/user/delete/", "x-auth-token not exist")
 		server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 		return
 	}
 
 	token, ok = arg.(string)
 	if !ok {
-		consoleLogWarning(r, "/user/delete/", "token have wrong type")
+		server.LogWarning(r, "/user/delete/", "token have wrong type")
 		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
-		consoleLogWarning(r, "/user/delete/", "token is empty")
+		server.LogWarning(r, "/user/delete/", "token is empty")
 		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
-		consoleLogWarning(r, "/user/delete/", "TokenDecode returned error - "+err.Error())
+		server.LogWarning(r, "/user/delete/", "TokenDecode returned error - "+err.Error())
 		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	isLogged = server.session.IsUserLoggedByUid(uid)
 	if !isLogged {
-		consoleLogWarning(r, "/photo/upload/", "User #"+strconv.Itoa(uid)+" is not logged")
+		server.LogWarning(r, "/photo/upload/", "User #"+strconv.Itoa(uid)+" is not logged")
 		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	arg, isExist = request["pass"]
 	if !isExist {
-		consoleLogWarning(r, "/user/delete/", "password not exist")
+		server.LogWarning(r, "/user/delete/", "password not exist")
 		server.error(w, errDef.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
 		return
 	}
 
 	pass, ok = arg.(string)
 	if !ok {
-		consoleLogWarning(r, "/user/delete/", "password have wrong type")
+		server.LogWarning(r, "/user/delete/", "password have wrong type")
 		server.error(w, errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
 		return
 	}
@@ -83,13 +83,13 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	user, err := server.Db.GetUserByUid(uid)
 	if err != nil {
-		consoleLogError(r, "/user/delete/", "GetUserByUid returned error - "+err.Error())
+		server.LogError(r, "/user/delete/", "GetUserByUid returned error - "+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	if encryptedPass != user.EncryptedPass {
-		consoleLogWarning(r, "/user/delete/", "password is incorrect")
+		server.LogWarning(r, "/user/delete/", "password is incorrect")
 		server.error(w, errDef.InvalidArgument.WithArguments("неверный пароль", "password is wrong"))
 		return
 	}
@@ -98,13 +98,13 @@ func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
-		consoleLogError(r, "/user/delete/", "DeleteUser returned error - "+err.Error())
+		server.LogError(r, "/user/delete/", "DeleteUser returned error - "+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK) // 200
-	consoleLogSuccess(r, "/user/delete/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
+	server.LogSuccess(r, "/user/delete/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was removed successfully. No response body")
 }
 
@@ -120,7 +120,7 @@ func (server *Server) HandlerUserDelete(w http.ResponseWriter, r *http.Request) 
 	if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 
-		consoleLog(r, "/user/delete/", "client wants to know what methods are allowed")
+		server.Log(r, "/user/delete/", "client wants to know what methods are allowed")
 
 	} else if r.Method == "DELETE" {
 
@@ -129,7 +129,7 @@ func (server *Server) HandlerUserDelete(w http.ResponseWriter, r *http.Request) 
 	} else {
 		// ALL OTHERS METHODS
 
-		consoleLogWarning(r, "/user/delete/", "wrong request method")
+		server.LogWarning(r, "/user/delete/", "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
 
 	}

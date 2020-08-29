@@ -12,10 +12,11 @@ import (
 )
 
 type Server struct {
-	Db           database.Storage
-	session      session.Session
-	isLogEnabled bool
-	MailConf     config.Mail
+	Port          int
+	Db            database.Storage
+	session       session.Session
+	isLogsEnabled bool
+	mailConf      config.Mail
 }
 
 func (server Server) error(w http.ResponseWriter, err errDef.ApiError) {
@@ -23,20 +24,21 @@ func (server Server) error(w http.ResponseWriter, err errDef.ApiError) {
 	w.Write(err.ToJson())
 }
 
-func New() (*Server, error) {
+func New(confPath string) (*Server, error) {
 	var conf *config.Config
 	var server = &Server{}
 	var newStorage database.Storage
 
-	conf, err := config.Create()
+	conf, err := config.Create(confPath)
 	if err != nil {
 		return nil, err
 	}
 	println(GREEN + "Configuration file was received" + NO_COLOR)
-	server.isLogEnabled = conf.IsLogEnabled
-	server.MailConf = conf.Mail
+	server.isLogsEnabled = conf.IsLogEnabled
+	server.mailConf = conf.Mail
+	server.Port = conf.Port
 
-	if !conf.IsPsqlDBase {
+	if !conf.IsSqlDB {
 		println(YELLOW + "Using MOC object as database connection" + NO_COLOR)
 		newStorage = fakeSql.New()
 	} else {

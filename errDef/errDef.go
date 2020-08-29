@@ -1,7 +1,6 @@
 package errDef
 
 import (
-	// "errors"
 	"encoding/json"
 	"net/http"
 )

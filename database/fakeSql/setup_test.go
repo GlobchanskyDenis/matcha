@@ -2,6 +2,7 @@ package fakeSql
 
 import (
 	"MatchaServer/common"
+	"MatchaServer/config"
 	"testing"
 )
 
@@ -9,7 +10,16 @@ func TestTruncate(t *testing.T) {
 	print(common.NO_COLOR)
 	var repo = ConnFake{}
 
-	_ = repo.Connect()
+	conf, err := config.Create("../../config/")
+	if err != nil {
+		t.Errorf(common.RED_BG + "ERROR: Cannot get config file - " + err.Error() + common.NO_COLOR)
+		return
+	}
+	err = repo.Connect(&conf.Sql)
+	if err != nil {
+		t.Errorf(common.RED_BG + "ERROR: Cannot connect to database - " + err.Error() + common.NO_COLOR)
+		return
+	}
 	user1, _ := repo.SetNewUser("mail@mail.ru", "EncryptedPass")
 	user2, _ := repo.SetNewUser("new@mail.ru", "EncryptedPass")
 

@@ -1,10 +1,7 @@
 package apiServer
 
 import (
-	// . "MatchaServer/config"
-	// "MatchaServer/database/fakeSql"
-
-	"MatchaServer/database/postgres"
+	. "MatchaServer/common"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -19,7 +16,7 @@ func TestUserCreate(t *testing.T) {
 
 	/////////// INITIALIZE ///////////
 
-	server, err := New(postgres.New())
+	server, err := New("../config/")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR + "\n")
 		return

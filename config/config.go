@@ -22,14 +22,15 @@ type Mail struct {
 
 type Config struct {
 	IsLogEnabled bool `toml:"log_enabled"`
-	IsPsqlDBase  bool `toml:"postgres_database"`
+	IsSqlDB      bool `toml:"connect_database"`
+	Port         int  `toml:"port"`
 	Mail         Mail `toml:"mail_server"`
 	Sql          Sql  `toml:"database"`
 }
 
-func Create() (*Config, error) {
+func Create(path string) (*Config, error) {
 	var conf = &Config{}
-	_, err := toml.DecodeFile("config/config.toml", conf)
+	_, err := toml.DecodeFile(path+"config.toml", conf)
 	if err != nil {
 		return nil, err
 	}

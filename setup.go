@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	server, err := apiServer.New()
+	server, err := apiServer.New("config/")
 	print("Connecting to database\t\t")
 	if err != nil {
 		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)

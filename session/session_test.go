@@ -1,7 +1,8 @@
 package session
 
 import (
-	. "MatchaServer/config"
+	// . "MatchaServer/config"
+	. "MatchaServer/common"
 	"testing"
 )
 
