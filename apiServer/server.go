@@ -1,27 +1,21 @@
 package apiServer
 
 import (
+	. "MatchaServer/common"
+	"MatchaServer/config"
 	"MatchaServer/database"
+	"MatchaServer/database/fakeSql"
+	"MatchaServer/database/postgres"
 	"MatchaServer/errDef"
 	"MatchaServer/session"
 	"net/http"
 )
 
-const (
-	RED       = "\033[31m"
-	GREEN     = "\033[32m"
-	YELLOW    = "\033[33m"
-	BLUE      = "\033[34m"
-	RED_BG    = "\033[41;30m"
-	GREEN_BG  = "\033[42;30m"
-	YELLOW_BG = "\033[43;30m"
-	BLUE_BG   = "\033[44;30m"
-	NO_COLOR  = "\033[m"
-)
-
 type Server struct {
-	Db      database.Storage
-	session session.Session
+	Db           database.Storage
+	session      session.Session
+	isLogEnabled bool
+	MailConf     config.Mail
 }
 
 func (server Server) error(w http.ResponseWriter, err errDef.ApiError) {
@@ -29,10 +23,28 @@ func (server Server) error(w http.ResponseWriter, err errDef.ApiError) {
 	w.Write(err.ToJson())
 }
 
-func New(newStorage database.Storage) (*Server, error) {
+func New() (*Server, error) {
+	var conf *config.Config
 	var server = &Server{}
+	var newStorage database.Storage
+
+	conf, err := config.Create()
+	if err != nil {
+		return nil, err
+	}
+	println(GREEN + "Configuration file was received" + NO_COLOR)
+	server.isLogEnabled = conf.IsLogEnabled
+	server.MailConf = conf.Mail
+
+	if !conf.IsPsqlDBase {
+		println(YELLOW + "Using MOC object as database connection" + NO_COLOR)
+		newStorage = fakeSql.New()
+	} else {
+		println(GREEN + "Using postgres as database connection" + NO_COLOR)
+		newStorage = postgres.New()
+	}
 	(*server).Db = newStorage
 	(*server).session = session.CreateSession()
-	err := server.Db.Connect()
+	err = server.Db.Connect(&conf.Sql)
 	return server, err
 }

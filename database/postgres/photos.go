@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"MatchaServer/errDef"
 	"errors"
 )
@@ -39,9 +39,9 @@ func (conn ConnDB) DeletePhoto(pid int) error {
 	return nil
 }
 
-func (conn ConnDB) GetPhotosByUid(uid int) ([]config.Photo, error) {
-	var photos = []config.Photo{}
-	var photo config.Photo
+func (conn ConnDB) GetPhotosByUid(uid int) ([]common.Photo, error) {
+	var photos = []common.Photo{}
+	var photo common.Photo
 
 	stmt, err := conn.db.Prepare("SELECT * FROM photos WHERE uid=$1")
 	if err != nil {
@@ -61,8 +61,8 @@ func (conn ConnDB) GetPhotosByUid(uid int) ([]config.Photo, error) {
 	return photos, nil
 }
 
-func (conn ConnDB) GetPhotoByPid(pid int) (config.Photo, error) {
-	var photo config.Photo
+func (conn ConnDB) GetPhotoByPid(pid int) (common.Photo, error) {
+	var photo common.Photo
 
 	stmt, err := conn.db.Prepare("SELECT * FROM photos WHERE pid=$1")
 	if err != nil {

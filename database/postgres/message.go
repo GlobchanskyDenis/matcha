@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"errors"
 )
 
@@ -32,9 +32,9 @@ func (conn ConnDB) DeleteMessage(nid int) error {
 	return nil
 }
 
-func (conn ConnDB) GetMessagesFromChat(uidSender int, uidReceiver int) ([]config.Message, error) {
-	var messages = []config.Message{}
-	var message config.Message
+func (conn ConnDB) GetMessagesFromChat(uidSender int, uidReceiver int) ([]common.Message, error) {
+	var messages = []common.Message{}
+	var message common.Message
 
 	stmt, err := conn.db.Prepare("SELECT * FROM messages WHERE " +
 		"(uidSender=$1 AND uidReceiver=$2) OR (uidSender=$2 AND uidReceiver=$1)")

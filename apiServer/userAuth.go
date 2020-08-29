@@ -1,8 +1,9 @@
 package apiServer
 
 import (
-	"MatchaServer/handlers"
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
 )
@@ -15,7 +16,7 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 
 	devices, err := server.Db.GetDevicesByUid(uid)
 	if err != nil {
-		consoleLogError(r, "/user/auth/", "GetDevicesByUid returned error - " + err.Error())
+		consoleLogError(r, "/user/auth/", "GetDevicesByUid returned error - "+err.Error())
 		return errDef.DatabaseError
 	}
 	for _, device := range devices {
@@ -26,12 +27,12 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 	if !knownDevice {
 		err = server.Db.SetNewDevice(uid, r.UserAgent())
 		if err != nil {
-			consoleLogError(r, "/user/auth/", "SetNewDevice returned error - " + err.Error())
+			consoleLogError(r, "/user/auth/", "SetNewDevice returned error - "+err.Error())
 			return errDef.DatabaseError
 		}
 		err = server.session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
 		if err != nil {
-			consoleLogError(r, "/user/auth/", "SendNotifToLoggedUser returned error - " + err.Error())
+			consoleLogError(r, "/user/auth/", "SendNotifToLoggedUser returned error - "+err.Error())
 			return errDef.WebSocketError
 		}
 	}
@@ -55,7 +56,7 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		consoleLogError(r, "/user/auth/", "request decode error - " + err.Error())
+		consoleLogError(r, "/user/auth/", "request decode error - "+err.Error())
 		server.error(w, errDef.InvalidRequestBody)
 		return
 	}

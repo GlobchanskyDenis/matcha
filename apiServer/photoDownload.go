@@ -1,8 +1,9 @@
 package apiServer
 
 import (
-	"MatchaServer/handlers"
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -11,13 +12,13 @@ import (
 // USER MAIL CONFIRM BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) photoDownload(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, token  	string
-		myUid, authorUid	int
-		tmpFloat64			float64
-		err          error
-		request      map[string]interface{}
-		item         interface{}
-		isExist, isLogged, ok  bool
+		message, token        string
+		myUid, authorUid      int
+		tmpFloat64            float64
+		err                   error
+		request               map[string]interface{}
+		item                  interface{}
+		isExist, isLogged, ok bool
 	)
 
 	message = "request for PHOTO DOWNLOAD was recieved"

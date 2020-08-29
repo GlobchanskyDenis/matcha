@@ -1,13 +1,12 @@
 package fakeSql
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"MatchaServer/errDef"
-	// "errors"
 )
 
 func (conn ConnFake) SetNewPhoto(uid int, src string) (int, error) {
-	var photo config.Photo
+	var photo common.Photo
 
 	photo.Uid = uid
 	photo.Src = src
@@ -28,9 +27,9 @@ func (conn ConnFake) DeletePhoto(pid int) error {
 	return nil
 }
 
-func (conn ConnFake) GetPhotosByUid(uid int) ([]config.Photo, error) {
-	var photos = []config.Photo{}
-	var photo config.Photo
+func (conn ConnFake) GetPhotosByUid(uid int) ([]common.Photo, error) {
+	var photos = []common.Photo{}
+	var photo common.Photo
 
 	for _, photo = range conn.photos {
 		if photo.Uid == uid {
@@ -40,8 +39,8 @@ func (conn ConnFake) GetPhotosByUid(uid int) ([]config.Photo, error) {
 	return photos, nil
 }
 
-func (conn ConnFake) GetPhotoByPid(pid int) (config.Photo, error) {
-	var photo config.Photo
+func (conn ConnFake) GetPhotoByPid(pid int) (common.Photo, error) {
+	var photo common.Photo
 
 	for _, photo = range conn.photos {
 		if photo.Pid == pid {

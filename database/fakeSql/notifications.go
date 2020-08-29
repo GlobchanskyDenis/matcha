@@ -1,11 +1,11 @@
 package fakeSql
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 )
 
 func (conn ConnFake) SetNewNotif(uidReceiver int, uidSender int, body string) (int, error) {
-	var notif config.Notif
+	var notif common.Notif
 
 	notif.UidSender = uidSender
 	notif.UidReceiver = uidReceiver
@@ -27,9 +27,9 @@ func (conn ConnFake) DeleteNotif(nid int) error {
 	return nil
 }
 
-func (conn ConnFake) GetNotifByUidReceiver(uid int) ([]config.Notif, error) {
-	var notifs = []config.Notif{}
-	var notif config.Notif
+func (conn ConnFake) GetNotifByUidReceiver(uid int) ([]common.Notif, error) {
+	var notifs = []common.Notif{}
+	var notif common.Notif
 
 	for _, notif = range conn.notif {
 		if notif.UidReceiver == uid {

@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"MatchaServer/errDef"
 	"database/sql"
 	"errors"
@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (config.User, error) {
-	var user config.User
+func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, error) {
+	var user common.User
 	stmt, err := conn.db.Prepare("INSERT INTO users (mail, encryptedPass) VALUES ($1, $2) RETURNING uid, mail")
 	if err != nil {
 		return user, errors.New(err.Error() + " in preparing")
@@ -37,13 +37,13 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 	return nil
 }
 
-func (conn *ConnDB) UpdateUser(user config.User) error {
+func (conn *ConnDB) UpdateUser(user common.User) error {
 	var interests string
 	for _, item := range user.Interests {
 		interests += item + ", "
 	}
 	if len(interests) > 2 {
-		interests = string(interests[:len(interests) - 2])
+		interests = string(interests[:len(interests)-2])
 	}
 	stmt, err := conn.db.Prepare("UPDATE users SET " +
 		"mail=$2, encryptedPass=$3, fname=$4, lname=$5, birth=$6, gender=$7, " +
@@ -63,13 +63,13 @@ func (conn *ConnDB) UpdateUser(user config.User) error {
 }
 
 // Тут никак не реализован фильтр !!!!!!!!!!!!!!!
-func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) {
+func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]common.User, error) {
 	var (
-		users []config.User
-		user  config.User
-		err   error
-		rows  *sql.Rows
-		birth string
+		users     []common.User
+		user      common.User
+		err       error
+		rows      *sql.Rows
+		birth     string
 		interests string
 	)
 
@@ -106,12 +106,12 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]config.User, error) 
 	return users, err
 }
 
-func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
+func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 	var (
-		user config.User
-		err  error
-		row  *sql.Rows
-		birth string
+		user      common.User
+		err       error
+		row       *sql.Rows
+		birth     string
 		interests string
 	)
 
@@ -154,12 +154,12 @@ func (conn *ConnDB) GetUserByUid(uid int) (config.User, error) {
 	return user, nil
 }
 
-func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
+func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	var (
-		user config.User
-		err  error
-		row  *sql.Rows
-		birth string
+		user      common.User
+		err       error
+		row       *sql.Rows
+		birth     string
 		interests string
 	)
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
@@ -201,12 +201,12 @@ func (conn *ConnDB) GetUserByMail(mail string) (config.User, error) {
 	return user, nil
 }
 
-func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (config.User, error) {
+func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.User, error) {
 	var (
-		user config.User
-		err  error
-		row  *sql.Rows
-		birth string
+		user      common.User
+		err       error
+		row       *sql.Rows
+		birth     string
 		interests string
 	)
 
@@ -250,9 +250,9 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (config.Us
 	return user, nil
 }
 
-func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
-	var users = []config.User{}
-	var user config.User
+func (conn *ConnDB) GetLoggedUsers(uid []int) ([]common.User, error) {
+	var users = []common.User{}
+	var user common.User
 	var birth string
 	var interests string
 
@@ -266,7 +266,7 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]config.User, error) {
 		query += "$" + strconv.Itoa(i) + ", "
 	}
 	tmp := []byte(query)
-	tmp = tmp[:len(tmp) - 2]
+	tmp = tmp[:len(tmp)-2]
 	query = string(tmp) + ")"
 
 	stmt, err := conn.db.Prepare(query)

@@ -1,22 +1,22 @@
 package postgres
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"errors"
 	"strconv"
 )
 
-func (conn ConnDB) AddInterests(unknownInterests []config.Interest) error {
+func (conn ConnDB) AddInterests(unknownInterests []common.Interest) error {
 	var query = "INSERT INTO interests (name) VALUES "
 	var nameArr = []interface{}{}
 	if len(unknownInterests) == 0 {
 		return nil
 	}
 	for nbr, interest := range unknownInterests {
-		query += "($" + strconv.Itoa(nbr + 1) + "), "
+		query += "($" + strconv.Itoa(nbr+1) + "), "
 		nameArr = append(nameArr, interest.Name)
 	}
-	query = string(query[:len(query) - 2])
+	query = string(query[:len(query)-2])
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
 		return errors.New(err.Error() + " in preparing")
@@ -29,9 +29,9 @@ func (conn ConnDB) AddInterests(unknownInterests []config.Interest) error {
 	return nil
 }
 
-func (conn ConnDB) GetInterests() ([]config.Interest, error) {
-	var interests = []config.Interest{}
-	var interest config.Interest
+func (conn ConnDB) GetInterests() ([]common.Interest, error) {
+	var interests = []common.Interest{}
+	var interest common.Interest
 
 	stmt, err := conn.db.Prepare("SELECT * FROM interests")
 	if err != nil {

@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	. "MatchaServer/config"
-	"MatchaServer/handlers"
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"MatchaServer/handlers"
 	"testing"
 )
 
@@ -11,13 +11,12 @@ var (
 	mail = "test@gmail.com"
 	pass = "AsdVar34!A"
 
-	mailNew        = "test_new@gmail.com"
-	passNew        = "DFe2*FDsd"
+	mailNew = "test_new@gmail.com"
+	passNew = "DFe2*FDsd"
 
-	mailFail        = "mail@gmail@yandex.ru"
-	passFail        = "12345678"
+	mailFail = "mail@gmail@yandex.ru"
+	passFail = "12345678"
 )
-
 
 func TestUser(t *testing.T) {
 	print(NO_COLOR)

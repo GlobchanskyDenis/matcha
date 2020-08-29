@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
@@ -23,7 +23,7 @@ var (
 	orientationNew = "hetero"
 	bioNew         = `born, suffered, died`
 	avaIDNew       = 42
-	latitudeNew	   = 3.1415
+	latitudeNew    = 3.1415
 	longitudeNew   = 56
 	interests1New  = [...]string{"fun", "other", "football"}
 	interests2New  = []string{}
@@ -38,20 +38,20 @@ var (
 	bioFail         = `фвыфв ывфывфщзшзщольджук  йлофыдлвоы фыдлвоыдвлффды дл 
 	ывофыдлвоыфлдвоы оыфво фылдво л ыовлывфвфыовфыд офыл офвд лфывыфлво фв флдв офлвдофы лфо фдылов
 	sdsadasdsa sadasdasdasd asd asdsadas as asdasdsad as`
-	avaIDFail = -1
-	latitudeFail    = "123"
-	longitudeFail    = "asd"
-	interests1Fail  = [...]string{"asdasdsadasdasdasdadasdasdadfsdfdsfsdfgfdgfgdfsdfsfsdsadasdasdsadsdasdasdasdasdasdasdasdasdasdasdadsdasddasdasdsadasdasd"}
-	interests2Fail  = []string{"", "", "football"}
-	interests3Fail  []string = nil
+	avaIDFail               = -1
+	latitudeFail            = "123"
+	longitudeFail           = "asd"
+	interests1Fail          = [...]string{"asdasdsadasdasdasdadasdasdadfsdfdsfsdfgfdgfgdfsdfsfsdsadasdasdsadsdasdasdasdasdasdasdasdasdasdasdadsdasddasdasdsadasdasd"}
+	interests2Fail          = []string{"", "", "football"}
+	interests3Fail []string = nil
 )
 
-func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string) config.User {
+func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string) common.User {
 	t.Helper()
 
 	user, err := server.Db.SetNewUser(mail, handlers.PassHash(pass))
 	if err != nil {
-		t.Errorf(config.RED_BG + "ERROR: Cannot create test user - " + err.Error() + config.NO_COLOR + "\n")
+		t.Errorf(common.RED_BG + "ERROR: Cannot create test user - " + err.Error() + common.NO_COLOR + "\n")
 		return user
 	}
 	user.Pass = pass
@@ -59,13 +59,13 @@ func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string)
 	user.Status = "confirmed"
 	err = server.Db.UpdateUser(user)
 	if err != nil {
-		t.Errorf(config.RED_BG + "ERROR: Cannot update test user - " + err.Error() + config.NO_COLOR + "\n")
+		t.Errorf(common.RED_BG + "ERROR: Cannot update test user - " + err.Error() + common.NO_COLOR + "\n")
 		return user
 	}
 	return user
 }
 
-func (server *Server) TestTestUserAuthorize(t *testing.T, user config.User) string {
+func (server *Server) TestTestUserAuthorize(t *testing.T, user common.User) string {
 	t.Helper()
 
 	url := "http://localhost:3000/user/auth/"
@@ -74,23 +74,23 @@ func (server *Server) TestTestUserAuthorize(t *testing.T, user config.User) stri
 	req := httptest.NewRequest("POST", url, requestBody)
 	server.HandlerUserAuth(rec, req)
 	if rec.Code != http.StatusOK {
-		t.Errorf(config.RED_BG + "ERROR: wrong response status in user authentication. Expected %d got %d" + config.NO_COLOR + "\n", http.StatusOK, rec.Code)
+		t.Errorf(common.RED_BG+"ERROR: wrong response status in user authentication. Expected %d got %d"+common.NO_COLOR+"\n", http.StatusOK, rec.Code)
 		t.Fatal()
 	}
 	var response map[string]interface{}
 	err := json.NewDecoder(rec.Body).Decode(&response)
 	if err != nil {
-		t.Errorf(config.RED_BG + "ERROR: json decode error while user authentication - " + err.Error() + config.NO_COLOR + "\n")
+		t.Errorf(common.RED_BG + "ERROR: json decode error while user authentication - " + err.Error() + common.NO_COLOR + "\n")
 		t.Fatal()
 	}
 	item, isExist := response["x-auth-token"]
 	if !isExist {
-		t.Errorf(config.RED_BG + "ERROR: x-auth-token not exists in response of user authentication" + config.NO_COLOR + "\n")
+		t.Errorf(common.RED_BG + "ERROR: x-auth-token not exists in response of user authentication" + common.NO_COLOR + "\n")
 		t.Fatal()
 	}
 	_, ok := item.(string)
 	if !ok {
-		t.Errorf(config.RED_BG + "ERROR: x-auth-token have wrong type" + config.NO_COLOR + "\n")
+		t.Errorf(common.RED_BG + "ERROR: x-auth-token have wrong type" + common.NO_COLOR + "\n")
 		t.Fatal()
 	}
 	return item.(string)

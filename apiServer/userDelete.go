@@ -1,6 +1,7 @@
 package apiServer
 
 import (
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
 	"encoding/json"
@@ -12,11 +13,11 @@ import (
 // REQUEST SHOULD HAVE 'x-auth-token' HEADER
 func (server *Server) userDelete(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, token      string
-		err                 error
-		request             map[string]interface{}
-		pass, encryptedPass string
-		uid                 int
+		message, token        string
+		err                   error
+		request               map[string]interface{}
+		pass, encryptedPass   string
+		uid                   int
 		isLogged, isExist, ok bool
 	)
 

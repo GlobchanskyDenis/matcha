@@ -1,8 +1,9 @@
 package apiServer
 
 import (
-	"MatchaServer/handlers"
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
 	"strconv"

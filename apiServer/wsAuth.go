@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	// . "MatchaServer/config"
+	. "MatchaServer/common"
 	// "MatchaServer/handlers"
 	"encoding/json"
 	"github.com/gorilla/websocket"

@@ -1,12 +1,13 @@
 package database
 
 import (
+	"MatchaServer/common"
 	"MatchaServer/config"
 )
 
 type Storage interface {
 	// setup
-	Connect() error
+	Connect(conf *config.Sql) error
 	Close()
 	TruncateAllTables() error
 	DropAllTables() error
@@ -20,39 +21,39 @@ type Storage interface {
 	CreateInterestsTable() error
 
 	// user
-	SetNewUser(mail string, passwd string) (config.User, error)
+	SetNewUser(mail string, passwd string) (common.User, error)
 	DeleteUser(uid int) error
-	UpdateUser(user config.User) error
-	SearchUsersByOneFilter(filter string) ([]config.User, error)
-	GetUserByUid(uid int) (config.User, error)
-	GetUserByMail(mail string) (config.User, error)
-	GetUserForAuth(mail string, passwd string) (config.User, error)
-	GetLoggedUsers(uid []int) ([]config.User, error)
+	UpdateUser(user common.User) error
+	SearchUsersByOneFilter(filter string) ([]common.User, error)
+	GetUserByUid(uid int) (common.User, error)
+	GetUserByMail(mail string) (common.User, error)
+	GetUserForAuth(mail string, passwd string) (common.User, error)
+	GetLoggedUsers(uid []int) ([]common.User, error)
 	IsUserExistsByMail(mail string) (bool, error)
 	IsUserExistsByUid(uid int) (bool, error)
 
 	// devices
 	SetNewDevice(uid int, device string) error
 	DeleteDevice(id int) error
-	GetDevicesByUid(uid int) ([]config.Device, error)
+	GetDevicesByUid(uid int) ([]common.Device, error)
 
 	// messages
 	SetNewMessage(uidSender int, uidReceiver int, body string) (int, error)
 	DeleteMessage(nid int) error
-	GetMessagesFromChat(uidSender int, uidReceiver int) ([]config.Message, error)
+	GetMessagesFromChat(uidSender int, uidReceiver int) ([]common.Message, error)
 
 	// notifications
 	SetNewNotif(uidReceiver int, uidSender int, body string) (int, error)
 	DeleteNotif(nid int) error
-	GetNotifByUidReceiver(uid int) ([]config.Notif, error)
+	GetNotifByUidReceiver(uid int) ([]common.Notif, error)
 
 	// interests
-	AddInterests(unknownInterests []config.Interest) error
-	GetInterests() ([]config.Interest, error)
+	AddInterests(unknownInterests []common.Interest) error
+	GetInterests() ([]common.Interest, error)
 
 	// photos
 	SetNewPhoto(uid int, src string) (int, error)
 	DeletePhoto(pid int) error
-	GetPhotosByUid(uid int) ([]config.Photo, error)
-	GetPhotoByPid(pid int) (config.Photo, error)
+	GetPhotosByUid(uid int) ([]common.Photo, error)
+	GetPhotoByPid(pid int) (common.Photo, error)
 }

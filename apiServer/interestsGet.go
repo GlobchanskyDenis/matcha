@@ -1,17 +1,18 @@
 package apiServer
 
 import (
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
-	"strconv"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 // USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) interestsGet(w http.ResponseWriter, r *http.Request) {
 	var (
-		message    string
-		err        error
+		message string
+		err     error
 	)
 
 	defer func() {
@@ -41,7 +42,7 @@ func (server *Server) interestsGet(w http.ResponseWriter, r *http.Request) {
 	// This is my valid case.
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonInterests)
-	consoleLogSuccess(r, "/interests/get/", "Interests was returned to user. Amount " + strconv.Itoa(len(interests)))
+	consoleLogSuccess(r, "/interests/get/", "Interests was returned to user. Amount "+strconv.Itoa(len(interests)))
 }
 
 // HTTP HANDLER FOR DOMAIN /interests/get/ . IT HANDLES:

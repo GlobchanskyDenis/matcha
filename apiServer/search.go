@@ -1,10 +1,11 @@
 package apiServer
 
 import (
+	. "MatchaServer/common"
+	"MatchaServer/errDef"
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"MatchaServer/errDef"
 )
 
 func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {

@@ -1,6 +1,7 @@
 package apiServer
 
 import (
+	. "MatchaServer/common"
 	"MatchaServer/config"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
@@ -15,7 +16,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		err                        error
 		request                    map[string]interface{}
 		isExist, ok                bool
-		user                       config.User
+		user                       User
 	)
 
 	err = json.NewDecoder(r.Body).Decode(&request)
@@ -53,7 +54,7 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message = "request was recieved, mail: "+BLUE+mail+NO_COLOR+" password: hidden"
+	message = "request was recieved, mail: " + BLUE + mail + NO_COLOR + " password: hidden"
 	consoleLog(r, "/user/create/", message)
 
 	if mail == "" || pass == "" {
@@ -114,14 +115,14 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(201)
 	consoleLogSuccess(r, "/user/create/", "user "+BLUE+mail+NO_COLOR+" was created successfully. No response body")
 
-	go func(mail string, xRegToken string, r *http.Request) {
-		err := handlers.SendMail(mail, xRegToken)
+	go func(mail string, xRegToken string, r *http.Request, mailConf *config.Mail) {
+		err := handlers.SendMail(mail, xRegToken, mailConf)
 		if err != nil {
 			consoleLogError(r, "/user/create/", "SendMail returned error "+err.Error())
 		} else {
 			consoleLogSuccess(r, "/user/create/", "Confirm mail for user "+BLUE+mail+NO_COLOR+" was send successfully")
 		}
-	}(mail, token, r)
+	}(mail, token, r, &server.MailConf)
 }
 
 // HTTP HANDLER FOR DOMAIN /user/reg

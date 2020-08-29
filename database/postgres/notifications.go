@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"errors"
 )
 
@@ -32,9 +32,9 @@ func (conn ConnDB) DeleteNotif(nid int) error {
 	return nil
 }
 
-func (conn ConnDB) GetNotifByUidReceiver(uid int) ([]config.Notif, error) {
-	var notifs = []config.Notif{}
-	var notif config.Notif
+func (conn ConnDB) GetNotifByUidReceiver(uid int) ([]common.Notif, error) {
+	var notifs = []common.Notif{}
+	var notif common.Notif
 
 	stmt, err := conn.db.Prepare("SELECT * FROM notifs WHERE uidReceiver=$1")
 	if err != nil {

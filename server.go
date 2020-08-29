@@ -2,15 +2,14 @@ package main
 
 import (
 	"MatchaServer/apiServer"
-	"MatchaServer/config"
-	"MatchaServer/database/postgres"
+	"MatchaServer/common"
 	"net/http"
 )
 
 func main() {
-	server, err := apiServer.New(postgres.New())
+	server, err := apiServer.New()
 	if err != nil {
-		println(config.RED + "Server cannot start - " + err.Error() + config.NO_COLOR)
+		println(common.RED + "Server cannot start - " + err.Error() + common.NO_COLOR)
 	} else {
 		http.HandleFunc("/interests/get/", server.HandlerInterestsGet)
 		http.HandleFunc("/photo/download/", server.HandlerPhotoDownload)
@@ -23,8 +22,8 @@ func main() {
 		http.HandleFunc("/search/", server.HandlerSearch)
 		http.HandleFunc("/ws/auth/", server.WebSocketHandlerAuth)
 
-		println(config.GREEN + "starting server at :3000" + config.NO_COLOR)
+		println(common.GREEN + "starting server at :3000" + common.NO_COLOR)
 		http.ListenAndServe(":3000", nil)
-		println(config.RED + "Порт 3000 занят" + config.NO_COLOR)
+		println(common.RED + "Порт 3000 занят" + common.NO_COLOR)
 	}
 }

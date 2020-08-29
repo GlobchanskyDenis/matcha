@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"MatchaServer/common"
 	"MatchaServer/config"
 	"MatchaServer/errDef"
 	// "errors"
@@ -180,8 +181,8 @@ func CheckName(name string) error {
 	}
 	for i := 0; i < len(runeSlice); i++ {
 		if !isNameRunePermitted(runeSlice[i]) {
-			return errDef.NewArg("символ поля имени " + string(runeSlice[i]) + " запрещен", 
-				"name letter '" + string(runeSlice[i]) + "' is not permitted")
+			return errDef.NewArg("символ поля имени "+string(runeSlice[i])+" запрещен",
+				"name letter '"+string(runeSlice[i])+"' is not permitted")
 		}
 	}
 	return nil
@@ -189,14 +190,14 @@ func CheckName(name string) error {
 
 func CheckGender(gender string) error {
 	if gender != "male" && gender != "female" {
-		return errDef.NewArg("гендер " + gender + " неизвестен", "gender '" + gender + "' is not known")
+		return errDef.NewArg("гендер "+gender+" неизвестен", "gender '"+gender+"' is not known")
 	}
 	return nil
 }
 
 func CheckOrientation(orientation string) error {
 	if orientation != "hetero" && orientation != "bi" && orientation != "homo" {
-		return errDef.NewArg("ориентация " + orientation + " неизвестна", "orientation '" + orientation + "' not exist in database")
+		return errDef.NewArg("ориентация "+orientation+" неизвестна", "orientation '"+orientation+"' not exist in database")
 	}
 	return nil
 }
@@ -208,9 +209,9 @@ func CheckBio(bio string) error {
 	return nil
 }
 
-func FindUnknownInterests(knownInterests []config.Interest, interestsNameArr []string) []config.Interest {
-	var unknownInterests []config.Interest
-	var newInterest config.Interest
+func FindUnknownInterests(knownInterests []common.Interest, interestsNameArr []string) []common.Interest {
+	var unknownInterests []common.Interest
+	var newInterest common.Interest
 	var isKnown bool
 	for _, interestsName := range interestsNameArr {
 		isKnown = false
@@ -371,18 +372,18 @@ func TokenMailDecode(token string) (string, error) {
 	return mail, nil
 }
 
-func SendMail(to string, xRegToken string) error {
-	auth := smtp.PlainAuth("", config.MAIL_FROM, config.MAIL_PASS, config.MAIL_HOST)
+func SendMail(to string, xRegToken string, mailConf *config.Mail) error {
+	auth := smtp.PlainAuth("", mailConf.Mail, mailConf.Pass, mailConf.Host)
 	message := `To: <` + to + `>
-From: "Matcha administration" <` + config.MAIL_FROM + `>
+From: "Matcha administration" <` + mailConf.Mail + `>
 Subject: Confirm registration in Matcha
 
 Hello, ` + to + `, I have registration code for you!
 ` + xRegToken + `
 `
 
-	if err := smtp.SendMail(config.MAIL_HOST+":587",
-		auth, config.MAIL_FROM, []string{to}, []byte(message)); err != nil {
+	if err := smtp.SendMail(mailConf.Host+":587",
+		auth, mailConf.Mail, []string{to}, []byte(message)); err != nil {
 		return errDef.NewArg("не смог отправить письмо", "could not sent letter").AddOriginalError(err)
 	}
 	return nil

@@ -1,29 +1,30 @@
 package fakeSql
 
 import (
+	"MatchaServer/common"
 	"MatchaServer/config"
 )
 
 type ConnFake struct {
-	users    map[int]config.User
-	devices  map[int]config.Device
-	messages map[int]config.Message
-	notif    map[int]config.Notif
-	photos   map[int]config.Photo
-	interests map[int]config.Interest
+	users     map[int]common.User
+	devices   map[int]common.Device
+	messages  map[int]common.Message
+	notif     map[int]common.Notif
+	photos    map[int]common.Photo
+	interests map[int]common.Interest
 }
 
 func New() *ConnFake {
 	return &(ConnFake{})
 }
 
-func (conn *ConnFake) Connect() error {
-	conn.users = map[int]config.User{}
-	conn.devices = map[int]config.Device{}
-	conn.messages = map[int]config.Message{}
-	conn.notif = map[int]config.Notif{}
-	conn.photos = map[int]config.Photo{}
-	conn.interests = map[int]config.Interest{}
+func (conn *ConnFake) Connect(conf *config.Sql) error {
+	conn.users = map[int]common.User{}
+	conn.devices = map[int]common.Device{}
+	conn.messages = map[int]common.Message{}
+	conn.notif = map[int]common.Notif{}
+	conn.photos = map[int]common.Photo{}
+	conn.interests = map[int]common.Interest{}
 	return nil
 }
 
@@ -77,31 +78,31 @@ func (conn ConnFake) CreateEnumTypes() error {
 }
 
 func (conn *ConnFake) CreateUsersTable() error {
-	conn.users = map[int]config.User{}
+	conn.users = map[int]common.User{}
 	return nil
 }
 
 func (conn *ConnFake) CreateNotifsTable() error {
-	conn.notif = map[int]config.Notif{}
+	conn.notif = map[int]common.Notif{}
 	return nil
 }
 
 func (conn *ConnFake) CreateMessagesTable() error {
-	conn.messages = map[int]config.Message{}
+	conn.messages = map[int]common.Message{}
 	return nil
 }
 
 func (conn *ConnFake) CreatePhotosTable() error {
-	conn.photos = map[int]config.Photo{}
+	conn.photos = map[int]common.Photo{}
 	return nil
 }
 
 func (conn *ConnFake) CreateDevicesTable() error {
-	conn.devices = map[int]config.Device{}
+	conn.devices = map[int]common.Device{}
 	return nil
 }
 
 func (conn *ConnFake) CreateInterestsTable() error {
-	conn.interests = map[int]config.Interest{}
+	conn.interests = map[int]common.Interest{}
 	return nil
 }

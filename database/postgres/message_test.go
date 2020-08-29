@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	. "MatchaServer/config"
+	. "MatchaServer/common"
 	"strconv"
 	"testing"
 )

@@ -1,8 +1,9 @@
 package apiServer
 
 import (
-	"MatchaServer/handlers"
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -12,11 +13,11 @@ import (
 func (server *Server) photoUpload(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, body, token  string
-		uid, pid			int
-		err          error
-		request      map[string]interface{}
-		item         interface{}
-		isExist, isLogged, ok  bool
+		uid, pid              int
+		err                   error
+		request               map[string]interface{}
+		item                  interface{}
+		isExist, isLogged, ok bool
 	)
 
 	message = "request for PHOTO UPLOAD was recieved"

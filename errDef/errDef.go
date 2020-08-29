@@ -7,18 +7,18 @@ import (
 )
 
 type ApiError struct {
-	Code		       int    `json:"code"`
+	Code               int    `json:"code"`
 	HttpResponseStatus int    `json:"-"`
-	RuPattern	       string `json:"-"`
+	RuPattern          string `json:"-"`
 	RuToClient         string `json:"ru"`
-	EngPattern	       string `json:"-"`
+	EngPattern         string `json:"-"`
 	EngToClient        string `json:"eng"`
 }
 
 type ApiErrorArgument struct {
-	ru	    string
-	eng 	string
-	err		error
+	ru  string
+	eng string
+	err error
 }
 
 func NewArg(ru string, eng string) ApiErrorArgument {

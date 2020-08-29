@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	// "MatchaServer/common"
 	"MatchaServer/config"
 	"database/sql"
 	"strconv"
@@ -16,11 +17,11 @@ func New() *ConnDB {
 	return &(ConnDB{})
 }
 
-func (conn *ConnDB) Connect() error {
+func (conn *ConnDB) Connect(conf *config.Sql) error {
 	var dsn string
 
-	dsn = "user=" + config.DB_USER + " password=" + config.DB_PASS + " dbname=" + config.DB_NAME + " host=" + config.DB_HOST + " sslmode=disable"
-	db, err := sql.Open(config.DB_TYPE, dsn)
+	dsn = "user=" + conf.User + " password=" + conf.Pass + " dbname=" + conf.DBName + " host=" + conf.Host + " sslmode=disable"
+	db, err := sql.Open(conf.DBType, dsn)
 	conn.db = db
 	return err
 }

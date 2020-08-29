@@ -1,16 +1,17 @@
 package apiServer
 
 import (
-	"MatchaServer/config"
-	"MatchaServer/handlers"
+	. "MatchaServer/common"
+	// "MatchaServer/config"
 	"MatchaServer/errDef"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-func fillUserStruct(request map[string]interface{}, user config.User) (config.User, string, error) {
+func fillUserStruct(request map[string]interface{}, user User) (User, string, error) {
 	var usefullFieldsExists, ok, isExist bool
 	var message string
 	var err error
@@ -25,7 +26,7 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		usefullFieldsExists = true
 		user.Mail, ok = arg.(string)
 		if !ok {
-			return user, message, 
+			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type")
 		}
 		err = handlers.CheckMail(user.Mail)
@@ -56,7 +57,7 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		usefullFieldsExists = true
 		user.Fname, ok = arg.(string)
 		if !ok {
-			return user, message, 
+			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле fname имеет неверный тип", "fname field has wrong type")
 		}
 		err = handlers.CheckName(user.Fname)
@@ -86,12 +87,12 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 		usefullFieldsExists = true
 		birth, ok := arg.(string)
 		if !ok {
-			return user, message, 
+			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
 		}
 		user.Birth, err = time.Parse("2006-01-02", birth)
 		if err != nil {
-			return user, message, 
+			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
 		}
 		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
@@ -203,13 +204,13 @@ func fillUserStruct(request map[string]interface{}, user config.User) (config.Us
 			interestsStr += tmpStr + ", "
 		}
 		if len(interestsStr) > 2 {
-			interestsStr = string(interestsStr[:len(interestsStr) - 2])
+			interestsStr = string(interestsStr[:len(interestsStr)-2])
 		}
 		message += " interests=" + BLUE + interestsStr + NO_COLOR
 	}
 
 	if !usefullFieldsExists {
-		return user, message, errDef.NoArgument//.WithArguments("Нет ни одного полезного поля", "no usefull fields found")
+		return user, message, errDef.NoArgument //.WithArguments("Нет ни одного полезного поля", "no usefull fields found")
 	}
 	return user, message, nil
 }
@@ -222,7 +223,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid            int
 		err            error
-		user           config.User
+		user           User
 		message, token string
 		request        map[string]interface{}
 	)
@@ -259,7 +260,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		var interestsNameArr []string
 		knownInterests, err := server.Db.GetInterests()
 		if err != nil {
-			consoleLogWarning(r, "/user/update/", "GetInterests returned error - " + err.Error())
+			consoleLogWarning(r, "/user/update/", "GetInterests returned error - "+err.Error())
 			server.error(w, errDef.DatabaseError)
 			return
 		}
@@ -278,8 +279,8 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 			}
 			err = handlers.CheckInterest(interest)
 			if err != nil {
-				consoleLogWarning(r, "/user/update/", "invalid interest - " + err.Error())
-				server.error(w, errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо", 
+				consoleLogWarning(r, "/user/update/", "invalid interest - "+err.Error())
+				server.error(w, errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
 					"interests (item) field has wrong value"))
 				return
 			}
@@ -288,7 +289,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		unknownInterests := handlers.FindUnknownInterests(knownInterests, interestsNameArr)
 		err = server.Db.AddInterests(unknownInterests)
 		if err != nil {
-			consoleLogError(r, "/user/update/", "AddInterests returned error - " + err.Error())
+			consoleLogError(r, "/user/update/", "AddInterests returned error - "+err.Error())
 			server.error(w, errDef.DatabaseError)
 			return
 		}

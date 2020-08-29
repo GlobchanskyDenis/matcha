@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"MatchaServer/config"
+	"MatchaServer/common"
 	"errors"
 )
 
@@ -31,9 +31,9 @@ func (conn ConnDB) DeleteDevice(id int) error {
 	return nil
 }
 
-func (conn ConnDB) GetDevicesByUid(uid int) ([]config.Device, error) {
-	var devices = []config.Device{}
-	var device config.Device
+func (conn ConnDB) GetDevicesByUid(uid int) ([]common.Device, error) {
+	var devices = []common.Device{}
+	var device common.Device
 
 	stmt, err := conn.db.Prepare("SELECT * FROM devices WHERE uid=$1")
 	if err != nil {

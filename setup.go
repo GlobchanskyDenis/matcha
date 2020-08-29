@@ -2,112 +2,109 @@ package main
 
 import (
 	"MatchaServer/apiServer"
-	"MatchaServer/config"
-	"MatchaServer/database/postgres"
+	"MatchaServer/common"
 	"MatchaServer/handlers"
-	// "MatchaServer/database/fakeSql"
 	"time"
 )
 
 func main() {
+	server, err := apiServer.New()
 	print("Connecting to database\t\t")
-	// server, err := apiServer.New(fakeSql.New())
-	server, err := apiServer.New(postgres.New())
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Drop all tables\t\t\t")
 	err = server.Db.DropAllTables()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Drop ENUM types in db\t\t")
 	err = server.Db.DropEnumTypes()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create ENUM types in db\t\t")
 	err = server.Db.CreateEnumTypes()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create users table\t\t")
 	err = server.Db.CreateUsersTable()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create notif table\t\t")
 	err = server.Db.CreateNotifsTable()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create message table\t\t")
 	err = server.Db.CreateMessagesTable()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create photo table\t\t")
 	err = server.Db.CreatePhotosTable()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create known devices table\t")
 	err = server.Db.CreateDevicesTable()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Create interests table\t\t")
 	err = server.Db.CreateInterestsTable()
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Add admin@gmail.com user\t")
 	user, err := server.Db.SetNewUser("admin@gmail.com", handlers.PassHash("admin"))
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
 	print("Set all fields to user\t\t")
@@ -120,9 +117,9 @@ func main() {
 	user.Orientation = "hetero"
 	err = server.Db.UpdateUser(user)
 	if err != nil {
-		println(config.RED + " - error: " + err.Error() + config.NO_COLOR)
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	} else {
-		println(config.GREEN + " - done" + config.NO_COLOR)
+		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 }
