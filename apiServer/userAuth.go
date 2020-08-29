@@ -153,7 +153,7 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	server.LogSuccess(r, "/user/auth/", "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
 }
 
-// HTTP HANDLER FOR DOMAIN /auth/ . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /user/auth/ . IT HANDLES:
 // AUTHENTICATE USER BY POST METHOD
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
 func (server *Server) HandlerUserAuth(w http.ResponseWriter, r *http.Request) {
