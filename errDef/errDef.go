@@ -30,7 +30,7 @@ func NewArg(ru string, eng string) ApiErrorArgument {
 
 func (err ApiErrorArgument) Error() string {
 	if err.err != nil {
-		return err.err.Error()
+		return err.eng + " " + err.err.Error()
 	}
 	return err.eng
 }
