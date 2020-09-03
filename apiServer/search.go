@@ -13,20 +13,20 @@ func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
 
 	users, err := server.Db.SearchUsersByOneFilter(filter)
 	if err != nil {
-		server.LogError(r, "/users/", "SearchUsersByOneFilter returned error "+err.Error())
+		server.LogError(r, "SearchUsersByOneFilter returned error "+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
-		server.LogError(r, "/users/", "Marshal returned error"+err.Error())
+		server.LogError(r, "Marshal returned error"+err.Error())
 		server.error(w, errDef.MarshalError)
 		return
 	}
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write([]byte(jsonUsers))
-	server.LogSuccess(r, "/users/", "array of "+BLUE+"all"+NO_COLOR+
+	server.LogSuccess(r, "array of "+BLUE+"all"+NO_COLOR+
 		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
@@ -34,29 +34,29 @@ func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
 
 	users, err := server.Db.GetLoggedUsers(server.session.GetLoggedUsersUidSlice())
 	if err != nil {
-		server.LogError(r, "/users/", "GetLoggedUsers returned error"+err.Error())
+		server.LogError(r, "GetLoggedUsers returned error"+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
-		server.LogError(r, "/users/", "Marshal returned error"+err.Error())
+		server.LogError(r, "Marshal returned error"+err.Error())
 		server.error(w, errDef.MarshalError)
 		return
 	}
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonUsers)
-	server.LogSuccess(r, "/users/", "array of "+BLUE+"logged"+NO_COLOR+
+	server.LogSuccess(r, "array of "+BLUE+"logged"+NO_COLOR+
 		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
 func (server *Server) search(w http.ResponseWriter, r *http.Request) {
 	var filter = r.URL.Query().Get("filter")
 
-	server.Log(r, "/users/", "request was recieved with filter "+BLUE+filter+NO_COLOR)
+	server.Log(r, "request was recieved with filter "+BLUE+filter+NO_COLOR)
 
 	if filter != "all" && filter != "logged" {
-		server.LogWarning(r, "/users/", "filter "+BLUE+filter+NO_COLOR+" not exist")
+		server.LogWarning(r, "filter "+BLUE+filter+NO_COLOR+" not exist")
 		errDef.InvalidArgument.WithArguments("Значение поля filter недопустимо", "filter field has wrong value")
 		return
 	}
@@ -82,12 +82,12 @@ func (server *Server) HandlerSearch(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 
-		server.Log(r, "/users/", "client wants to know what methods are allowed")
+		server.Log(r, "client wants to know what methods are allowed")
 
 	} else {
 		// ALL OTHERS METHODS
 
-		server.LogWarning(r, "/users/", "wrong request method")
+		server.LogWarning(r, "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
 
 	}

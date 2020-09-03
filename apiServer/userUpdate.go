@@ -231,27 +231,27 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		server.LogError(r, "/user/update/", "request json decode failed - "+err.Error())
+		server.LogError(r, "request json decode failed - "+err.Error())
 		server.error(w, errDef.InvalidRequestBody)
 		return
 	}
 
 	arg, isExist := request["x-auth-token"]
 	if !isExist {
-		server.LogWarning(r, "/user/update/", "x-auth-token not exists")
+		server.LogWarning(r, "x-auth-token not exists")
 		server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 		return
 	}
 
 	token, ok := arg.(string)
 	if !ok {
-		server.LogWarning(r, "/user/update/", "token have wrong type")
+		server.LogWarning(r, "token have wrong type")
 		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
-		server.LogWarning(r, "/user/update/", "token is empty")
+		server.LogWarning(r, "token is empty")
 		server.error(w, errDef.UserNotLogged)
 		return
 	}
@@ -261,26 +261,26 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		var interestsNameArr []string
 		knownInterests, err := server.Db.GetInterests()
 		if err != nil {
-			server.LogWarning(r, "/user/update/", "GetInterests returned error - "+err.Error())
+			server.LogWarning(r, "GetInterests returned error - "+err.Error())
 			server.error(w, errDef.DatabaseError)
 			return
 		}
 		interfaceArr, ok := arg.([]interface{})
 		if !ok {
-			server.LogWarning(r, "/user/update/", "wrong argument type (interests)")
+			server.LogWarning(r, "wrong argument type (interests)")
 			server.error(w, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type"))
 			return
 		}
 		for _, item := range interfaceArr {
 			interest, ok := item.(string)
 			if !ok {
-				server.LogWarning(r, "/user/update/", "wrong argument type (interests item)")
+				server.LogWarning(r, "wrong argument type (interests item)")
 				server.error(w, errDef.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип", "interests (item) field has wrong type"))
 				return
 			}
 			err = handlers.CheckInterest(interest)
 			if err != nil {
-				server.LogWarning(r, "/user/update/", "invalid interest - "+err.Error())
+				server.LogWarning(r, "invalid interest - "+err.Error())
 				server.error(w, errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
 					"interests (item) field has wrong value"))
 				return
@@ -290,7 +290,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		unknownInterests := handlers.FindUnknownInterests(knownInterests, interestsNameArr)
 		err = server.Db.AddInterests(unknownInterests)
 		if err != nil {
-			server.LogError(r, "/user/update/", "AddInterests returned error - "+err.Error())
+			server.LogError(r, "AddInterests returned error - "+err.Error())
 			server.error(w, errDef.DatabaseError)
 			return
 		}
@@ -298,40 +298,40 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
-		server.LogWarning(r, "/user/update/", "TokenUidDecode returned error - "+err.Error())
+		server.LogWarning(r, "TokenUidDecode returned error - "+err.Error())
 		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	if !server.session.IsUserLoggedByUid(uid) {
-		server.LogWarning(r, "/user/update/", "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
+		server.LogWarning(r, "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
 		server.error(w, errDef.UserNotLogged)
 		return
 	}
 
 	user, err = server.Db.GetUserByUid(uid)
 	if errDef.RecordNotFound.IsOverlapWithError(err) {
-		server.LogWarning(r, "/user/update/", "GetUserByUid - record not found")
+		server.LogWarning(r, "GetUserByUid - record not found")
 		server.error(w, errDef.UserNotExist)
 		return
 	} else if err != nil {
-		server.LogError(r, "/user/update/", "GetUser returned error - "+err.Error())
+		server.LogError(r, "GetUser returned error - "+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
 
 	user, message, err = fillUserStruct(request, user)
 	if err != nil {
-		server.LogWarning(r, "/user/update/", err.Error())
+		server.LogWarning(r, err.Error())
 		server.error(w, err.(errDef.ApiError))
 		return
 	}
 
-	server.Log(r, "/user/update/", message)
+	server.Log(r, message)
 
 	err = server.Db.UpdateUser(user)
 	if err != nil {
-		server.LogError(r, "/user/update/", "UpdateUser returned error - "+err.Error())
+		server.LogError(r, "UpdateUser returned error - "+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
@@ -339,7 +339,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	// Проверить - принадлежит ли фото юзеру
 
 	w.WriteHeader(http.StatusOK) // 200
-	server.LogSuccess(r, "/user/update/", "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
+	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated successfully. No response body")
 }
 
@@ -355,7 +355,7 @@ func (server *Server) HandlerUserUpdate(w http.ResponseWriter, r *http.Request) 
 	if r.Method == "OPTIONS" {
 		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
 
-		server.Log(r, "/user/update/", "client wants to know what methods are allowed")
+		server.Log(r, "client wants to know what methods are allowed")
 
 	} else if r.Method == "PATCH" {
 
@@ -364,7 +364,7 @@ func (server *Server) HandlerUserUpdate(w http.ResponseWriter, r *http.Request) 
 	} else {
 		// ALL OTHER METHODS
 
-		server.LogWarning(r, "/user/update/", "wrong request method")
+		server.LogWarning(r, "wrong request method")
 		w.WriteHeader(http.StatusMethodNotAllowed) // 405
 
 	}
