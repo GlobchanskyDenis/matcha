@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"context"
 )
 
 func TestUserCreate(t *testing.T) {
@@ -79,22 +80,19 @@ func TestUserCreate(t *testing.T) {
 				"pass": "",
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
-		}, {
-			name:           "broken json 1",
-			requestBody:    strings.NewReader(`[{"mail":"` + mailNew + `","pass":"` + passNew + `"}`),
-			expectedStatus: http.StatusBadRequest,
-		}, {
-			name:           "broken json 2",
-			requestBody:    strings.NewReader(`{"mail":` + mailNew + `","pass":"` + passNew + `"}`),
-			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
-			var req *http.Request
-			var url = "http://localhost:3000/user/create/"
-			var rec = httptest.NewRecorder()
+			var (
+				requestParams     map[string]interface{}
+				err error
+				ctx		context.Context
+				url = "http://localhost:3000/user/create/"
+				rec = httptest.NewRecorder()
+				req *http.Request
+			)
 			if tc.requestBody == nil {
 				requestBody := &bytes.Buffer{}
 				json.NewEncoder(requestBody).Encode(tc.payload)
@@ -102,7 +100,13 @@ func TestUserCreate(t *testing.T) {
 			} else {
 				req = httptest.NewRequest("POST", url, tc.requestBody)
 			}
-			server.HandlerUserCreate(rec, req)
+			err = json.NewDecoder(req.Body).Decode(&requestParams)
+			if err != nil {
+				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
+				return
+			}
+			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+			server.UserCreate(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if tc.expectedStatus != http.StatusOK {

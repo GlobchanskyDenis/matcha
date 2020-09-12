@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"context"
 )
 
 func TestUserAuthenticate(t *testing.T) {
@@ -55,14 +56,6 @@ func TestUserAuthenticate(t *testing.T) {
 			requestBody:    strings.NewReader(`{"mail":"` + mail + `"}`),
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`[{"mail":"` + mail + `","pass":"` + pass + `"}`),
-			expectedStatus: http.StatusBadRequest,
-		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`{"mail":` + mail + `","pass":"` + pass + `"}`),
-			expectedStatus: http.StatusBadRequest,
-		}, {
 			name:           "invalid wrong password",
 			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + passNew + `"}`),
 			expectedStatus: http.StatusUnprocessableEntity,
@@ -79,10 +72,22 @@ func TestUserAuthenticate(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
-			url := "http://localhost:3000/user/auth/"
-			rec := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", url, tc.requestBody)
-			server.HandlerUserAuth(rec, req)
+			var (
+				requestParams     map[string]interface{}
+				err error
+				ctx		context.Context
+				url = "http://localhost:3000/user/auth/"
+				rec = httptest.NewRecorder()
+				req = httptest.NewRequest("POST", url, tc.requestBody)
+			)
+
+			err = json.NewDecoder(req.Body).Decode(&requestParams)
+			if err != nil {
+				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
+				return
+			}
+			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+			server.UserAuth(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else {

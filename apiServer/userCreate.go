@@ -5,49 +5,47 @@ import (
 	"MatchaServer/config"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
-	"encoding/json"
 	"net/http"
+	"context"
 )
 
-// USER REGISTRATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
+// HTTP HANDLER FOR DOMAIN /user/create/
+func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, pass, token string
 		err                        error
-		request                    map[string]interface{}
+		requestParams              map[string]interface{}
+		item					   interface{}
+		ctx						   context.Context
 		isExist, ok                bool
 		user                       User
 	)
 
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		server.LogError(r, "request json decode failed - "+err.Error())
-		server.error(w, errDef.InvalidRequestBody)
-		return
-	}
+	ctx = r.Context()
+	requestParams = ctx.Value("requestParams").(map[string]interface{})
 
-	arg, isExist := request["mail"]
+	item, isExist = requestParams["mail"]
 	if !isExist {
 		server.LogWarning(r, "mail not exist")
 		server.error(w, errDef.NoArgument.WithArguments("Поле mail отсутствует", "mail field expected"))
 		return
 	}
 
-	mail, ok = arg.(string)
+	mail, ok = item.(string)
 	if !ok {
 		server.LogWarning(r, "mail has wrong type")
 		server.error(w, errDef.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type"))
 		return
 	}
 
-	arg, isExist = request["pass"]
+	item, isExist = requestParams["pass"]
 	if !isExist {
 		server.LogWarning(r, "password not exist")
 		server.error(w, errDef.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
 		return
 	}
 
-	pass, ok = arg.(string)
+	pass, ok = item.(string)
 	if !ok {
 		server.LogWarning(r, "password has wrong type")
 		server.error(w, errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
@@ -79,13 +77,13 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isUserExists, err := server.Db.IsUserExistsByMail(mail)
+	isExist, err = server.Db.IsUserExistsByMail(mail)
 	if err != nil {
 		server.LogError(r, "IsUserExists returned error "+err.Error())
 		server.error(w, errDef.DatabaseError)
 		return
 	}
-	if isUserExists {
+	if isExist {
 		server.LogWarning(r, "user "+BLUE+mail+NO_COLOR+" alredy exists")
 		server.error(w, errDef.RegFailUserExists)
 		return
@@ -123,31 +121,4 @@ func (server *Server) userReg(w http.ResponseWriter, r *http.Request) {
 			server.LogSuccess(r, "Confirm mail for user "+BLUE+mail+NO_COLOR+" was send successfully")
 		}
 	}(mail, token, r, &server.mailConf)
-}
-
-// HTTP HANDLER FOR DOMAIN /user/reg
-// REGISTRATE USER BY POST METHOD
-// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HandlerUserCreate(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
-
-	if r.Method == "POST" {
-
-		server.userReg(w, r)
-
-	} else if r.Method == "OPTIONS" {
-		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-
-		server.Log(r, "client wants to know what methods are allowed")
-
-	} else {
-		// ALL OTHERS METHODS
-
-		server.LogWarning(r, "wrong request method")
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-
-	}
 }

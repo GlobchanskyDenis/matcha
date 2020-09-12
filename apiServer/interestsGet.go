@@ -1,22 +1,16 @@
 package apiServer
 
 import (
-	// . "MatchaServer/common"
 	"MatchaServer/errDef"
 	"encoding/json"
 	"net/http"
 	"strconv"
 )
 
-// USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) interestsGet(w http.ResponseWriter, r *http.Request) {
-	var (
-		message string
-		err     error
-	)
-
-	message = "request for interests array was recieved"
-	server.Log(r, message)
+// HTTP HANDLER FOR DOMAIN /interests/get/ . IT HANDLES:
+// RETURNING ARRAY OF EXISTING INTERESTS
+func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
+	var err     error
 
 	interests, err := server.Db.GetInterests()
 	if err != nil {
@@ -37,24 +31,4 @@ func (server *Server) interestsGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonInterests)
 	server.LogSuccess(r, "Interests was returned to user. Amount "+strconv.Itoa(len(interests)))
-}
-
-// HTTP HANDLER FOR DOMAIN /interests/get/ . IT HANDLES:
-// RETURNING ARRAY OF EXISTING INTERESTS BY GET METHOD
-// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HandlerInterestsGet(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-
-	if r.Method == "GET" {
-		server.interestsGet(w, r)
-	} else if r.Method == "OPTIONS" {
-		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-		server.Log(r, "client wants to know what methods are allowed")
-	} else {
-		// ALL OTHERS METHODS
-		server.LogWarning(r, "wrong request method")
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-	}
 }

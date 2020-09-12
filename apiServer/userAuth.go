@@ -6,6 +6,7 @@ import (
 	"MatchaServer/handlers"
 	"encoding/json"
 	"net/http"
+	"context"
 )
 
 func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid int) error {
@@ -39,23 +40,34 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 	return nil
 }
 
-// USER AUTHORISATION BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
+// HTTP HANDLER FOR DOMAIN /user/auth/ . IT HANDLES:
+// AUTHENTICATE USER BY POST METHOD
+// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
+func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, pass, token, tokenWS, response string
 		err                                           error
-		request                                       map[string]interface{}
+		requestParams                                 map[string]interface{}
 		isExist, ok                                   bool
+		ctx											  context.Context
 	)
 
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		server.LogError(r, "request decode error - "+err.Error())
-		server.error(w, errDef.InvalidRequestBody)
-		return
-	}
+	defer func() {
+		e := recover()
+		if e != nil {
+			err, ok := e.(error)
+			if ok {
+				println("PANIC! " + err.Error())
+			} else {
+				println("PANIC!")
+			}
+		}
+	}()
 
-	arg, isExist := request["mail"]
+	ctx = r.Context()
+	requestParams = ctx.Value("requestParams").(map[string]interface{})
+
+	arg, isExist := requestParams["mail"]
 	if !isExist {
 		server.LogWarning(r, "mail not exist")
 		server.error(w, errDef.NoArgument.WithArguments("Поле mail отсутствует", "mail field expected"))
@@ -69,7 +81,7 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg, isExist = request["pass"]
+	arg, isExist = requestParams["pass"]
 	if !isExist {
 		server.LogWarning(r, "password not exist")
 		server.error(w, errDef.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
@@ -145,24 +157,4 @@ func (server *Server) userAuth(w http.ResponseWriter, r *http.Request) {
 	response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 	w.Write([]byte(response))
 	server.LogSuccess(r, "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
-}
-
-// HTTP HANDLER FOR DOMAIN /user/auth/ . IT HANDLES:
-// AUTHENTICATE USER BY POST METHOD
-// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HandlerUserAuth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
-
-	if r.Method == "POST" {
-		server.userAuth(w, r)
-	} else if r.Method == "OPTIONS" {
-		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-		server.Log(r, "client wants to know what methods are allowed")
-	} else {
-		// ALL OTHERS METHODS
-		server.LogWarning(r, "wrong request method")
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-	}
 }

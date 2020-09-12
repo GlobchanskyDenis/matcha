@@ -117,9 +117,9 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 	}
 }
 
-// WEB SOCKET HANDLER FOR DOMAIN /ws/
+// WEB SOCKET HANDLER FOR DOMAIN /ws/auth/
 // GET PARAMS login AND ws-auth-token SHOULD BE IN REQUEST
-func (server *Server) WebSocketHandlerAuth(w http.ResponseWriter, r *http.Request) {
+func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 	var wsAuthToken = r.URL.Query().Get("ws-auth-token")
 	var message string
 	var uidStr = r.URL.Query().Get("uid")

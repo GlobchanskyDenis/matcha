@@ -2,12 +2,14 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/handlers"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"context"
 )
 
 func TestUserDelete(t *testing.T) {
@@ -61,34 +63,6 @@ func TestUserDelete(t *testing.T) {
 			},
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name: "invalid token",
-			payload: map[string]string{
-				"pass":         pass,
-				"x-auth-token": "token123",
-			},
-			expectedStatus: http.StatusUnauthorized,
-		}, {
-			name: "invalid empty token",
-			payload: map[string]string{
-				"pass":         pass,
-				"x-auth-token": "",
-			},
-			expectedStatus: http.StatusUnauthorized,
-		}, {
-			name: "invalid no token at all",
-			payload: map[string]string{
-				"pass": pass,
-			},
-			expectedStatus: http.StatusBadRequest,
-		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`{"pass":` + passNew + `","x-auth-token":"` + token + `"}`),
-			expectedStatus: http.StatusBadRequest,
-		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`[{"pass":"` + passNew + `","x-auth-token":"` + token + `"}`),
-			expectedStatus: http.StatusBadRequest,
-		}, {
 			name: "valid",
 			payload: map[string]string{
 				"pass":         pass,
@@ -100,9 +74,15 @@ func TestUserDelete(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
-			var req *http.Request
-			var url = "http://localhost:3000/user/delete/"
-			var rec = httptest.NewRecorder()
+			var (
+				requestParams     map[string]interface{}
+				err error
+				ctx		context.Context
+				url = "http://localhost:3000/user/create/"
+				rec = httptest.NewRecorder()
+				req *http.Request
+			)
+			// put request body into req
 			if tc.requestBody == nil {
 				requestBody := &bytes.Buffer{}
 				json.NewEncoder(requestBody).Encode(tc.payload)
@@ -110,7 +90,46 @@ func TestUserDelete(t *testing.T) {
 			} else {
 				req = httptest.NewRequest("DELETE", url, tc.requestBody)
 			}
-			server.HandlerUserDelete(rec, req)
+			// get params from request
+			err = json.NewDecoder(req.Body).Decode(&requestParams)
+			if err != nil {
+				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
+				return
+			}
+			// put params in context
+			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+
+			item, isExist := requestParams["x-auth-token"]
+			if !isExist {
+				t_.Errorf(RED_BG+"Cannot start test: token expected"+ NO_COLOR+"\n")
+				return
+			}
+
+			token, ok := item.(string)
+			if !ok {
+				t_.Errorf(RED_BG+"Cannot start test: token has wrong type"+ NO_COLOR+"\n")
+				return
+			}
+
+			if token == "" {
+				t_.Errorf(RED_BG+"Cannot start test: token is empty"+ NO_COLOR+"\n")
+				return
+			}
+
+			uid, err := handlers.TokenUidDecode(token)
+			if err != nil {
+				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
+				return
+			}
+
+			isLogged := server.session.IsUserLoggedByUid(uid)
+			if !isLogged {
+				t_.Errorf(RED_BG+"Cannot start test: token is empty"+ NO_COLOR+"\n")
+				return
+			}
+
+			ctx = context.WithValue(ctx, "uid", uid)
+			server.UserDelete(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if rec.Code != http.StatusOK {

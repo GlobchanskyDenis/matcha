@@ -7,27 +7,44 @@ import (
 	"strconv"
 )
 
-func router(server *apiServer.Server) {
+func router(server *apiServer.Server) http.Handler {
 	println(common.GREEN + "tracing router" + common.NO_COLOR)
 
+	mux := http.NewServeMux()
+
 	// GET
-	http.HandleFunc("/interests/get/", server.HandlerInterestsGet)
-	http.HandleFunc("/ws/auth/", server.WebSocketHandlerAuth)
-		
+	mux.Handle("/interests/get/", server.GetMethodMiddleWare(
+		http.HandlerFunc(server.InterestsGet)))
+	mux.Handle("/ws/auth/", server.GetMethodMiddleWare(
+		http.HandlerFunc(server.WebSocketAuth)))
+	mux.Handle("/search/", server.GetMethodMiddleWare(
+		http.HandlerFunc(server.Search)))
+
 	// POST
-	http.HandleFunc("/photo/download/", server.HandlerPhotoDownload)
-	http.HandleFunc("/photo/upload/", server.HandlerPhotoUpload)
-	http.HandleFunc("/user/auth/", server.HandlerUserAuth)
-	http.HandleFunc("/user/create/", server.HandlerUserCreate)
-	http.HandleFunc("/user/get/", server.HandlerUserGet)
-	http.HandleFunc("/search/", server.HandlerSearch)
+	mux.Handle("/user/auth/", server.PostMethodMiddleWare(
+		http.HandlerFunc(server.UserAuth)))
+	mux.Handle("/user/create/", server.PostMethodMiddleWare(
+		http.HandlerFunc(server.UserCreate)))
+	mux.Handle("/photo/download/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoDownload))))
+	mux.Handle("/photo/upload/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoUpload))))
+	mux.Handle("/user/get/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
 
 	// PATCH
-	http.HandleFunc("/user/update/status/", server.HandlerUserUpdateStatus)
-	http.HandleFunc("/user/update/", server.HandlerUserUpdate)
+	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(
+		http.HandlerFunc(server.UserUpdateStatus)))
+	mux.Handle("/user/update/", server.PatchMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserUpdate))))
 
 	// DELETE
-	http.HandleFunc("/user/delete/", server.HandlerUserDelete)
+	mux.Handle("/user/delete/", server.DeleteMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserDelete))))
+
+	serveMux := server.PanicMiddleWare(mux)
+
+	return serveMux
 }
 
 func main() {
@@ -35,9 +52,9 @@ func main() {
 	if err != nil {
 		println(common.RED + "Server cannot start - " + err.Error() + common.NO_COLOR)
 	} else {
-		router(server)
+		mux := router(server)
 		println(common.GREEN + "starting server at :" + strconv.Itoa(server.Port) + common.NO_COLOR)
-		http.ListenAndServe(":"+strconv.Itoa(server.Port), nil)
+		http.ListenAndServe(":"+strconv.Itoa(server.Port), mux)
 		println(common.RED + "Порт " + strconv.Itoa(server.Port) + " занят" + common.NO_COLOR)
 	}
 }

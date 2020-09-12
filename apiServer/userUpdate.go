@@ -4,9 +4,9 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
-	"encoding/json"
 	"net/http"
 	"strconv"
+	"context"
 	"time"
 )
 
@@ -216,47 +216,26 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	return user, message, nil
 }
 
-// USER UPDATE BY PATCH METHOD
+// HTTP HANDLER FOR DOMAIN /user/update/
 // REQUEST BODY IS JSON
-// REQUEST SHOULD HAVE 'x-auth-token' HEADER
 // RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
-func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
+func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid            int
 		err            error
 		user           User
-		message, token string
-		request        map[string]interface{}
+		message       string
+		requestParams map[string]interface{}
+		item		  interface{}
+		ctx			  context.Context
+		isExist       bool
 	)
 
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		server.LogError(r, "request json decode failed - "+err.Error())
-		server.error(w, errDef.InvalidRequestBody)
-		return
-	}
+	ctx = r.Context()
+	requestParams = ctx.Value("requestParams").(map[string]interface{})
+	uid = ctx.Value("uid").(int)
 
-	arg, isExist := request["x-auth-token"]
-	if !isExist {
-		server.LogWarning(r, "x-auth-token not exists")
-		server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
-		return
-	}
-
-	token, ok := arg.(string)
-	if !ok {
-		server.LogWarning(r, "token have wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
-		return
-	}
-
-	if token == "" {
-		server.LogWarning(r, "token is empty")
-		server.error(w, errDef.UserNotLogged)
-		return
-	}
-
-	arg, isExist = request["interests"]
+	item, isExist = requestParams["interests"]
 	if isExist {
 		var interestsNameArr []string
 		knownInterests, err := server.Db.GetInterests()
@@ -265,7 +244,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 			server.error(w, errDef.DatabaseError)
 			return
 		}
-		interfaceArr, ok := arg.([]interface{})
+		interfaceArr, ok := item.([]interface{})
 		if !ok {
 			server.LogWarning(r, "wrong argument type (interests)")
 			server.error(w, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type"))
@@ -296,19 +275,6 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	uid, err = handlers.TokenUidDecode(token)
-	if err != nil {
-		server.LogWarning(r, "TokenUidDecode returned error - "+err.Error())
-		server.error(w, errDef.UserNotLogged)
-		return
-	}
-
-	if !server.session.IsUserLoggedByUid(uid) {
-		server.LogWarning(r, "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" is not logged")
-		server.error(w, errDef.UserNotLogged)
-		return
-	}
-
 	user, err = server.Db.GetUserByUid(uid)
 	if errDef.RecordNotFound.IsOverlapWithError(err) {
 		server.LogWarning(r, "GetUserByUid - record not found")
@@ -320,7 +286,7 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, message, err = fillUserStruct(request, user)
+	user, message, err = fillUserStruct(requestParams, user)
 	if err != nil {
 		server.LogWarning(r, err.Error())
 		server.error(w, err.(errDef.ApiError))
@@ -341,31 +307,4 @@ func (server *Server) userUpdate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK) // 200
 	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated successfully. No response body")
-}
-
-// HTTP HANDLER FOR DOMAIN /user/update/
-// UPDATE USER BY PATCH METHOD
-// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HandlerUserUpdate(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "POST,PATCH,OPTIONS,DELETE")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,x-auth-token")
-
-	if r.Method == "OPTIONS" {
-		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-
-		server.Log(r, "client wants to know what methods are allowed")
-
-	} else if r.Method == "PATCH" {
-
-		server.userUpdate(w, r)
-
-	} else {
-		// ALL OTHER METHODS
-
-		server.LogWarning(r, "wrong request method")
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-
-	}
 }

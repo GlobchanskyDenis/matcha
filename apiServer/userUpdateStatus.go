@@ -4,32 +4,27 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
-	"encoding/json"
 	"net/http"
 	"strconv"
+	"context"
 )
 
-// USER MAIL CONFIRM BY POST METHOD. REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
+// HTTP HANDLER FOR DOMAIN /user/update/status/
+// USER MAIL CONFIRM. REQUEST AND RESPONSE DATA IS JSON
+func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, mail, token string
+		mail, token string
 		err                  error
-		request              map[string]interface{}
+		requestParams              map[string]interface{}
 		item                 interface{}
+		ctx					 context.Context
 		isExist, ok          bool
 	)
 
-	message = "request for MAIL CONFIRM was recieved"
-	server.Log(r, message)
+	ctx = r.Context()
+	requestParams = ctx.Value("requestParams").(map[string]interface{})
 
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		server.LogError(r, "request json decode failed - "+err.Error())
-		server.error(w, errDef.InvalidRequestBody)
-		return
-	}
-
-	item, isExist = request["x-reg-token"]
+	item, isExist = requestParams["x-reg-token"]
 	if !isExist {
 		server.LogError(r, "x-reg-token not exist in request")
 		server.error(w, errDef.NoArgument.WithArguments("Поле x-reg-token отсутствует", "x-reg-token field expected"))
@@ -79,24 +74,4 @@ func (server *Server) userUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK) // 200
 	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated its status successfully. No response body")
-}
-
-// HTTP HANDLER FOR DOMAIN /user/update/status . IT HANDLES:
-// UPDATE USER STATUS BY PATCH METHOD
-// SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
-func (server *Server) HandlerUserUpdateStatus(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "PATCH,OPTIONS")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-
-	if r.Method == "PATCH" {
-		server.userUpdateStatus(w, r)
-	} else if r.Method == "OPTIONS" {
-		// OPTIONS METHOD (CLIENT WANTS TO KNOW WHAT METHODS AND HEADERS ARE ALLOWED)
-		server.Log(r, "client wants to know what methods are allowed")
-	} else {
-		// ALL OTHERS METHODS
-		server.LogWarning(r, "wrong request method")
-		w.WriteHeader(http.StatusMethodNotAllowed) // 405
-	}
 }

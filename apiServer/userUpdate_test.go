@@ -2,12 +2,14 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/handlers"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"context"
 )
 
 func TestUserUpdate(t *testing.T) {
@@ -278,35 +280,19 @@ func TestUserUpdate(t *testing.T) {
 				"x-auth-token": token,
 			},
 			expectedStatus: http.StatusBadRequest,
-		}, {
-			name: "invalid token",
-			payload: map[string]string{
-				"fname":        fnameNew,
-				"x-auth-token": "BlaBla",
-			},
-			expectedStatus: http.StatusUnauthorized,
-		}, {
-			name: "invalid token not exists",
-			payload: map[string]string{
-				"fname": fnameNew,
-			},
-			expectedStatus: http.StatusBadRequest,
-		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`[{"mail":"` + mailNew + `","x-auth-token":"` + token + `"}`),
-			expectedStatus: http.StatusBadRequest,
-		}, {
-			name:           "invalid broken json",
-			requestBody:    strings.NewReader(`{"mail":` + mailNew + `","x-auth-token":"` + token + `"}`),
-			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
-			var req *http.Request
-			var url = "http://localhost:3000/user/update/"
-			var rec = httptest.NewRecorder()
+			var (
+				requestParams     map[string]interface{}
+				err error
+				ctx		context.Context
+				url = "http://localhost:3000/user/create/"
+				rec = httptest.NewRecorder()
+				req *http.Request
+			)
 			if tc.requestBody == nil {
 				requestBody := &bytes.Buffer{}
 				json.NewEncoder(requestBody).Encode(tc.payload)
@@ -314,7 +300,43 @@ func TestUserUpdate(t *testing.T) {
 			} else {
 				req = httptest.NewRequest("PATCH", url, tc.requestBody)
 			}
-			server.HandlerUserUpdate(rec, req)
+			err = json.NewDecoder(req.Body).Decode(&requestParams)
+			if err != nil {
+				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
+				return
+			}
+			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+			item, isExist := requestParams["x-auth-token"]
+			if !isExist {
+				t_.Errorf(RED_BG+"Cannot start test: token expected"+ NO_COLOR+"\n")
+				return
+			}
+
+			token, ok := item.(string)
+			if !ok {
+				t_.Errorf(RED_BG+"Cannot start test: token has wrong type"+ NO_COLOR+"\n")
+				return
+			}
+
+			if token == "" {
+				t_.Errorf(RED_BG+"Cannot start test: token is empty"+ NO_COLOR+"\n")
+				return
+			}
+
+			uid, err := handlers.TokenUidDecode(token)
+			if err != nil {
+				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
+				return
+			}
+
+			isLogged := server.session.IsUserLoggedByUid(uid)
+			if !isLogged {
+				t_.Errorf(RED_BG+"Cannot start test: token is empty"+ NO_COLOR+"\n")
+				return
+			}
+
+			ctx = context.WithValue(ctx, "uid", uid)
+			server.UserUpdate(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
 			} else if tc.expectedStatus != http.StatusOK {
@@ -324,17 +346,4 @@ func TestUserUpdate(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("invalid without request body at all", func(t_ *testing.T) {
-		url := "http://localhost:3000/user/update/"
-		rec := httptest.NewRecorder()
-		req := httptest.NewRequest("PATCH", url, nil)
-		server.HandlerUserUpdate(rec, req)
-		expectedStatus := http.StatusBadRequest
-		if rec.Code != expectedStatus {
-			t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, expectedStatus)
-		} else {
-			t.Logf(GREEN_BG + "SUCCESS: user update was failed as it expected" + NO_COLOR + "\n")
-		}
-	})
 }

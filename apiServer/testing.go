@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"context"
 )
 
 var (
@@ -68,17 +69,29 @@ func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string)
 func (server *Server) TestTestUserAuthorize(t *testing.T, user common.User) string {
 	t.Helper()
 
-	url := "http://localhost:3000/user/auth/"
-	rec := httptest.NewRecorder()
-	requestBody := strings.NewReader(`{"mail":"` + user.Mail + `","pass":"` + user.Pass + `"}`)
-	req := httptest.NewRequest("POST", url, requestBody)
-	server.HandlerUserAuth(rec, req)
+	var (
+		requestParams     map[string]interface{}
+		err error
+		ctx		context.Context
+		url = "http://localhost:3000/user/auth/"
+		rec = httptest.NewRecorder()
+		requestBody = strings.NewReader(`{"mail":"` + user.Mail + `","pass":"` + user.Pass + `"}`)
+		req = httptest.NewRequest("POST", url, requestBody)
+	)
+	
+	err = json.NewDecoder(req.Body).Decode(&requestParams)
+	if err != nil {
+		t.Errorf(common.RED_BG+"Cannot start test because of error: "+ err.Error() + common.NO_COLOR+"\n")
+		return ""
+	}
+	ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+	server.UserAuth(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Errorf(common.RED_BG+"ERROR: wrong response status in user authentication. Expected %d got %d"+common.NO_COLOR+"\n", http.StatusOK, rec.Code)
 		t.Fatal()
 	}
 	var response map[string]interface{}
-	err := json.NewDecoder(rec.Body).Decode(&response)
+	err = json.NewDecoder(rec.Body).Decode(&response)
 	if err != nil {
 		t.Errorf(common.RED_BG + "ERROR: json decode error while user authentication - " + err.Error() + common.NO_COLOR + "\n")
 		t.Fatal()
