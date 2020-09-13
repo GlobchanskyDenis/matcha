@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	// "context"
 )
 
 func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +51,19 @@ func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
 		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }
 
+// Фильтры по онлайну, возрасту, рейтингу, локации (или радиус от заданной точки), интересам, 
+// обязательный фильтр по соответствию пол/ориентация
+// если поля не заполнены - показываем всех
+
 func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
+	// var {
+	// 	requestParams	map[string]interface{}
+	// 	ctx				context.Context
+	// }
 	var filter = r.URL.Query().Get("filter")
+	// ctx = r.Context()
+	// requestParams = ctx.Value("requestParams").(map[string]interface{})
+	
 
 	server.Log(r, "request was recieved with filter "+BLUE+filter+NO_COLOR)
 
