@@ -4,9 +4,10 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
-	"context"
 	"time"
 )
 
@@ -152,7 +153,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.AvaID = int(tmpFloat)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип", "avaID field has wrong type")
+				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип", "avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
 		}
 		if user.AvaID < 0 {
 			return user, message, errDef.InvalidArgument.WithArguments("Значение поля avaID недопустимо", "avaID field has wrong value")
@@ -221,13 +222,13 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 // RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
 func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid            int
-		err            error
-		user           User
+		uid           int
+		err           error
+		user          User
 		message       string
 		requestParams map[string]interface{}
-		item		  interface{}
-		ctx			  context.Context
+		item          interface{}
+		ctx           context.Context
 		isExist       bool
 	)
 

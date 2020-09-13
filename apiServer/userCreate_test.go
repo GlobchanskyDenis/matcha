@@ -2,13 +2,12 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"bytes"
-	"encoding/json"
+	"context"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
-	"context"
 )
 
 func TestUserCreate(t *testing.T) {
@@ -29,53 +28,53 @@ func TestUserCreate(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		payload        interface{}
+		payload        map[string]interface{}
 		requestBody    *strings.Reader
 		expectedStatus int
 	}{
 		{
 			name: "invalid mail",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"mail": mailFail,
 				"pass": pass,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid password",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": passFail,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name: "same user already exists",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": pass,
 			},
 			expectedStatus: http.StatusNotAcceptable,
 		}, {
 			name: "password not exists",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"mail": mail,
 			},
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name: "mail not exists",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"pass": pass,
 			},
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name: "mail is empty",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"mail": "",
 				"pass": pass,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
 			name: "password is empty",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": "",
 			},
@@ -86,26 +85,19 @@ func TestUserCreate(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
-				requestParams     map[string]interface{}
-				err error
-				ctx		context.Context
-				url = "http://localhost:3000/user/create/"
+				ctx context.Context
+				url = "http://localhost:" + strconv.Itoa(server.Port) + "/user/create/"
 				rec = httptest.NewRecorder()
 				req *http.Request
 			)
-			if tc.requestBody == nil {
-				requestBody := &bytes.Buffer{}
-				json.NewEncoder(requestBody).Encode(tc.payload)
-				req = httptest.NewRequest("POST", url, requestBody)
-			} else {
-				req = httptest.NewRequest("POST", url, tc.requestBody)
-			}
-			err = json.NewDecoder(req.Body).Decode(&requestParams)
-			if err != nil {
-				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
-				return
-			}
-			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+			// all request params should be handled in middlewares
+			// so new request body is nil
+			req = httptest.NewRequest("POST", url, nil)
+
+			// put info from middlewares into context
+			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)
+
+			// start test
 			server.UserCreate(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)

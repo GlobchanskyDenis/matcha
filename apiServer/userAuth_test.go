@@ -2,12 +2,13 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
-	"context"
 )
 
 func TestUserAuthenticate(t *testing.T) {
@@ -28,44 +29,70 @@ func TestUserAuthenticate(t *testing.T) {
 
 	testCases := []struct {
 		name           string
+		payload        map[string]interface{}
 		requestBody    *strings.Reader
 		expectedStatus int
 	}{
 		{
-			name:           "invalid mail",
-			requestBody:    strings.NewReader(`{"mail":"` + mailFail + `","pass":"` + pass + `"}`),
+			name: "invalid mail",
+			payload: map[string]interface{}{
+				"mail": mailFail,
+				"pass": pass,
+			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name:           "invalid passwd",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + passFail + `"}`),
+			name: "invalid passwd",
+			payload: map[string]interface{}{
+				"mail": mail,
+				"pass": passFail,
+			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name:           "invalid empty passwd",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":""}`),
+			name: "invalid empty passwd",
+			payload: map[string]interface{}{
+				"mail": mail,
+				"pass": "",
+			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name:           "invalid empty mail",
-			requestBody:    strings.NewReader(`{"mail":"","pass":"` + pass + `"}`),
+			name: "invalid empty mail",
+			payload: map[string]interface{}{
+				"mail": "",
+				"pass": pass,
+			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name:           "invalid no mail",
-			requestBody:    strings.NewReader(`{"pass":"` + pass + `"}`),
+			name: "invalid no mail",
+			payload: map[string]interface{}{
+				"pass": pass,
+			},
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name:           "invalid no passwd",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `"}`),
+			name: "invalid no passwd",
+			payload: map[string]interface{}{
+				"mail": mail,
+			},
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name:           "invalid wrong password",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + passNew + `"}`),
+			name: "invalid wrong password",
+			payload: map[string]interface{}{
+				"mail": mail,
+				"pass": passNew,
+			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name:           "invalid not existing mail",
-			requestBody:    strings.NewReader(`{"mail":"` + mailNew + `","pass":"` + pass + `"}`),
+			name: "invalid not existing mail",
+			payload: map[string]interface{}{
+				"mail": mailNew,
+				"pass": pass,
+			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name:           "valid",
-			requestBody:    strings.NewReader(`{"mail":"` + mail + `","pass":"` + pass + `"}`),
+			name: "valid",
+			payload: map[string]interface{}{
+				"mail": mail,
+				"pass": pass,
+			},
 			expectedStatus: http.StatusOK,
 		},
 	}
@@ -73,20 +100,19 @@ func TestUserAuthenticate(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
-				requestParams     map[string]interface{}
-				err error
-				ctx		context.Context
-				url = "http://localhost:3000/user/auth/"
+				ctx context.Context
+				url = "http://localhost:" + strconv.Itoa(server.Port) + "/user/auth/"
 				rec = httptest.NewRecorder()
-				req = httptest.NewRequest("POST", url, tc.requestBody)
+				req *http.Request
 			)
+			// all request params should be handled in middlewares
+			// so new request body is nil
+			req = httptest.NewRequest("POST", url, nil)
 
-			err = json.NewDecoder(req.Body).Decode(&requestParams)
-			if err != nil {
-				t_.Errorf(RED_BG+"Cannot start test because of error: "+ err.Error() + NO_COLOR+"\n")
-				return
-			}
-			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
+			// put info from middlewares into context
+			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)
+
+			// start test
 			server.UserAuth(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)

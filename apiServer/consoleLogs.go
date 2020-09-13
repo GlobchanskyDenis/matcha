@@ -3,9 +3,9 @@ package apiServer
 import (
 	. "MatchaServer/common"
 	"log"
-	"time"
-	"strconv"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 func (server *Server) Log(r *http.Request, message string) {
@@ -48,6 +48,6 @@ func (server *Server) TimeLog(r *http.Request, dur time.Duration) {
 	if milliseconds > 10 {
 		color = RED_BG
 	}
-	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path, 
-		"time : " + color + strconv.Itoa(milliseconds) + NO_COLOR)
+	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path,
+		"time : "+color+strconv.Itoa(milliseconds)+NO_COLOR)
 }

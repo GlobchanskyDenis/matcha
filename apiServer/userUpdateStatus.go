@@ -4,21 +4,21 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
+	"context"
 	"net/http"
 	"strconv"
-	"context"
 )
 
 // HTTP HANDLER FOR DOMAIN /user/update/status/
 // USER MAIL CONFIRM. REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	var (
-		mail, token string
-		err                  error
-		requestParams              map[string]interface{}
-		item                 interface{}
-		ctx					 context.Context
-		isExist, ok          bool
+		mail, token   string
+		err           error
+		requestParams map[string]interface{}
+		item          interface{}
+		ctx           context.Context
+		isExist, ok   bool
 	)
 
 	ctx = r.Context()

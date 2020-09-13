@@ -5,8 +5,8 @@ import (
 	"MatchaServer/config"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
-	"net/http"
 	"context"
+	"net/http"
 )
 
 // HTTP HANDLER FOR DOMAIN /user/create/
@@ -15,8 +15,8 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 		message, mail, pass, token string
 		err                        error
 		requestParams              map[string]interface{}
-		item					   interface{}
-		ctx						   context.Context
+		item                       interface{}
+		ctx                        context.Context
 		isExist, ok                bool
 		user                       User
 	)

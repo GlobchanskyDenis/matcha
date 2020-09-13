@@ -13,17 +13,17 @@ import (
 func (server *Server) CheckAuthMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			requestParams     map[string]interface{}
-			item			  interface{}
-			ctx				  context.Context
-			token             string
-			uid               int
+			requestParams         map[string]interface{}
+			item                  interface{}
+			ctx                   context.Context
+			token                 string
+			uid                   int
 			isExist, isLogged, ok bool
-			err               error
+			err                   error
 		)
 		ctx = r.Context()
 		requestParams = ctx.Value("requestParams").(map[string]interface{})
-		
+
 		item, isExist = requestParams["x-auth-token"]
 		if !isExist {
 			server.LogWarning(r, "x-auth-token not exist in request")
@@ -86,9 +86,9 @@ func (server *Server) PanicMiddleWare(next http.Handler) http.Handler {
 func (server *Server) PostMethodMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			requestParams     map[string]interface{}
-			err error
-			ctx		context.Context
+			requestParams map[string]interface{}
+			err           error
+			ctx           context.Context
 		)
 
 		w.Header().Add("Access-Control-Allow-Origin", "*")
@@ -118,9 +118,9 @@ func (server *Server) PostMethodMiddleWare(next http.Handler) http.Handler {
 func (server *Server) PatchMethodMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			requestParams     map[string]interface{}
-			err error
-			ctx		context.Context
+			requestParams map[string]interface{}
+			err           error
+			ctx           context.Context
 		)
 
 		w.Header().Add("Access-Control-Allow-Origin", "*")
@@ -150,9 +150,9 @@ func (server *Server) PatchMethodMiddleWare(next http.Handler) http.Handler {
 func (server *Server) DeleteMethodMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			requestParams     map[string]interface{}
-			err error
-			ctx		context.Context
+			requestParams map[string]interface{}
+			err           error
+			ctx           context.Context
 		)
 
 		w.Header().Add("Access-Control-Allow-Origin", "*")

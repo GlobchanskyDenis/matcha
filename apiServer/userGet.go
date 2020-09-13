@@ -3,9 +3,9 @@ package apiServer
 import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"context"
 	"encoding/json"
 	"net/http"
-	"context"
 )
 
 // HTTP HANDLER FOR DOMAIN /user/get/ . IT HANDLES:
@@ -15,8 +15,8 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	var (
 		user User
 		uid  int
-		err            error
-		ctx			  context.Context
+		err  error
+		ctx  context.Context
 	)
 
 	ctx = r.Context()

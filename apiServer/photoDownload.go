@@ -3,25 +3,25 @@ package apiServer
 import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"context"
 )
 
 // HTTP HANDLER FOR DOMAIN /photo/download . IT HANDLES:
 // DOWNLOAD USER PHOTOS BY UID
 func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 	var (
-		authorUid, myUid      int
-		tmpFloat64            float64
-		err                   error
-		requestParams         map[string]interface{}
-		item                  interface{}
-		ctx                   context.Context
-		isExist, ok bool
+		authorUid, myUid int
+		tmpFloat64       float64
+		err              error
+		requestParams    map[string]interface{}
+		item             interface{}
+		ctx              context.Context
+		isExist, ok      bool
 	)
-	
+
 	ctx = r.Context()
 	requestParams = ctx.Value("requestParams").(map[string]interface{})
 	myUid = ctx.Value("uid").(int)

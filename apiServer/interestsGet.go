@@ -10,7 +10,7 @@ import (
 // HTTP HANDLER FOR DOMAIN /interests/get/ . IT HANDLES:
 // RETURNING ARRAY OF EXISTING INTERESTS
 func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
-	var err     error
+	var err error
 
 	interests, err := server.Db.GetInterests()
 	if err != nil {

@@ -3,7 +3,6 @@ package apiServer
 import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
-	// "encoding/json"
 	"context"
 	"net/http"
 	"strconv"
@@ -13,13 +12,13 @@ import (
 // UPLOAD USER PHOTO
 func (server *Server) PhotoUpload(w http.ResponseWriter, r *http.Request) {
 	var (
-		src string
-		uid, pid              int
-		err                   error
-		requestParams         map[string]interface{}
-		item                  interface{}
-		ctx                   context.Context
-		isExist, ok bool
+		src           string
+		uid, pid      int
+		err           error
+		requestParams map[string]interface{}
+		item          interface{}
+		ctx           context.Context
+		isExist, ok   bool
 	)
 
 	ctx = r.Context()

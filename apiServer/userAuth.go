@@ -4,9 +4,9 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
+	"context"
 	"encoding/json"
 	"net/http"
-	"context"
 )
 
 func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid int) error {
@@ -49,7 +49,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		err                                           error
 		requestParams                                 map[string]interface{}
 		isExist, ok                                   bool
-		ctx											  context.Context
+		ctx                                           context.Context
 	)
 
 	defer func() {

@@ -4,20 +4,20 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errDef"
 	"MatchaServer/handlers"
+	"context"
 	"net/http"
 	"strconv"
-	"context"
 )
 
 // HTTP HANDLER FOR DOMAIN /user/delete/
 func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	var (
-		err                   error
+		err                 error
 		requestParams       map[string]interface{}
-		item				interface{}
-		ctx					context.Context
+		item                interface{}
+		ctx                 context.Context
 		pass, encryptedPass string
-		uid                   int
+		uid                 int
 		isExist, ok         bool
 	)
 

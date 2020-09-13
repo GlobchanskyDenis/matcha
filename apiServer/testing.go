@@ -3,31 +3,31 @@ package apiServer
 import (
 	"MatchaServer/common"
 	"MatchaServer/handlers"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"context"
 )
 
 var (
 	mail = "test@gmail.com"
 	pass = "AsdVar34!A"
 
-	mailNew        = "test_new@gmail.com"
-	passNew        = "DFe2*FDsd"
-	fnameNew       = "Денис"
-	lnameNew       = "Глобчанский"
-	ageNew         = 21
-	genderNew      = "male"
-	orientationNew = "hetero"
-	bioNew         = `born, suffered, died`
-	avaIDNew       = 42
-	latitudeNew    = 3.1415
-	longitudeNew   = 56
-	interests1New  = [...]string{"fun", "other", "football"}
-	interests2New  = []string{}
+	mailNew                = "test_new@gmail.com"
+	passNew                = "DFe2*FDsd"
+	fnameNew               = "Денис"
+	lnameNew               = "Глобчанский"
+	ageNew                 = 21
+	genderNew              = "male"
+	orientationNew         = "hetero"
+	bioNew                 = `born, suffered, died`
+	avaIDNew       float64 = 42
+	latitudeNew    float64 = 3.1415
+	longitudeNew   float64 = 56.1
+	interests1New = append([]interface{}{}, "fun", "other", "football")
+	interests2New = []interface{}{}
 
 	mailFail        = "mail@gmail@yandex.ru"
 	passFail        = "12345678"
@@ -70,18 +70,18 @@ func (server *Server) TestTestUserAuthorize(t *testing.T, user common.User) stri
 	t.Helper()
 
 	var (
-		requestParams     map[string]interface{}
-		err error
-		ctx		context.Context
-		url = "http://localhost:3000/user/auth/"
-		rec = httptest.NewRecorder()
-		requestBody = strings.NewReader(`{"mail":"` + user.Mail + `","pass":"` + user.Pass + `"}`)
-		req = httptest.NewRequest("POST", url, requestBody)
+		requestParams map[string]interface{}
+		err           error
+		ctx           context.Context
+		url           = "http://localhost:3000/user/auth/"
+		rec           = httptest.NewRecorder()
+		requestBody   = strings.NewReader(`{"mail":"` + user.Mail + `","pass":"` + user.Pass + `"}`)
+		req           = httptest.NewRequest("POST", url, requestBody)
 	)
-	
+
 	err = json.NewDecoder(req.Body).Decode(&requestParams)
 	if err != nil {
-		t.Errorf(common.RED_BG+"Cannot start test because of error: "+ err.Error() + common.NO_COLOR+"\n")
+		t.Errorf(common.RED_BG + "Cannot start test because of error: " + err.Error() + common.NO_COLOR + "\n")
 		return ""
 	}
 	ctx = context.WithValue(req.Context(), "requestParams", requestParams)
