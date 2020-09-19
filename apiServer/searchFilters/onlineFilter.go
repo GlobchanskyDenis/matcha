@@ -8,10 +8,13 @@ type onlineFilter struct {
 	uidSlice []int
 }
 
+func (f onlineFilter) print() string {
+	return "online"
+}
+
 func (onlineFilter) getFilterType() int {
 	return int(onlineFilterType)
 }
-
 
 func (f onlineFilter) prepareQueryFilter() string {
 	if len(f.uidSlice) == 0 {

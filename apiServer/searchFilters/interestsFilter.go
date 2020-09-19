@@ -1,10 +1,59 @@
 package searchFilters
 
 import (
+	"errors"
 )
 
 type interestsFilter struct {
 	interests []string
+}
+
+func newInterestsFilter(in interface{}) (*interestsFilter, error) {
+	var (
+		filter interestsFilter
+		ok bool
+		payload []interface{}
+		item interface{}
+		str string
+	)
+
+	// Заранее выделю память под некоторое количество интересов
+	// Для меньшего количества дополнительных аллокаций
+	filter.interests = make([]string, 0, 5)
+
+	// Преобразую полезную нагрузку в нужный нам формат
+	payload, ok = in.([]interface{})
+	if !ok {
+		return nil, errors.New("wrong type of interests filter")
+	}
+
+	// Обрабатываю все имеющиеся интересы
+	for _, item = range payload {
+		str, ok = item.(string)
+		if !ok {
+			return nil, errors.New("wrong type of interests item")
+		} else {
+			filter.interests = append(filter.interests, str)
+		}
+	}
+
+	// В случае если не было никаких интересов
+	if len(payload) == 0 {
+		return nil, errors.New("no interests found")
+	}
+
+	return &filter, nil
+}
+
+func (f interestsFilter) print() string {
+	var dst = "interests("
+	for i, interest := range f.interests {
+		if i != 0 {
+			dst += ", "
+		}
+		dst += interest
+	}
+	return dst + ")"
 }
 
 func (interestsFilter) getFilterType() int {

@@ -1,8 +1,6 @@
 package searchFilters
 
 import (
-	// "strconv"
-	// "time"
 )
 
 const (
@@ -10,18 +8,88 @@ const (
 	ageFilterType
 	ratingFilterType
 	interestsFilterType
+	locationFilterType
 )
 
 type Filter interface {
 	getFilterType() int
 	prepareQueryFilter() string
+	print() string
 }
 
 type Filters struct {
 	filters []Filter
 }
 
-func (f Filters) PrepareQuery(sexRestrictions string) string {
+func New() *Filters {
+	return &Filters{}
+}
+
+func (f *Filters) Parse(in map[string]interface{}) error {
+	var (
+		filter Filter
+		err error
+		isExist bool
+		item interface{}
+		
+	)
+	item, isExist = in["age"]
+	if isExist {
+		filter, err = newAgeFilter(item)
+		if err != nil {
+			return err
+		}
+		f.filters = append(f.filters, filter)
+	}
+	item, isExist = in["interests"]
+	if isExist {
+		filter, err = newInterestsFilter(item)
+		if err != nil {
+			return err
+		}
+		f.filters = append(f.filters, filter)
+	}
+	item, isExist = in["location"]
+	if isExist {
+		filter, err = newLocationFilter(item)
+		if err != nil {
+			return err
+		}
+		f.filters = append(f.filters, filter)
+	}
+	// item, isExist = in["online"]
+	// if isExist {
+	// 	payloadExist = true
+	// 	filter, err = newOnlineFilter(item)
+	// 	if err != nil {
+	// 		return nil
+	// 	}
+	// 	f.filters = append(f.filters, filter)
+	// }
+	item, isExist = in["rating"]
+	if isExist {
+		filter, err = newRatingFilter(item)
+		if err != nil {
+			return err
+		}
+		f.filters = append(f.filters, filter)
+	}
+	return nil
+}
+
+func (f *Filters) Print() string {
+	var dst string
+	for i, item := range f.filters {
+		if i == 0 {
+			dst += item.print()
+		} else {
+			dst += " " + item.print()
+		}
+	}
+	return dst
+}
+
+func (f *Filters) PrepareQuery(sexRestrictions string) string {
 	var query = "SELECT * FROM users"
 	var queryRestrictions []string
 
