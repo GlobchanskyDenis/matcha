@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strconv"
 	"context"
-	"fmt"
 )
 
 // Фильтры по онлайну, возрасту, рейтингу, локации (или радиус от заданной точки), интересам, 
@@ -51,10 +50,7 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
-	fmt.Printf("%#v\n", user)
-	println("sex restrictions: " + sexRestrictions)
 	query := filters.PrepareQuery(sexRestrictions)
-	println(query)
 	users, err = server.Db.GetUsersByQuery(query)
 	if err != nil {
 		server.LogError(r, "GetUsersByQuery returned error "+err.Error())
@@ -68,7 +64,6 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errDef.MarshalError)
 		return
 	}
-	println(string(jsonUsers))
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonUsers)
 	server.LogSuccess(r, "array of users was transmitted. Users amount "+strconv.Itoa(len(users)))

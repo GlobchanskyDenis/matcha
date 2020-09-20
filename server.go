@@ -17,8 +17,6 @@ func router(server *apiServer.Server) http.Handler {
 		http.HandlerFunc(server.InterestsGet)))
 	mux.Handle("/ws/auth/", server.GetMethodMiddleWare(
 		http.HandlerFunc(server.WebSocketAuth)))
-	mux.Handle("/search/", server.GetMethodMiddleWare(
-		http.HandlerFunc(server.Search)))
 
 	// POST
 	mux.Handle("/user/auth/", server.PostMethodMiddleWare(
@@ -31,6 +29,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoUpload))))
 	mux.Handle("/user/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
+	mux.Handle("/search/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.Search))))
 
 	// PATCH
 	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(

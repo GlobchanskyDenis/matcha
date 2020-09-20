@@ -52,18 +52,6 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		ctx                                           context.Context
 	)
 
-	// defer func() {
-	// 	e := recover()
-	// 	if e != nil {
-	// 		err, ok := e.(error)
-	// 		if ok {
-	// 			println("PANIC! " + err.Error())
-	// 		} else {
-	// 			println("PANIC!")
-	// 		}
-	// 	}
-	// }()
-
 	ctx = r.Context()
 	requestParams = ctx.Value("requestParams").(map[string]interface{})
 
