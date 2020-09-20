@@ -1,7 +1,7 @@
 package searchFilters
 
 import (
-	"errors"
+	"MatchaServer/errDef"
 )
 
 type interestsFilter struct {
@@ -24,14 +24,14 @@ func newInterestsFilter(in interface{}) (*interestsFilter, error) {
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.([]interface{})
 	if !ok {
-		return nil, errors.New("wrong type of interests filter")
+		return nil, errDef.NewArg("неверный тип фильтра интересов", "wrong type of interests filter")
 	}
 
 	// Обрабатываю все имеющиеся интересы
 	for _, item = range payload {
 		str, ok = item.(string)
 		if !ok {
-			return nil, errors.New("wrong type of interests item")
+			return nil, errDef.NewArg("неверный тип интереса в фильтре интересов", "wrong type of interests item")
 		} else {
 			filter.interests = append(filter.interests, str)
 		}
@@ -39,7 +39,7 @@ func newInterestsFilter(in interface{}) (*interestsFilter, error) {
 
 	// В случае если не было никаких интересов
 	if len(payload) == 0 {
-		return nil, errors.New("no interests found")
+		return nil, errDef.NewArg("в фильтре интересов не найдены интересы", "no interests found")
 	}
 
 	return &filter, nil

@@ -201,6 +201,45 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	return user, nil
 }
 
+func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
+	var (
+		user  common.User
+		users []common.User
+		interests, birth string
+	)
+	rows, err := conn.db.Query(query)
+	if err != nil {
+		return nil, errors.New(err.Error() + " in query")
+	}
+	for rows.Next() {
+		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
+			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
+			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
+			&(user.Status), &(user.Rating))
+		if err != nil {
+			return nil, err
+		}
+		// handle user Interests
+		if len(interests) > 2 {
+			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+			for _, strItem := range strArr {
+				user.Interests = append(user.Interests, strItem)
+			}
+		}
+		// handle user birth and age
+		if len(birth) > 10 {
+			birth = string(birth[:10])
+			user.Birth, err = time.Parse("2006-01-02", birth)
+			if err != nil {
+				return nil, err
+			}
+			user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
 func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.User, error) {
 	var (
 		user      common.User

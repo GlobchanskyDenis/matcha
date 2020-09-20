@@ -2,81 +2,74 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/apiServer/searchFilters"
 	"MatchaServer/errDef"
 	"encoding/json"
 	"net/http"
 	"strconv"
-	// "context"
+	"context"
+	"fmt"
 )
-
-func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
-	var filter = r.URL.Query().Get("filter")
-
-	users, err := server.Db.SearchUsersByOneFilter(filter)
-	if err != nil {
-		server.LogError(r, "SearchUsersByOneFilter returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
-		return
-	}
-
-	jsonUsers, err := json.Marshal(users)
-	if err != nil {
-		server.LogError(r, "Marshal returned error"+err.Error())
-		server.error(w, errDef.MarshalError)
-		return
-	}
-	w.WriteHeader(http.StatusOK) // 200
-	w.Write([]byte(jsonUsers))
-	server.LogSuccess(r, "array of "+BLUE+"all"+NO_COLOR+
-		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
-}
-
-func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
-
-	users, err := server.Db.GetLoggedUsers(server.Session.GetLoggedUsersUidSlice())
-	if err != nil {
-		server.LogError(r, "GetLoggedUsers returned error"+err.Error())
-		server.error(w, errDef.DatabaseError)
-		return
-	}
-	jsonUsers, err := json.Marshal(users)
-	if err != nil {
-		server.LogError(r, "Marshal returned error"+err.Error())
-		server.error(w, errDef.MarshalError)
-		return
-	}
-	w.WriteHeader(http.StatusOK) // 200
-	w.Write(jsonUsers)
-	server.LogSuccess(r, "array of "+BLUE+"logged"+NO_COLOR+
-		" users was transmitted. Users amount "+strconv.Itoa(len(users)))
-}
 
 // Фильтры по онлайну, возрасту, рейтингу, локации (или радиус от заданной точки), интересам, 
 // обязательный фильтр по соответствию пол/ориентация
 // если поля не заполнены - показываем всех
 
 func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
-	// var {
-	// 	requestParams	map[string]interface{}
-	// 	ctx				context.Context
-	// }
-	var filter = r.URL.Query().Get("filter")
-	// ctx = r.Context()
-	// requestParams = ctx.Value("requestParams").(map[string]interface{})
-	
+	var (
+		requestParams	map[string]interface{}
+		ctx				context.Context
+		filters			*searchFilters.Filters
+		uid				int
+		err				error
+		user			User
+		users			[]User
+		sexRestrictions string
+	)
 
-	server.Log(r, "request was recieved with filter "+BLUE+filter+NO_COLOR)
-
-	if filter != "all" && filter != "logged" {
-		server.LogWarning(r, "filter "+BLUE+filter+NO_COLOR+" not exist")
-		errDef.InvalidArgument.WithArguments("Значение поля filter недопустимо", "filter field has wrong value")
+	ctx = r.Context()
+	uid = ctx.Value("uid").(int)
+	requestParams = ctx.Value("requestParams").(map[string]interface{})
+	filters = searchFilters.New()
+	err = filters.Parse(requestParams, uid, server.Db, &server.Session)
+	if err != nil {
+		server.LogWarning(r, "Cannot parse filter: "+BLUE+err.Error()+NO_COLOR)
+		server.error(w, errDef.InvalidArgument.WithArguments(err))
 		return
 	}
 
-	if filter == "all" {
-		server.searchAll(w, r)
+	server.Log(r, "search filters: "+BLUE+filters.Print()+NO_COLOR)
+
+	user, err = server.Db.GetUserByUid(uid)
+	if errDef.RecordNotFound.IsOverlapWithError(err) {
+		server.LogWarning(r, "User with uid #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" not found")
+		server.error(w, errDef.UserNotExist)
+		return
+	} else if err != nil {
+		server.LogError(r, "GetUserByUid returned error "+err.Error())
+		server.error(w, errDef.DatabaseError)
+		return
 	}
-	if filter == "logged" {
-		server.searchLogged(w, r)
+	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
+	fmt.Printf("%#v\n", user)
+	println("sex restrictions: " + sexRestrictions)
+	query := filters.PrepareQuery(sexRestrictions)
+	println(query)
+	users, err = server.Db.GetUsersByQuery(query)
+	if err != nil {
+		server.LogError(r, "GetUsersByQuery returned error "+err.Error())
+		server.error(w, errDef.DatabaseError)
+		return
 	}
+
+	jsonUsers, err := json.Marshal(users)
+	if err != nil {
+		server.LogError(r, "Marshal returned error"+err.Error())
+		server.error(w, errDef.MarshalError)
+		return
+	}
+	println(string(jsonUsers))
+	w.WriteHeader(http.StatusOK) // 200
+	w.Write(jsonUsers)
+	server.LogSuccess(r, "array of users was transmitted. Users amount "+strconv.Itoa(len(users)))
 }

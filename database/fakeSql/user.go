@@ -54,6 +54,10 @@ func (conn *ConnFake) GetUserByMail(mail string) (common.User, error) {
 	return common.User{}, errDef.RecordNotFound
 }
 
+func (conn *ConnFake) GetUsersByQuery(query string) ([]common.User, error) {
+	return nil, nil
+}
+
 func (conn *ConnFake) GetUserForAuth(mail string, encryptedPass string) (common.User, error) {
 	for _, user := range conn.users {
 		if user.Mail == mail && user.EncryptedPass == encryptedPass {

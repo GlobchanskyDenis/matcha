@@ -1,7 +1,7 @@
 package searchFilters
 
 import (
-	"errors"
+	"MatchaServer/errDef"
 	"strconv"
 )
 
@@ -27,7 +27,7 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
-		return nil, errors.New("wrong type of new age filter")
+		return nil, errDef.NewArg("неверный тип фильтра локации", "wrong type of location filter")
 	}
 
 	// Обрабатываю параметр
@@ -36,7 +36,8 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMinLatSet = true
 		filter.minLatitude, ok = item.(float64)
 		if !ok {
-			return nil, errors.New("wrong type of min latitude parameter")
+			return nil, errDef.NewArg("неверный тип параметра минимальной широты фильтра локации", 
+				"wrong type of min latitude parameter")
 		}
 	}
 
@@ -46,7 +47,8 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMaxLatSet = true
 		filter.maxLatitude, ok = item.(float64)
 		if !ok {
-			return nil, errors.New("wrong type of max latitude parameter")
+			return nil, errDef.NewArg("неверный тип параметра максимальной широты фильтра локации", 
+				"wrong type of max latitude parameter")
 		}
 	}
 
@@ -56,7 +58,8 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMinLonSet = true
 		filter.minLongitude, ok = item.(float64)
 		if !ok {
-			return nil, errors.New("wrong type of min longitude parameter")
+			return nil, errDef.NewArg("неверный тип параметра минимальной долготы фильтра локации", 
+				"wrong type of min longitude parameter")
 		}
 	}
 
@@ -66,28 +69,29 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMaxLonSet = true
 		filter.maxLongitude, ok = item.(float64)
 		if !ok {
-			return nil, errors.New("wrong type of max longitude parameter")
+			return nil, errDef.NewArg("неверный тип параметра максимальной долготы фильтра локации", 
+				"wrong type of max longitude parameter")
 		}
 	}
 
 	// Если ни одного параметра не найдено
 	if !filter.isMinLatSet && !filter.isMaxLatSet &&
 		!filter.isMinLonSet && !filter.isMaxLonSet {
-		return nil, errors.New("no location parameters found")
+		return nil, errDef.NewArg("не найдены параметры в фильтре локации", "no location parameters found")
 	}
 
 	// Валидация широты
 	if (filter.isMinLatSet && filter.isMaxLatSet &&
 		filter.minLatitude > filter.maxLatitude) ||
 		filter.minLatitude < -90.0 || filter.maxLatitude > 90.0 {
-		return nil, errors.New("invalid latitude")
+		return nil, errDef.NewArg("ошибка параметра широты фильтра локации", "invalid latitude")
 	}
 
 	// Валидация долготы
 	if (filter.isMinLonSet && filter.isMaxLonSet &&
 		filter.minLongitude > filter.maxLongitude) ||
 		filter.minLongitude < -180.0 || filter.maxLongitude > 180.0 {
-		return nil, errors.New("invalid longitude")
+		return nil, errDef.NewArg("ошибка параметра долготы фильтра локации", "invalid longitude")
 	}
 
 	return &filter, nil

@@ -3,7 +3,8 @@ package searchFilters
 import (
 	"MatchaServer/database"
 	"MatchaServer/session"
-	"errors"
+	"MatchaServer/errDef"
+	"strconv"
 )
 
 const (
@@ -22,6 +23,7 @@ type Filter interface {
 }
 
 type Filters struct {
+	uid     int
 	filters []Filter
 }
 
@@ -39,7 +41,7 @@ func (f *Filters) Parse(in map[string]interface{}, uid int,
 	)
 
 	if session == nil {
-		return errors.New("Empty session found")
+		return errDef.NewArg("найден пустой указатель сессии", "empty session pointer found")
 	}
 	item, isExist = in["age"]
 	if isExist {
@@ -90,6 +92,7 @@ func (f *Filters) Parse(in map[string]interface{}, uid int,
 		}
 		f.filters = append(f.filters, filter)
 	}
+	f.uid = uid
 	return nil
 }
 
@@ -106,21 +109,13 @@ func (f *Filters) Print() string {
 }
 
 func (f *Filters) PrepareQuery(sexRestrictions string) string {
-	var query = "SELECT * FROM users"
-	var queryRestrictions []string
+	var query = "SELECT * FROM users WHERE uid!="+strconv.Itoa(f.uid)
 
 	if sexRestrictions != "" {
-		queryRestrictions = append(queryRestrictions, sexRestrictions)
+		query += " AND " + sexRestrictions
 	}
 	for _, item := range f.filters {
-		if queryRestrictions == nil {
-			queryRestrictions = append(queryRestrictions, " WHERE "+item.prepareQueryFilter())
-		} else {
-			queryRestrictions = append(queryRestrictions, " AND "+item.prepareQueryFilter())
-		}
-	}
-	for _, restrict := range queryRestrictions {
-		query += restrict
+		query += " AND " + item.prepareQueryFilter()
 	}
 	return query
 }
