@@ -33,7 +33,7 @@ func (server *Server) searchAll(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) searchLogged(w http.ResponseWriter, r *http.Request) {
 
-	users, err := server.Db.GetLoggedUsers(server.session.GetLoggedUsersUidSlice())
+	users, err := server.Db.GetLoggedUsers(server.Session.GetLoggedUsersUidSlice())
 	if err != nil {
 		server.LogError(r, "GetLoggedUsers returned error"+err.Error())
 		server.error(w, errDef.DatabaseError)

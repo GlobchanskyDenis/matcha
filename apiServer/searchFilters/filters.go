@@ -1,6 +1,9 @@
 package searchFilters
 
 import (
+	"MatchaServer/database"
+	"MatchaServer/session"
+	"errors"
 )
 
 const (
@@ -9,6 +12,7 @@ const (
 	ratingFilterType
 	interestsFilterType
 	locationFilterType
+	radiusFilterType
 )
 
 type Filter interface {
@@ -25,14 +29,18 @@ func New() *Filters {
 	return &Filters{}
 }
 
-func (f *Filters) Parse(in map[string]interface{}) error {
+func (f *Filters) Parse(in map[string]interface{}, uid int, 
+	connDB database.Storage, session *session.Session) error {
 	var (
-		filter Filter
-		err error
+		filter  Filter
+		err     error
 		isExist bool
-		item interface{}
-		
+		item    interface{}
 	)
+
+	if session == nil {
+		return errors.New("Empty session found")
+	}
 	item, isExist = in["age"]
 	if isExist {
 		filter, err = newAgeFilter(item)
@@ -57,18 +65,26 @@ func (f *Filters) Parse(in map[string]interface{}) error {
 		}
 		f.filters = append(f.filters, filter)
 	}
-	// item, isExist = in["online"]
-	// if isExist {
-	// 	payloadExist = true
-	// 	filter, err = newOnlineFilter(item)
-	// 	if err != nil {
-	// 		return nil
-	// 	}
-	// 	f.filters = append(f.filters, filter)
-	// }
+	_, isExist = in["online"]
+	if isExist {
+		filter, err = newOnlineFilter(session)
+		if err != nil {
+			return nil
+		}
+		f.filters = append(f.filters, filter)
+	}
 	item, isExist = in["rating"]
 	if isExist {
 		filter, err = newRatingFilter(item)
+		if err != nil {
+			return err
+		}
+		f.filters = append(f.filters, filter)
+	}
+	item, isExist = in["radius"]
+	if isExist {
+
+		filter, err = newRadiusFilter(item, uid, connDB)
 		if err != nil {
 			return err
 		}
@@ -98,9 +114,9 @@ func (f *Filters) PrepareQuery(sexRestrictions string) string {
 	}
 	for _, item := range f.filters {
 		if queryRestrictions == nil {
-			queryRestrictions = append(queryRestrictions, " WHERE " + item.prepareQueryFilter())
+			queryRestrictions = append(queryRestrictions, " WHERE "+item.prepareQueryFilter())
 		} else {
-			queryRestrictions = append(queryRestrictions, " AND " + item.prepareQueryFilter())
+			queryRestrictions = append(queryRestrictions, " AND "+item.prepareQueryFilter())
 		}
 	}
 	for _, restrict := range queryRestrictions {

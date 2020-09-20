@@ -54,7 +54,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	server.session.DeleteUserSessionByUid(user.Uid)
+	server.Session.DeleteUserSessionByUid(user.Uid)
 
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {

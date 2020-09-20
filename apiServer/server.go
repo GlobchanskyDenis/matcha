@@ -14,7 +14,7 @@ import (
 type Server struct {
 	Port          int
 	Db            database.Storage
-	session       session.Session
+	Session       session.Session
 	isLogsEnabled bool
 	mailConf      config.Mail
 }
@@ -46,7 +46,7 @@ func New(confPath string) (*Server, error) {
 		newStorage = postgres.New()
 	}
 	(*server).Db = newStorage
-	(*server).session = session.CreateSession()
+	(*server).Session = session.CreateSession()
 	err = server.Db.Connect(&conf.Sql)
 	return server, err
 }

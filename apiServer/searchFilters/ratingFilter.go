@@ -14,13 +14,13 @@ type ratingFilter struct {
 
 func newRatingFilter(in interface{}) (*ratingFilter, error) {
 	var (
-		filter ratingFilter
-		ok bool
+		filter  ratingFilter
+		ok      bool
 		payload map[string]interface{}
-		item interface{}
-		fl64 float64
+		item    interface{}
+		fl64    float64
 	)
-	
+
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
@@ -59,7 +59,7 @@ func newRatingFilter(in interface{}) (*ratingFilter, error) {
 		(filter.isMaxSet && filter.isMinSet && filter.maxRating < filter.minRating) {
 		return nil, errors.New("invalid rating parameter")
 	}
-	
+
 	return &filter, nil
 }
 

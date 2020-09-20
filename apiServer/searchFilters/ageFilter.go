@@ -1,27 +1,27 @@
 package searchFilters
 
 import (
+	"errors"
 	"strconv"
 	"time"
-	"errors"
 )
 
 type ageFilter struct {
 	isMinSet bool
 	isMaxSet bool
-	minAge int
-	maxAge int
+	minAge   int
+	maxAge   int
 }
 
 func newAgeFilter(in interface{}) (*ageFilter, error) {
 	var (
-		filter ageFilter
-		ok bool
+		filter  ageFilter
+		ok      bool
 		payload map[string]interface{}
-		item interface{}
-		fl64 float64
+		item    interface{}
+		fl64    float64
 	)
-	
+
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
@@ -95,20 +95,20 @@ func (ageFilter) getFilterType() int {
 func (f ageFilter) prepareQueryFilter() string {
 	var (
 		maxAge, minAge string
-		year, day int
-		month time.Month
+		year, day      int
+		month          time.Month
 	)
 
 	year, month, day = time.Now().Date()
 
 	if f.isMinSet {
-		minAge = strconv.Itoa(year - f.maxAge + 1) + "-" + 
-		stringifyDate(int(month)) + "-" + stringifyDate(day)
+		minAge = strconv.Itoa(year-f.maxAge+1) + "-" +
+			stringifyDate(int(month)) + "-" + stringifyDate(day)
 	}
 
 	if f.isMaxSet {
-		maxAge = strconv.Itoa(year - f.minAge - 1) + "-" + 
-		stringifyDate(int(month)) + "-" + stringifyDate(day)
+		maxAge = strconv.Itoa(year-f.minAge-1) + "-" +
+			stringifyDate(int(month)) + "-" + stringifyDate(day)
 	}
 
 	if f.isMinSet && !f.isMaxSet {

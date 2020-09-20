@@ -10,11 +10,11 @@ type interestsFilter struct {
 
 func newInterestsFilter(in interface{}) (*interestsFilter, error) {
 	var (
-		filter interestsFilter
-		ok bool
+		filter  interestsFilter
+		ok      bool
 		payload []interface{}
-		item interface{}
-		str string
+		item    interface{}
+		str     string
 	)
 
 	// Заранее выделю память под некоторое количество интересов
@@ -65,15 +65,15 @@ func (f interestsFilter) prepareQueryFilter() string {
 		return "1=1"
 	}
 	if len(f.interests) == 1 {
-		return "'"+f.interests[0] + "'=ANY(interests)"
+		return "'" + f.interests[0] + "'=ANY(interests)"
 	}
 
 	var queryFilter string
 	for _, interest := range f.interests {
 		if queryFilter == "" {
-			queryFilter = "('"+interest + "'=ANY(interests)"
+			queryFilter = "('" + interest + "'=ANY(interests)"
 		} else {
-			queryFilter += " AND '"+interest + "'=ANY(interests)"
+			queryFilter += " AND '" + interest + "'=ANY(interests)"
 		}
 	}
 	queryFilter += ")"

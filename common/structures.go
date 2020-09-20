@@ -9,7 +9,7 @@ type User struct {
 	EncryptedPass string    `json:"-"`
 	Fname         string    `json:"fname"`
 	Lname         string    `json:"lname"`
-	Birth         time.Time `json:"-"`
+	Birth         time.Time `json:"birth"`
 	Age           int       `json:"age,omitempty"`
 	Gender        string    `json:"gender,omitempty"`
 	Orientation   string    `json:"orientation,omitempty"`

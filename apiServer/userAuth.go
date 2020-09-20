@@ -31,7 +31,7 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 			server.LogError(r, "SetNewDevice returned error - "+err.Error())
 			return errDef.DatabaseError
 		}
-		err = server.session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
+		err = server.Session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
 		if err != nil {
 			server.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
 			return errDef.WebSocketError
@@ -129,7 +129,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err = server.session.AddUserToSession(user.Uid)
+	token, err = server.Session.AddUserToSession(user.Uid)
 	if err != nil {
 		server.LogError(r, "Cannot add user to session - "+err.Error())
 		server.error(w, errDef.UnknownInternalError)
@@ -144,7 +144,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenWS, err = server.session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
+	tokenWS, err = server.Session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.LogError(r, "cannot create web socket token - "+err.Error())

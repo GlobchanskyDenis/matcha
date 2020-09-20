@@ -107,7 +107,7 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			server.LogWarning(r, `SetNewMessage returned error - `+err.Error())
 			return
 		}
-		err = server.session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
+		err = server.Session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
 		if err != nil {
 			server.LogWarning(r, `SendMessageToLoggedUser returned error - `+err.Error())
 			return
@@ -150,7 +150,7 @@ func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 		ws.Close()
 		return
 	}
-	tokenWS, err := server.session.GetTokenWS(uid)
+	tokenWS, err := server.Session.GetTokenWS(uid)
 	if err != nil {
 		server.LogError(r, "GetTokenWS returned error - "+err.Error())
 		ws.Close()
@@ -163,13 +163,13 @@ func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	server.session.AddWSConnection(uid, ws)
+	server.Session.AddWSConnection(uid, ws)
 
 	server.LogSuccess(r, "WebSocket was created")
 
 	server.wsReader(r, ws, uid)
 
-	userSessionWasClosed, err := server.session.RemoveWSConnection(uid, ws)
+	userSessionWasClosed, err := server.Session.RemoveWSConnection(uid, ws)
 	if err != nil {
 		server.LogWarning(r, "RemoveWSConnection returned error: "+err.Error())
 	} else {

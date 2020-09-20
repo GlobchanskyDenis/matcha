@@ -6,24 +6,24 @@ import (
 )
 
 type locationFilter struct {
-	isMinLatSet	bool
-	isMaxLatSet	bool
-	isMinLonSet bool
-	isMaxLonSet bool
-	minLatitude float64
-	maxLatitude float64
+	isMinLatSet  bool
+	isMaxLatSet  bool
+	isMinLonSet  bool
+	isMaxLonSet  bool
+	minLatitude  float64
+	maxLatitude  float64
 	minLongitude float64
 	maxLongitude float64
 }
 
 func newLocationFilter(in interface{}) (*locationFilter, error) {
 	var (
-		filter locationFilter
-		ok bool
+		filter  locationFilter
+		ok      bool
 		payload map[string]interface{}
-		item interface{}
+		item    interface{}
 	)
-	
+
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
@@ -77,19 +77,19 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 	}
 
 	// Валидация широты
-	if (filter.isMinLatSet && filter.isMaxLatSet && 
-		filter.minLatitude > filter.maxLatitude) || 
+	if (filter.isMinLatSet && filter.isMaxLatSet &&
+		filter.minLatitude > filter.maxLatitude) ||
 		filter.minLatitude < -90.0 || filter.maxLatitude > 90.0 {
 		return nil, errors.New("invalid latitude")
 	}
 
 	// Валидация долготы
-	if (filter.isMinLonSet && filter.isMaxLonSet && 
-		filter.minLongitude > filter.maxLongitude) || 
+	if (filter.isMinLonSet && filter.isMaxLonSet &&
+		filter.minLongitude > filter.maxLongitude) ||
 		filter.minLongitude < -180.0 || filter.maxLongitude > 180.0 {
 		return nil, errors.New("invalid longitude")
 	}
-	
+
 	return &filter, nil
 }
 

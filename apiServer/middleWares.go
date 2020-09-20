@@ -51,7 +51,7 @@ func (server *Server) CheckAuthMiddleWare(next http.Handler) http.Handler {
 			return
 		}
 
-		isLogged = server.session.IsUserLoggedByUid(uid)
+		isLogged = server.Session.IsUserLoggedByUid(uid)
 		if !isLogged {
 			server.LogWarning(r, "User #"+strconv.Itoa(uid)+" is not logged")
 			server.error(w, errDef.UserNotLogged)
