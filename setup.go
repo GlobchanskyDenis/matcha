@@ -111,7 +111,12 @@ func main() {
 	user.EncryptedPass = handlers.PassHash("admin")
 	user.Fname = "admin"
 	user.Lname = "superUser"
-	user.Birth = time.Now()
+	date, err := time.Parse("2006-01-02", "1989-10-23")
+	user.Birth = common.CustomDate(date)
+	if err != nil {
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
+		return
+	}
 	user.Age = 30
 	user.Gender = "male"
 	user.Orientation = "hetero"

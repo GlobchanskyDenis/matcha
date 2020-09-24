@@ -54,7 +54,7 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
-		user.Lname, user.Birth.Format("2006-01-02"), user.Gender, user.Orientation,
+		user.Lname, time.Time(user.Birth).Format("2006-01-02"), user.Gender, user.Orientation,
 		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
 	if err != nil {
 		return errors.New(err.Error() + " in executing")
@@ -95,11 +95,12 @@ func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]common.User, error) 
 		// handle user birth and age
 		if len(birth) > 10 {
 			birth = string(birth[:10])
-			user.Birth, err = time.Parse("2006-01-02", birth)
+			date, err := time.Parse("2006-01-02", birth)
+			user.Birth = common.CustomDate(date)
 			if err != nil {
 				return nil, err
 			}
-			user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+			user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 		}
 		users = append(users, user)
 	}
@@ -145,11 +146,12 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 	// handle user birth and age
 	if len(birth) > 10 {
 		birth = string(birth[:10])
-		user.Birth, err = time.Parse("2006-01-02", birth)
+		date, err := time.Parse("2006-01-02", birth)
+		user.Birth = common.CustomDate(date)
 		if err != nil {
 			return user, err
 		}
-		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 	}
 	return user, nil
 }
@@ -192,11 +194,12 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	// handle user birth and age
 	if len(birth) > 10 {
 		birth = string(birth[:10])
-		user.Birth, err = time.Parse("2006-01-02", birth)
+		date, err := time.Parse("2006-01-02", birth)
+		user.Birth = common.CustomDate(date)
 		if err != nil {
 			return user, err
 		}
-		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 	}
 	return user, nil
 }
@@ -229,11 +232,12 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 		// handle user birth and age
 		if len(birth) > 10 {
 			birth = string(birth[:10])
-			user.Birth, err = time.Parse("2006-01-02", birth)
+			date, err := time.Parse("2006-01-02", birth)
+			user.Birth = common.CustomDate(date)
 			if err != nil {
 				return nil, err
 			}
-			user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+			user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 		}
 		users = append(users, user)
 	}
@@ -280,11 +284,12 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 	// handle user birth and age
 	if len(birth) > 10 {
 		birth = string(birth[:10])
-		user.Birth, err = time.Parse("2006-01-02", birth)
+		date, err := time.Parse("2006-01-02", birth)
+		user.Birth = common.CustomDate(date)
 		if err != nil {
 			return user, err
 		}
-		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 	}
 	return user, nil
 }
@@ -337,11 +342,12 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]common.User, error) {
 		// handle user birth and age
 		if len(birth) > 10 {
 			birth = string(birth[:10])
-			user.Birth, err = time.Parse("2006-01-02", birth)
+			date, err := time.Parse("2006-01-02", birth)
+			user.Birth = common.CustomDate(date)
 			if err != nil {
 				return nil, err
 			}
-			user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+			user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 		}
 		users = append(users, user)
 	}

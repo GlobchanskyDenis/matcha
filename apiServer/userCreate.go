@@ -64,7 +64,6 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	err = handlers.CheckMail(mail)
 	if err != nil {
 		server.LogWarning(r, "mail - "+err.Error())
-		// add apiErrorArgument in handlers functions
 		server.error(w, errDef.InvalidArgument.WithArguments(err))
 		return
 	}
@@ -72,7 +71,6 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	err = handlers.CheckPass(pass)
 	if err != nil {
 		server.LogWarning(r, "password - "+err.Error())
-		// add apiErrorArgument in handlers functions
 		server.error(w, errDef.InvalidArgument.WithArguments(err))
 		return
 	}

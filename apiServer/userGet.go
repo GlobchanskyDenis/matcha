@@ -35,7 +35,6 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 
 	jsonUser, err := json.Marshal(user)
 	if err != nil {
-		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.LogError(r, "Marshal returned error "+err.Error())
 		server.error(w, errDef.MarshalError)
 		return

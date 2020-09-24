@@ -31,7 +31,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		err = handlers.CheckMail(user.Mail)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " mail=" + BLUE + arg.(string) + NO_COLOR
@@ -47,7 +46,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.EncryptedPass = handlers.PassHash(user.Pass)
 		err = handlers.CheckPass(user.Pass)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " password=hidden"
@@ -62,7 +60,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		err = handlers.CheckName(user.Fname)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " fname=" + BLUE + arg.(string) + NO_COLOR
@@ -77,7 +74,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		err = handlers.CheckName(user.Lname)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " lname=" + BLUE + arg.(string) + NO_COLOR
@@ -90,12 +86,13 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
 		}
-		user.Birth, err = time.Parse("2006-01-02", birth)
+		date, err := time.Parse("2006-01-02", birth)
+		user.Birth = CustomDate(date)
 		if err != nil {
 			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
 		}
-		user.Age = int(time.Since(user.Birth).Hours() / 24 / 365.27)
+		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
 		if user.Age > 80 || user.Age < 16 {
 			return user, message, errDef.InvalidArgument.WithArguments("Значение поля birth недопустимо", "birth field has wrong value")
 		}
@@ -111,7 +108,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		err = handlers.CheckGender(user.Gender)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " gender=" + BLUE + arg.(string) + NO_COLOR
@@ -126,7 +122,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		err = handlers.CheckOrientation(user.Orientation)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " orientation=" + BLUE + arg.(string) + NO_COLOR
@@ -141,7 +136,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		err = handlers.CheckBio(user.Bio)
 		if err != nil {
-			// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 			return user, message, errDef.InvalidArgument.WithArguments(err)
 		}
 		message += " bio=" + BLUE + arg.(string) + NO_COLOR
@@ -199,7 +193,6 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			}
 			err = handlers.CheckInterest(tmpStr)
 			if err != nil {
-				// handlers - привести все ошибки к типу errDef.ApiErrorArgument
 				return user, message, errDef.InvalidArgument.WithArguments(err)
 			}
 			user.Interests = append(user.Interests, tmpStr)
@@ -212,7 +205,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	}
 
 	if !usefullFieldsExists {
-		return user, message, errDef.NoArgument //.WithArguments("Нет ни одного полезного поля", "no usefull fields found")
+		return user, message, errDef.NoArgument
 	}
 	return user, message, nil
 }
