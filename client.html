@@ -57,21 +57,98 @@
 			list.appendChild(newPhoto);
 		}
 
+		function handleFilters() {
+			var minAgeStr = document.forms['age']['min'].value
+			var maxAgeStr = document.forms['age']['max'].value
+			var minRatingStr = document.forms['rating']['min'].value
+			var maxRatingStr = document.forms['rating']['max'].value
+			var radLatitudeStr =  document.forms['location_radius']['latitude'].value
+			var radLongitudeStr = document.forms['location_radius']['longitude'].value
+			var radiusStr =       document.forms['location_radius']['radius'].value
+			var interestsStr = document.forms['other']['interests'].value
+			var filters = new Object();
+
+			// handle age filter
+			if (minAgeStr || maxAgeStr) {
+				filters.age = {}
+				if (minAgeStr) {
+					filters.age.min = Number(minAgeStr)
+				}
+				if (maxAgeStr) {
+					filters.age.max = Number(maxAgeStr)
+				}
+			}
+
+			// handle rating filter
+			if (minRatingStr || maxRatingStr) {
+				filters.rating = {}
+				if (minRatingStr) {
+					filters.rating.min = Number(minRatingStr)
+				}
+				if (maxRatingStr) {
+					filters.rating.max = Number(maxRatingStr)
+				}
+			}
+
+			// handle location radius filter
+			if (radLatitudeStr || radLongitudeStr || radiusStr) {
+				filters.radius = {}
+				if (radLatitudeStr) {
+					filters.radius.latitude = Number(radLatitudeStr)
+				}
+				if (radLongitudeStr) {
+					filters.radius.longitude = Number(radLongitudeStr)
+				}
+				if (radiusStr) {
+					filters.radius.radius = Number(radiusStr)
+				}
+			}
+
+			// handle interests filter
+			if (interestsStr != "") {
+				// результатом выражения является массив
+				filters.interests = interestsStr.split(" ")
+			}
+
+			// handle online filter
+			if (document.getElementById("online").checked) {
+				filters.online = {}
+			}
+			return filters
+		}
+
 		function getUsers() {
 			let xhr = new XMLHttpRequest();
-			var n = document.getElementById("filter1").options.selectedIndex;
-			var filter = document.getElementById("filter1").options[n].value;
-			xhr.open("GET", "http://localhost:3000/search/?filter=" + filter);
+
+			// var n = document.getElementById("filter1").options.selectedIndex;
+			// var filter = document.getElementById("filter1").options[n].value;
+
+			var filters = handleFilters()
+			// let tokenObj = new Map()
+			// tokenObj["x-auth-token"] = document.token
+			// filters.push(tokenObj)
+			filters["x-auth-token"] = document.token
+			console.log(JSON.stringify(filters))
+			// return
+
+			xhr.open("POST", "http://localhost:3000/search/");
 			// xhr.responseType = 'json';
-			console.log("tx: get users, filter = " + filter)
-			xhr.send();
+			// console.log("tx: get users, filter = " + filter)
+			xhr.send(JSON.stringify(filters));
 			xhr.onload = function () {
-				if (xhr.response) {
-					var requestAsync = JSON.parse(xhr.response);
-				} else {
-					var requestAsync = "";
-				}
 				console.log("rx: " + xhr.status + " : " + xhr.response);
+				if (xhr.response) {
+					// console.log("response:")
+					var requestAsync = JSON.parse(xhr.response);
+					if (!requestAsync) {
+						console.log("no users")
+						return
+					}
+				} else {
+					console.log("Empty response")
+					return
+					// var requestAsync = "";
+				}
 
 				if (xhr.status != 200 && xhr.status != 201) {
 					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
@@ -80,6 +157,10 @@
 					return
 				}
 
+				// if (!requestAsync) {
+				// 	console.log("Empty response")
+				// 	return
+				// }
 				if (requestAsync.error) {
 					document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : " + requestAsync.error + " "
 				} else {
@@ -534,6 +615,49 @@
 			display: block;
 			margin: 10px;
 		}
+
+		/* .filter_form {
+			display: block;
+			border: 1px solid brown;
+		} */
+
+		.filter_input {
+			display: block;
+			height:  25px;
+			width:   95%;
+			margin:  10px auto 10px auto;
+		}
+
+		.label {
+			display: block;
+			height:  25px;
+			width:   90%;
+			margin:  10px auto auto auto;
+			/* border: 1px solid brown; */
+		}
+
+		.checkbox {
+			display: inline-block;
+			height:  25px;
+			width:   25px;
+			margin:  auto auto auto auto;
+			padding: 0;
+			/* border: 1px solid brown; */
+		}
+
+		.checkbox_name {
+			display: inline;
+			position: relative;
+			top: -8px;
+			/* border: 1px solid brown; */
+		}
+
+		.filters_grid {
+			display: grid;
+			grid-template-columns:	repeat(4, 1fr);
+			width:650px;
+			border: 1px solid green;
+		}
 	</style>
 </head>
 
@@ -587,12 +711,33 @@
 	</form>
 	<input type="submit" value="Изменить данные" onclick="UpdateUser()">
 
-	<p>
+	<!-- <p>
 		<select size="1" id="filter1">
 			<option selected value="all">Всех пользователей</option>
 			<option value="logged">Только онлайн пользователей</option>
 		</select>
-	</p>
+	</p> -->
+	<div class="filters_grid">
+		<form name="age" class="filter_form">
+			<input type="text" class="filter_input" name="min" placeholder="мин возраст">
+			<input type="text" class="filter_input" name="max" placeholder="макс возраст">
+		</form>
+		<form name="rating" class="filter_form">
+			<input type="text" class="filter_input" name="min" placeholder="мин рейтинг">
+			<input type="text" class="filter_input" name="max" placeholder="макс рейтинг">
+		</form>
+		<form name="location_radius" class="filter_form">
+			<input type="text" class="filter_input" name="latitude" placeholder="широта">
+			<input type="text" class="filter_input" name="longitude" placeholder="долгота">
+			<input type="text" class="filter_input" name="radius" placeholder="радиус (км)">
+		</form>
+		<form name="other" class="filter_form">
+			<input type="text" class="filter_input" name="interests" placeholder="Интересы">
+			<label class="label"><input type="checkbox" class="checkbox" id="online">
+				<div class="checkbox_name">Онлайн</div>
+			</label>
+		</form>
+	</div>
 
 	<input type="submit" value="Показать пользователей" onclick="getUsers()">
 

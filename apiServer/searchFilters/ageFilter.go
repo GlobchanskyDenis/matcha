@@ -104,12 +104,12 @@ func (f ageFilter) prepareQueryFilter() string {
 	year, month, day = time.Now().Date()
 
 	if f.isMinSet {
-		minAge = strconv.Itoa(year-f.maxAge+1) + "-" +
+		minAge = strconv.Itoa(year-f.minAge+1) + "-" +
 			stringifyDate(int(month)) + "-" + stringifyDate(day)
 	}
 
 	if f.isMaxSet {
-		maxAge = strconv.Itoa(year-f.minAge-1) + "-" +
+		maxAge = strconv.Itoa(year-f.maxAge-1) + "-" +
 			stringifyDate(int(month)) + "-" + stringifyDate(day)
 	}
 
