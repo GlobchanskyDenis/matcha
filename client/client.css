@@ -1,0 +1,118 @@
+#responseField {
+	width:		95%;
+	text-align:	center;
+	height:		22px;
+	border:		3px solid green;
+	margin:		10px auto;
+}
+
+#errorField {
+	width:		95%;
+	text-align:	center;
+	height:		22px;
+	border:		3px solid red;
+	margin:		10px auto;
+}
+
+.grid_2_places {
+	display:				grid;
+	grid-template-columns:	repeat(2, 1fr);
+	width:					650px;
+	border:					1px solid gray;
+	margin:					5px auto 5px 15px;
+	background-color:		rgb(220,220,220);
+	border-radius:			5px;
+}
+
+.grid_3_places {
+	display:				grid;
+	grid-template-columns:	repeat(3, 1fr);
+	width:					650px;
+	border:					1px solid gray;
+	margin:					5px auto 5px 15px;
+	background-color:		rgb(220,220,220);
+	border-radius:			5px;
+}
+
+.grid_4_places {
+	display:				grid;
+	grid-template-columns:	repeat(4, 1fr);
+	width:					650px;
+	border:					1px solid gray;
+	margin:					5px auto 5px 15px;
+	background-color:		rgb(220,220,220);
+	border-radius:			5px;
+}
+
+.input_text {
+	display:	block;
+	width:		90%;
+	margin:		5px;
+}
+
+.input_submit {
+	width:		150px;
+	height:		25px;
+	font-size:	15px;
+	margin:		-3px auto 5px 30px;
+}
+
+.filter_input {
+	display: block;
+	height:  25px;
+	width:   95%;
+	margin:  10px auto 10px auto;
+}
+
+.label {
+	display: block;
+	height:  25px;
+	width:   90%;
+	margin:  10px auto auto auto;
+}
+
+.checkbox {
+	display: inline-block;
+	height:  25px;
+	width:   25px;
+	margin:  auto auto auto auto;
+	padding: 0;
+}
+
+.checkbox_name {
+	display: inline;
+	position: relative;
+	top: -8px;
+}
+
+.userList {
+	border: 1px solid black;
+	width: 320px;
+	min-height:	10px;
+}
+
+.item {
+	border: 1px solid red;
+	width: 300px;
+	margin: 2px auto 2px auto;
+}
+
+.photoList {
+	border: 3px solid brown;
+	width: 320px;
+	min-height:	10px;
+}
+
+.photo {
+	display: block;
+	width: 300px;
+	margin: 2px auto 2px auto;
+}
+
+#upload_photo {
+	position: absolute;
+	left: 690px;
+	top: 85px;
+	width: 200px;
+}
+

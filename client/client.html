@@ -1,0 +1,127 @@
+<html>
+
+<head>
+	<title>Client to test</title>
+	<link rel="stylesheet" href="client.css">
+	<script src="client.js"></script>
+</head>
+
+<body>
+
+	<div id="errorField">error Field</div>
+	<div id="responseField">response will be here</div>
+
+	<div class="grid_2_places">
+		<div>
+			<form name="auth">
+				<input type="text" class="input_text" name="mail" placeholder="mail">
+				<input type="password" class="input_text" name="pass" placeholder="password">
+			</form>
+			<input type="submit" class="input_submit" value="Авторизация" onclick="AuthUser()">
+		</div>
+		<div>
+			<form name="reg">
+				<input type="text" class="input_text" name="mail" placeholder="mail">
+				<input type="password" class="input_text" name="pass" placeholder="password">
+			</form>
+			<input type="submit" class="input_submit" value="Регистрация" onclick="RegUser()">
+		</div>
+	</div>
+
+	<div class="grid_3_places">
+		<div>
+			<form name="update_1">
+				<input type="text" class="input_text" name="mail" placeholder="mail">
+				<input type="password" class="input_text" name="pass" placeholder="password">
+				<input type="text" class="input_text" name="fname" placeholder="first name">
+				<input type="text" class="input_text" name="lname" placeholder="last name">
+			</form>
+		</div>
+		<div>
+			<form name="update_2">
+				<input type="text" class="input_text" name="birth" placeholder="birth date">
+				<input type="text" class="input_text" name="gender" placeholder="gender">
+				<input type="text" class="input_text" name="orientation" placeholder="orientation">
+				<input type="text" class="input_text" name="bio" placeholder="biography">
+			</form>
+			<input type="submit" class="input_submit" value="Изменить данные" onclick="UpdateUser()">
+		</div>
+		<div>
+			<form name="update_3">
+				<input type="text" class="input_text" name="avaID" placeholder="avaID">
+				<input type="text" class="input_text" name="latitude" placeholder="latitude">
+				<input type="text" class="input_text" name="longitude" placeholder="longitude">
+				<input type="text" class="input_text" name="interests" placeholder="interests">
+			</form>
+		</div>
+	</div>
+
+	<div class="grid_2_places">
+		<div>
+			<form name="dload">
+				<input type="text" class="input_text" name="uid" placeholder="uid of photo author">
+			</form>
+			<input type="submit" class="input_submit" value="Download" onclick="Download()">
+			<input type="submit" class="input_submit" value="Upload" onclick="Upload()">
+		</div>
+		<div>
+			<form name="updStatus">
+				<input type="text" class="input_text" name="x-reg-token" placeholder="x-reg-token">
+			</form>
+			<input type="submit" class="input_submit" value="Валидация почты" onclick="UpdateUserStatus()">
+			<form title="choose your file">
+				<input type="file" class="input_submit" accept="image/*" onchange="readURL(this);">
+			</form>
+		</div>
+	</div>
+
+	<div class="grid_4_places">
+		<div>
+			<form name="age" class="filter_form">
+				<input type="text" class="input_text" name="min" placeholder="мин возраст">
+				<input type="text" class="input_text" name="max" placeholder="макс возраст">
+			</form>
+			<input type="submit" class="input_submit" value="Поиск" onclick="getUsers()">
+		</div>
+		<div>
+			<form name="rating" class="filter_form">
+				<input type="text" class="input_text" name="min" placeholder="мин рейтинг">
+				<input type="text" class="input_text" name="max" placeholder="макс рейтинг">
+			</form>
+		</div>
+		<div>
+			<form name="location_radius" class="filter_form">
+				<input type="text" class="input_text" name="latitude" placeholder="широта">
+				<input type="text" class="input_text" name="longitude" placeholder="долгота">
+				<input type="text" class="input_text" name="radius" placeholder="радиус (км)">
+			</form>
+		</div>
+		<div>
+			<form name="other" class="filter_form">
+				<input type="text" class="input_text" name="interests" placeholder="Интересы">
+				<label class="label"><input type="checkbox" class="checkbox" id="online">
+					<div class="checkbox_name">Онлайн</div>
+				</label>
+			</form>
+		</div>
+	</div>
+
+	<div class="grid_2_places">
+		<div class="userList" id="userList">
+		</div>
+		<div class="photoList" id="photoList">
+		</div>
+	</div>
+
+	<img id="upload_photo">	
+
+	<!-- <p>
+		<select size="1" id="filter1">
+			<option selected value="all">Всех пользователей</option>
+			<option value="logged">Только онлайн пользователей</option>
+		</select>
+	</p> -->
+
+</body>
+
+</html>

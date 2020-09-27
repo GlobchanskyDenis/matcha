@@ -1,8 +1,4 @@
-<html>
 
-<head>
-	<title>Client to test</title>
-	<script>
 		function b64DecodeUnicode(str) {
 			// Going backwards: from bytestream, to percent-encoding, to original string.
 			return decodeURIComponent(atob(str).split('').map(function (c) {
@@ -338,7 +334,7 @@
 		function readURL(input) {
 			if (input.files && input.files[0]) {
 				var reader = new FileReader();
-				image = document.getElementById('uploadPhoto');
+				image = document.getElementById('upload_photo');
 				image.style.display = "block";
 				// document.getElementById('video').style.opacity = 0;
 				reader.onload = function (e) {
@@ -350,7 +346,7 @@
 		}
 
 		function Upload() {
-			var image = document.getElementById('uploadPhoto');
+			var image = document.getElementById('upload_photo');
 
 			var request = `{"x-auth-token":"` + document.token + `","src":"` + image.src + `"}` //btoa(image.src)
 			document.buffer = image.src
@@ -427,18 +423,18 @@
 		}
 
 		function UpdateUser() {
-			var mail = document.forms['upd']['mail'].value
-			var pass = document.forms['upd']['pass'].value
-			var fname = document.forms['upd']['fname'].value
-			var lname = document.forms['upd']['lname'].value
-			var birth = document.forms['upd']['birth'].value
-			var gender = document.forms['upd']['gender'].value
-			var orientation = document.forms['upd']['orientation'].value
-			var bio = document.forms['upd']['bio'].value
-			var avaID = document.forms['upd']['avaID'].value
-			var latitude = document.forms['upd']['latitude'].value
-			var longitude = document.forms['upd']['longitude'].value
-			var interestsString = document.forms['upd']['interests'].value
+			var mail = document.forms['update_1']['mail'].value
+			var pass = document.forms['update_1']['pass'].value
+			var fname = document.forms['update_1']['fname'].value
+			var lname = document.forms['update_1']['lname'].value
+			var birth = document.forms['update_2']['birth'].value
+			var gender = document.forms['update_2']['gender'].value
+			var orientation = document.forms['update_2']['orientation'].value
+			var bio = document.forms['update_2']['bio'].value
+			var avaID = document.forms['update_3']['avaID'].value
+			var latitude = document.forms['update_3']['latitude'].value
+			var longitude = document.forms['update_3']['longitude'].value
+			var interestsString = document.forms['update_3']['interests'].value
 			var interestsArr = interestsString.split(" ")
 			var request = ""
 
@@ -550,17 +546,18 @@
 				}
 				document.getElementById("errorField").innerHTML = ""
 				document.getElementById("responseField").innerHTML = "Update was done successfully"
-				document.forms['upd']['mail'].value = "";
-				document.forms['upd']['pass'].value = "";
-				document.forms['upd']['fname'].value = "";
-				document.forms['upd']['lname'].value = "";
-				document.forms['upd']['birth'].value = "";
-				document.forms['upd']['gender'].value = "";
-				document.forms['upd']['orientation'].value = "";
-				document.forms['upd']['bio'].value = "";
-				document.forms['upd']['avaID'].value = "";
-				document.forms['upd']['latitude'].value = "";
-				document.forms['upd']['longitude'].value = "";
+				document.forms['update_1']['mail'].value = "";
+				document.forms['update_1']['pass'].value = "";
+				document.forms['update_1']['fname'].value = "";
+				document.forms['update_1']['lname'].value = "";
+				document.forms['update_2']['birth'].value = "";
+				document.forms['update_2']['gender'].value = "";
+				document.forms['update_2']['orientation'].value = "";
+				document.forms['update_2']['bio'].value = "";
+				document.forms['update_3']['avaID'].value = "";
+				document.forms['update_3']['latitude'].value = "";
+				document.forms['update_3']['longitude'].value = "";
+				document.forms['update_3']['interests'].value = "";
 			}
 
 			xhr.onerror = function () {
@@ -570,184 +567,3 @@
 
 		var token = ""
 		var buffer = ""
-
-	</script>
-	<style>
-		.userList {
-			border: 1px solid black;
-			width: 500px;
-		}
-
-		.photoList {
-			border: 3px solid brown;
-			width: 500px;
-		}
-
-		.photo {
-			display: block;
-			width: 400px;
-			margin: 2px auto 2px auto;
-		}
-
-		.item {
-			border: 1px solid red;
-			width: 450px;
-			margin: 2px auto 2px auto;
-		}
-
-		#responseField {
-			width: 600px;
-			text-align: center;
-			height: 22px;
-			border: 3px solid green;
-			margin: 10px auto 10px 10px;
-		}
-
-		#errorField {
-			width: 600px;
-			text-align: center;
-			height: 22px;
-			border: 3px solid red;
-			margin: 10px auto 10px 10px;
-		}
-
-		input {
-			display: block;
-			margin: 10px;
-		}
-
-		/* .filter_form {
-			display: block;
-			border: 1px solid brown;
-		} */
-
-		.filter_input {
-			display: block;
-			height:  25px;
-			width:   95%;
-			margin:  10px auto 10px auto;
-		}
-
-		.label {
-			display: block;
-			height:  25px;
-			width:   90%;
-			margin:  10px auto auto auto;
-			/* border: 1px solid brown; */
-		}
-
-		.checkbox {
-			display: inline-block;
-			height:  25px;
-			width:   25px;
-			margin:  auto auto auto auto;
-			padding: 0;
-			/* border: 1px solid brown; */
-		}
-
-		.checkbox_name {
-			display: inline;
-			position: relative;
-			top: -8px;
-			/* border: 1px solid brown; */
-		}
-
-		.filters_grid {
-			display: grid;
-			grid-template-columns:	repeat(4, 1fr);
-			width:650px;
-			border: 1px solid green;
-		}
-	</style>
-</head>
-
-<body>
-
-	<div id="errorField">error Field</div>
-	<div id="responseField">response will be here</div>
-
-	<form title="choose your file">
-		<input type="file" accept="image/*" onchange="readURL(this);">
-	</form>
-
-	<input type="submit" value="Upload" onclick="Upload()">
-
-	<form name="dload">
-		<input type="text" name="uid" placeholder="uid of photo author">
-	</form>
-
-	<input type="submit" value="Download" onclick="Download()">
-
-	<form name="auth">
-		<input type="text" name="mail" placeholder="mail">
-		<input type="password" name="pass" placeholder="password">
-	</form>
-	<input type="submit" value="Авторизация" onclick="AuthUser()">
-
-	<form name="reg">
-		<input type="text" name="mail" placeholder="mail">
-		<input type="password" name="pass" placeholder="password">
-	</form>
-	<input type="submit" value="Регистрация" onclick="RegUser()">
-
-	<form name="updStatus">
-		<input type="text" name="x-reg-token" placeholder="x-reg-token">
-	</form>
-	<input type="submit" value="Валидация почты" onclick="UpdateUserStatus()">
-
-	<form name="upd">
-		<input type="text" name="mail" placeholder="mail">
-		<input type="password" name="pass" placeholder="password">
-		<input type="text" name="fname" placeholder="first name">
-		<input type="text" name="lname" placeholder="last name">
-		<input type="text" name="birth" placeholder="birth date">
-		<input type="text" name="gender" placeholder="gender">
-		<input type="text" name="orientation" placeholder="orientation">
-		<input type="text" name="bio" placeholder="biography">
-		<input type="text" name="avaID" placeholder="avaID">
-		<input type="text" name="latitude" placeholder="latitude">
-		<input type="text" name="longitude" placeholder="longitude">
-		<input type="text" name="interests" placeholder="interests">
-	</form>
-	<input type="submit" value="Изменить данные" onclick="UpdateUser()">
-
-	<!-- <p>
-		<select size="1" id="filter1">
-			<option selected value="all">Всех пользователей</option>
-			<option value="logged">Только онлайн пользователей</option>
-		</select>
-	</p> -->
-	<div class="filters_grid">
-		<form name="age" class="filter_form">
-			<input type="text" class="filter_input" name="min" placeholder="мин возраст">
-			<input type="text" class="filter_input" name="max" placeholder="макс возраст">
-		</form>
-		<form name="rating" class="filter_form">
-			<input type="text" class="filter_input" name="min" placeholder="мин рейтинг">
-			<input type="text" class="filter_input" name="max" placeholder="макс рейтинг">
-		</form>
-		<form name="location_radius" class="filter_form">
-			<input type="text" class="filter_input" name="latitude" placeholder="широта">
-			<input type="text" class="filter_input" name="longitude" placeholder="долгота">
-			<input type="text" class="filter_input" name="radius" placeholder="радиус (км)">
-		</form>
-		<form name="other" class="filter_form">
-			<input type="text" class="filter_input" name="interests" placeholder="Интересы">
-			<label class="label"><input type="checkbox" class="checkbox" id="online">
-				<div class="checkbox_name">Онлайн</div>
-			</label>
-		</form>
-	</div>
-
-	<input type="submit" value="Показать пользователей" onclick="getUsers()">
-
-	<div class="userList" id="userList">
-	</div>
-	<div class="photoList" id="photoList">
-	</div>
-
-	<img id="uploadPhoto">
-
-</body>
-
-</html>
