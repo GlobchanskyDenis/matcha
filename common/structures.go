@@ -57,21 +57,29 @@ type Photo struct {
 	Src string `json:"src"`
 }
 
-type CustomDate time.Time
+type CustomDate struct {
+	Time *time.Time
+}
 
 func (d *CustomDate) UnmarshalJSON(b []byte) (err error) {
 	layout := "2006-01-02"
-
-    s := strings.Trim(string(b), "\"") // remove quotes
+    s := strings.Trim(string(b), "\"")
     if s == "null" {
         return
     }
 	date, err := time.Parse(layout, s)
-	(*d) = CustomDate(date)
+	d.Time = &date
     return err
 }
 
 func (d CustomDate) MarshalJSON() ([]byte, error) {
 	layout := "2006-01-02"
-	return []byte(fmt.Sprintf(`"%s"`, time.Time(d).Format(layout))), nil
+	if d.Time == nil {
+		return []byte("null"), nil
+	}
+	if d.Time.IsZero() {
+		println("zero")
+		return []byte(fmt.Sprintf(`"%s"`, time.Now().Format(layout))), nil
+	}
+	return []byte(fmt.Sprintf(`"%s"`, d.Time.Format(layout))), nil
 }

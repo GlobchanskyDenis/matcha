@@ -128,28 +128,6 @@ func TestUser(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid GetLoggedUsers", func(t_ *testing.T) {
-		users, err := conn.GetLoggedUsers([]int{0, 0})
-		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
-		} else if len(users) != 0 {
-			t_.Errorf(RED_BG + "ERROR: GetLoggedUsers unexpected returned users" + NO_COLOR)
-		} else {
-			t_.Log(GREEN_BG + "SUCCESS: no users returned as it expected" + NO_COLOR)
-		}
-	})
-
-	t.Run("valid GetLoggedUsers", func(t_ *testing.T) {
-		users, err := conn.GetLoggedUsers([]int{user.Uid})
-		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
-		} else if len(users) != 1 {
-			t_.Errorf(RED_BG + "ERROR: GetLoggedUsers returned wrong number of users" + NO_COLOR)
-		} else {
-			t_.Log(GREEN_BG + "SUCCESS: GetLoggedUsers is fine" + NO_COLOR)
-		}
-	})
-
 	t.Run("invalid IsUserExistsByMail", func(t_ *testing.T) {
 		isExists, err := conn.IsUserExistsByMail(mailFail)
 		if err != nil {

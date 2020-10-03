@@ -112,7 +112,7 @@ func main() {
 	user.Fname = "admin"
 	user.Lname = "superUser"
 	date, err := time.Parse("2006-01-02", "1989-10-23")
-	user.Birth = common.CustomDate(date)
+	user.Birth.Time = &date
 	if err != nil {
 		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return

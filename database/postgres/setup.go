@@ -138,7 +138,7 @@ func (conn ConnDB) CreateUsersTable() error {
 		"encryptedPass VARCHAR(35) NOT NULL, " +
 		"fname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"lname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
-		"birth DATE DEFAULT '1955-02-03', " +
+		"birth DATE DEFAULT NULL, " +
 		"gender enum_gender NOT NULL DEFAULT '', " +
 		"orientation enum_orientation NOT NULL DEFAULT '', " +
 		"bio VARCHAR(" + strconv.Itoa(config.BIO_MAX_LEN) + ") NOT NULL DEFAULT '', " +

@@ -32,11 +32,6 @@ func (conn *ConnFake) UpdateUser(user common.User) error {
 	return nil
 }
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-func (conn ConnFake) SearchUsersByOneFilter(filter string) ([]common.User, error) {
-	return nil, nil
-}
-
 func (conn *ConnFake) GetUserByUid(uid int) (common.User, error) {
 	user, isExists := conn.users[uid]
 	if !isExists {
@@ -65,18 +60,6 @@ func (conn *ConnFake) GetUserForAuth(mail string, encryptedPass string) (common.
 		}
 	}
 	return common.User{}, errDef.RecordNotFound
-}
-
-func (conn *ConnFake) GetLoggedUsers(uid []int) ([]common.User, error) {
-	var users = []common.User{}
-	for _, user := range conn.users {
-		for _, id := range uid {
-			if user.Uid == id {
-				users = append(users, user)
-			}
-		}
-	}
-	return users, nil
 }
 
 func (conn ConnFake) IsUserExistsByMail(mail string) (bool, error) {

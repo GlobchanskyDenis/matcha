@@ -24,12 +24,11 @@ type Storage interface {
 	SetNewUser(mail string, passwd string) (common.User, error)
 	DeleteUser(uid int) error
 	UpdateUser(user common.User) error
-	SearchUsersByOneFilter(filter string) ([]common.User, error)
 	GetUserByUid(uid int) (common.User, error)
 	GetUserByMail(mail string) (common.User, error)
 	GetUsersByQuery(query string) ([]common.User, error)
 	GetUserForAuth(mail string, passwd string) (common.User, error)
-	GetLoggedUsers(uid []int) ([]common.User, error)
+	// GetLoggedUsers(uid []int) ([]common.User, error)
 	IsUserExistsByMail(mail string) (bool, error)
 	IsUserExistsByUid(uid int) (bool, error)
 

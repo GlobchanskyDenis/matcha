@@ -5,7 +5,7 @@ import (
 	"MatchaServer/errDef"
 	"database/sql"
 	"errors"
-	"strconv"
+	// "strconv"
 	"strings"
 	"time"
 )
@@ -39,6 +39,7 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 
 func (conn *ConnDB) UpdateUser(user common.User) error {
 	var interests string
+	// var birth interface{}
 	for _, item := range user.Interests {
 		interests += item + ", "
 	}
@@ -53,8 +54,14 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 		return errors.New(err.Error() + " in preparing")
 	}
 	defer stmt.Close()
+	// if user.Birth.Time != nil {
+	// 	birth = *user.Birth.Time//).Format("2006-01-02")
+	// 	// birthPtr = &birth
+	// } else {
+	// 	birth = nil
+	// }
 	_, err = stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
-		user.Lname, time.Time(user.Birth).Format("2006-01-02"), user.Gender, user.Orientation,
+		user.Lname, user.Birth.Time, user.Gender, user.Orientation,
 		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
 	if err != nil {
 		return errors.New(err.Error() + " in executing")
@@ -62,57 +69,14 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 	return nil
 }
 
-// Тут никак не реализован фильтр !!!!!!!!!!!!!!!
-func (conn ConnDB) SearchUsersByOneFilter(filter string) ([]common.User, error) {
-	var (
-		users     []common.User
-		user      common.User
-		err       error
-		rows      *sql.Rows
-		birth     string
-		interests string
-	)
-
-	rows, err = conn.db.Query("SELECT * FROM users")
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
-			&user.Lname, &birth, &user.Gender, &user.Orientation,
-			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
-			&user.Status, &user.Rating)
-		if err != nil {
-			return nil, err
-		}
-		// handle user Interests
-		if len(interests) > 2 {
-			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
-			for _, strItem := range strArr {
-				user.Interests = append(user.Interests, strItem)
-			}
-		}
-		// handle user birth and age
-		if len(birth) > 10 {
-			birth = string(birth[:10])
-			date, err := time.Parse("2006-01-02", birth)
-			user.Birth = common.CustomDate(date)
-			if err != nil {
-				return nil, err
-			}
-			user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
-		}
-		users = append(users, user)
-	}
-	return users, err
-}
-
 func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 	var (
 		user      common.User
 		err       error
 		row       *sql.Rows
-		birth     string
+		birth     interface{}
+		date	  time.Time
+		ok		  bool
 		interests string
 	)
 
@@ -144,14 +108,16 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 		}
 	}
 	// handle user birth and age
-	if len(birth) > 10 {
-		birth = string(birth[:10])
-		date, err := time.Parse("2006-01-02", birth)
-		user.Birth = common.CustomDate(date)
-		if err != nil {
-			return user, err
+	if birth != nil {
+		date, ok = birth.(time.Time)
+		if ok {
+			user.Birth.Time = &date
+			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
+		} else {
+			return user, errDef.AuthFail.WithArguments("не верный тип данных birth", "не верный тип данных birth")
 		}
-		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
+	} else {
+		user.Birth.Time = nil
 	}
 	return user, nil
 }
@@ -161,7 +127,9 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 		user      common.User
 		err       error
 		row       *sql.Rows
-		birth     string
+		birth     interface{}
+		date	  time.Time
+		ok		  bool
 		interests string
 	)
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
@@ -179,7 +147,7 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, err
+			return user, errors.New(err.Error() + ". In scanning")
 		}
 	} else {
 		return user, errDef.RecordNotFound
@@ -192,14 +160,16 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 		}
 	}
 	// handle user birth and age
-	if len(birth) > 10 {
-		birth = string(birth[:10])
-		date, err := time.Parse("2006-01-02", birth)
-		user.Birth = common.CustomDate(date)
-		if err != nil {
-			return user, err
+	if birth != nil {
+		date, ok = birth.(time.Time)
+		if ok {
+			user.Birth.Time = &date
+			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
+		} else {
+			return user, errDef.AuthFail.WithArguments("не верный тип данных birth", "не верный тип данных birth")
 		}
-		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
+	} else {
+		user.Birth.Time = nil
 	}
 	return user, nil
 }
@@ -233,11 +203,11 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 		if len(birth) > 10 {
 			birth = string(birth[:10])
 			date, err := time.Parse("2006-01-02", birth)
-			user.Birth = common.CustomDate(date)
+			user.Birth.Time = &date//common.CustomDate(date)
 			if err != nil {
 				return nil, err
 			}
-			user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
+			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 		}
 		users = append(users, user)
 	}
@@ -249,8 +219,10 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 		user      common.User
 		err       error
 		row       *sql.Rows
-		birth     string
+		birth     interface{}
+		date	  time.Time
 		interests string
+		ok 		  bool
 	)
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1 AND encryptedPass=$2")
@@ -282,76 +254,18 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 		}
 	}
 	// handle user birth and age
-	if len(birth) > 10 {
-		birth = string(birth[:10])
-		date, err := time.Parse("2006-01-02", birth)
-		user.Birth = common.CustomDate(date)
-		if err != nil {
-			return user, err
+	if birth != nil {
+		date, ok = birth.(time.Time)
+		if ok {
+			user.Birth.Time = &date
+			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
+		} else {
+			return user, errDef.AuthFail.WithArguments("не верный тип данных birth", "не верный тип данных birth")
 		}
-		user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
+	} else {
+		user.Birth.Time = nil
 	}
 	return user, nil
-}
-
-func (conn *ConnDB) GetLoggedUsers(uid []int) ([]common.User, error) {
-	var users = []common.User{}
-	var user common.User
-	var birth string
-	var interests string
-
-	if len(uid) == 0 {
-		return users, nil
-	}
-
-	query := "SELECT * FROM users WHERE uid IN ("
-	length := len(uid)
-	for i := 1; i <= length; i++ {
-		query += "$" + strconv.Itoa(i) + ", "
-	}
-	tmp := []byte(query)
-	tmp = tmp[:len(tmp)-2]
-	query = string(tmp) + ")"
-
-	stmt, err := conn.db.Prepare(query)
-	if err != nil {
-		return users, errors.New(err.Error() + " in preparing")
-	}
-
-	interfaceSlice := make([]interface{}, len(uid))
-	for i, val := range uid {
-		interfaceSlice[i] = val
-	}
-
-	rows, err := stmt.Query(interfaceSlice...)
-	for rows.Next() {
-		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating))
-		if err != nil {
-			return nil, err
-		}
-		// handle user Interests
-		if len(interests) > 2 {
-			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
-			for _, strItem := range strArr {
-				user.Interests = append(user.Interests, strItem)
-			}
-		}
-		// handle user birth and age
-		if len(birth) > 10 {
-			birth = string(birth[:10])
-			date, err := time.Parse("2006-01-02", birth)
-			user.Birth = common.CustomDate(date)
-			if err != nil {
-				return nil, err
-			}
-			user.Age = int(time.Since(time.Time(user.Birth)).Hours() / 24 / 365.27)
-		}
-		users = append(users, user)
-	}
-	return users, nil
 }
 
 func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {

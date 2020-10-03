@@ -45,11 +45,6 @@ func TestUser(t *testing.T) {
 		t.Error(common.RED_BG + "ERROR: GetUserForAuth" + common.NO_COLOR + "\n")
 		return
 	}
-	users, _ := repo.GetLoggedUsers([]int{user2.Uid})
-	if users == nil || len(users) != 1 || users[0].Uid != user2.Uid || users[0].Fname != user2.Fname || users[0].Lname != user2.Lname {
-		t.Error(common.RED_BG + "ERROR: GetLoggedUsers" + common.NO_COLOR + "\n")
-		return
-	}
 	was, _ := repo.IsUserExistsByMail(user1.Mail)
 	_ = repo.DeleteUser(user1.Uid)
 	now, _ := repo.IsUserExistsByMail(user1.Mail)
