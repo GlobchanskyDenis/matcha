@@ -2,8 +2,8 @@ package searchFilters
 
 import (
 	"MatchaServer/database"
-	"MatchaServer/session"
 	"MatchaServer/errDef"
+	"MatchaServer/session"
 	"strconv"
 )
 
@@ -31,7 +31,7 @@ func New() *Filters {
 	return &Filters{}
 }
 
-func (f *Filters) Parse(in map[string]interface{}, uid int, 
+func (f *Filters) Parse(in map[string]interface{}, uid int,
 	connDB database.Storage, session *session.Session) error {
 	var (
 		filter  Filter
@@ -109,7 +109,7 @@ func (f *Filters) Print() string {
 }
 
 func (f *Filters) PrepareQuery(sexRestrictions string) string {
-	var query = "SELECT * FROM users WHERE uid!="+strconv.Itoa(f.uid)
+	var query = "SELECT * FROM users WHERE uid!=" + strconv.Itoa(f.uid)
 
 	if sexRestrictions != "" {
 		query += " AND " + sexRestrictions

@@ -10,7 +10,7 @@ type onlineFilter struct {
 }
 
 func newOnlineFilter(session *session.Session) (*onlineFilter, error) {
-	var filter   onlineFilter
+	var filter onlineFilter
 
 	// Получаю слайс пользователей
 	filter.uidSlice = session.GetLoggedUsersUidSlice()

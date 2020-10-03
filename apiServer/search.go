@@ -1,28 +1,28 @@
 package apiServer
 
 import (
-	. "MatchaServer/common"
 	"MatchaServer/apiServer/searchFilters"
+	. "MatchaServer/common"
 	"MatchaServer/errDef"
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"context"
 )
 
-// Фильтры по онлайну, возрасту, рейтингу, локации (или радиус от заданной точки), интересам, 
+// Фильтры по онлайну, возрасту, рейтингу, локации (или радиус от заданной точки), интересам,
 // обязательный фильтр по соответствию пол/ориентация
 // если поля не заполнены - показываем всех
 
 func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	var (
-		requestParams	map[string]interface{}
-		ctx				context.Context
-		filters			*searchFilters.Filters
-		uid				int
-		err				error
-		user			User
-		users			[]User
+		requestParams   map[string]interface{}
+		ctx             context.Context
+		filters         *searchFilters.Filters
+		uid             int
+		err             error
+		user            User
+		users           []User
 		sexRestrictions string
 	)
 

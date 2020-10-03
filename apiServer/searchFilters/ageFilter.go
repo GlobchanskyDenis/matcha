@@ -33,7 +33,7 @@ func newAgeFilter(in interface{}) (*ageFilter, error) {
 	if ok {
 		fl64, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра минимального возраста фильтра age", 
+			return nil, errDef.NewArg("неверный тип параметра минимального возраста фильтра age",
 				"wrong type of min age parameter")
 		}
 		filter.isMinSet = true
@@ -45,7 +45,7 @@ func newAgeFilter(in interface{}) (*ageFilter, error) {
 	if ok {
 		fl64, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра максимального возраста фильтра age", 
+			return nil, errDef.NewArg("неверный тип параметра максимального возраста фильтра age",
 				"wrong type of max age parameter")
 		}
 		filter.isMaxSet = true

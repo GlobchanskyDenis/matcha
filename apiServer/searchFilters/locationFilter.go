@@ -36,7 +36,7 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMinLatSet = true
 		filter.minLatitude, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра минимальной широты фильтра локации", 
+			return nil, errDef.NewArg("неверный тип параметра минимальной широты фильтра локации",
 				"wrong type of min latitude parameter")
 		}
 	}
@@ -47,7 +47,7 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMaxLatSet = true
 		filter.maxLatitude, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра максимальной широты фильтра локации", 
+			return nil, errDef.NewArg("неверный тип параметра максимальной широты фильтра локации",
 				"wrong type of max latitude parameter")
 		}
 	}
@@ -58,7 +58,7 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMinLonSet = true
 		filter.minLongitude, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра минимальной долготы фильтра локации", 
+			return nil, errDef.NewArg("неверный тип параметра минимальной долготы фильтра локации",
 				"wrong type of min longitude parameter")
 		}
 	}
@@ -69,7 +69,7 @@ func newLocationFilter(in interface{}) (*locationFilter, error) {
 		filter.isMaxLonSet = true
 		filter.maxLongitude, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра максимальной долготы фильтра локации", 
+			return nil, errDef.NewArg("неверный тип параметра максимальной долготы фильтра локации",
 				"wrong type of max longitude parameter")
 		}
 	}

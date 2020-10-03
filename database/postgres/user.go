@@ -75,8 +75,8 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 		err       error
 		row       *sql.Rows
 		birth     interface{}
-		date	  time.Time
-		ok		  bool
+		date      time.Time
+		ok        bool
 		interests string
 	)
 
@@ -128,8 +128,8 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 		err       error
 		row       *sql.Rows
 		birth     interface{}
-		date	  time.Time
-		ok		  bool
+		date      time.Time
+		ok        bool
 		interests string
 	)
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
@@ -176,8 +176,8 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 
 func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 	var (
-		user  common.User
-		users []common.User
+		user             common.User
+		users            []common.User
 		interests, birth string
 	)
 	rows, err := conn.db.Query(query)
@@ -203,7 +203,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 		if len(birth) > 10 {
 			birth = string(birth[:10])
 			date, err := time.Parse("2006-01-02", birth)
-			user.Birth.Time = &date//common.CustomDate(date)
+			user.Birth.Time = &date //common.CustomDate(date)
 			if err != nil {
 				return nil, err
 			}
@@ -220,9 +220,9 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 		err       error
 		row       *sql.Rows
 		birth     interface{}
-		date	  time.Time
+		date      time.Time
 		interests string
-		ok 		  bool
+		ok        bool
 	)
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1 AND encryptedPass=$2")

@@ -26,8 +26,8 @@ var (
 	avaIDNew       float64 = 42
 	latitudeNew    float64 = 3.1415
 	longitudeNew   float64 = 56.1
-	interests1New = append([]interface{}{}, "fun", "other", "football")
-	interests2New = []interface{}{}
+	interests1New          = append([]interface{}{}, "fun", "other", "football")
+	interests2New          = []interface{}{}
 
 	mailFail        = "mail@gmail@yandex.ru"
 	passFail        = "12345678"

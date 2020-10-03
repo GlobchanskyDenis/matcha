@@ -1,39 +1,29 @@
 package searchFilters
 
 import (
-	"MatchaServer/apiServer"
+	"MatchaServer/database/postgres"
+	"MatchaServer/session"
+	// "MatchaServer/database/fakeSql"
+	"MatchaServer/config"
 	"encoding/json"
 	"strings"
 	"testing"
 )
 
-// func Test1(t *testing.T) {
-// 	Fs := Filters{}
-// 	F1 := ageFilter{minAge: 30, maxAge: 30}
-// 	F2 := onlineFilter{uidSlice: append([]int{}, 1, 2, 3)}
-// 	// F2 := onlineFilter{uidSlice: append([]int{}, 1)}
-// 	// F2 := onlineFilter{uidSlice: []int{}}
-// 	F3 := ratingFilter{minRating: 0, maxRating: 5}
-// 	F4 := interestsFilter{interests: append([]string{}, "fun", "football")}
-// 	F5 := locationFilter{minLongitude: 32.5, maxLongitude: 46.4, minLatitude: 3.1415, maxLatitude: 15.45}
-
-// 	Fs.filters = append(Fs.filters, F1, F2, F3, F4, F5)
-// 	println(Fs.PrepareQuery(""))
-// 	fmt.Println("online filter type ", F2.getFilterType())
-// 	fmt.Println("age filter type ", F1.getFilterType())
-// 	fmt.Println("rating filter type ", F3.getFilterType())
-// 	fmt.Println("interest filter type ", F4.getFilterType())
-// 	fmt.Println("location filter type ", F5.getFilterType())
-// 	println(Fs.Print())
-// }
-
 func TestAge(t *testing.T) {
 	uid := 1
-	server, err := apiServer.New("../../config/")
+	cfg, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (config error): " + err.Error())
 		return
 	}
+	db := postgres.New()
+	err = db.Connect(&cfg.Sql)
+	if err != nil {
+		t.Errorf("Cannot start test (connecting database): " + err.Error())
+		return
+	}
+	sess := session.CreateSession()
 
 	testCases := []struct {
 		name      string
@@ -86,7 +76,7 @@ func TestAge(t *testing.T) {
 				return
 			}
 
-			err = f.Parse(params, uid, server.Db, &server.Session)
+			err = f.Parse(params, uid, db, &sess)
 			if err != nil {
 				if tc.isInvalid {
 					t.Log("Success: error found as it expected - " + err.Error())
@@ -109,11 +99,18 @@ func TestAge(t *testing.T) {
 
 func TestRating(t *testing.T) {
 	uid := 1
-	server, err := apiServer.New("../../config/")
+	cfg, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (config error): " + err.Error())
 		return
 	}
+	db := postgres.New()
+	err = db.Connect(&cfg.Sql)
+	if err != nil {
+		t.Errorf("Cannot start test (connecting database): " + err.Error())
+		return
+	}
+	sess := session.CreateSession()
 
 	testCases := []struct {
 		name      string
@@ -166,7 +163,7 @@ func TestRating(t *testing.T) {
 				return
 			}
 
-			err = f.Parse(params, uid, server.Db, &server.Session)
+			err = f.Parse(params, uid, db, &sess)
 			if err != nil {
 				if tc.isInvalid {
 					t.Log("Success: error found as it expected - " + err.Error())
@@ -189,11 +186,18 @@ func TestRating(t *testing.T) {
 
 func TestInterests(t *testing.T) {
 	uid := 1
-	server, err := apiServer.New("../../config/")
+	cfg, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (config error): " + err.Error())
 		return
 	}
+	db := postgres.New()
+	err = db.Connect(&cfg.Sql)
+	if err != nil {
+		t.Errorf("Cannot start test (connecting database): " + err.Error())
+		return
+	}
+	sess := session.CreateSession()
 
 	testCases := []struct {
 		name      string
@@ -230,7 +234,7 @@ func TestInterests(t *testing.T) {
 				return
 			}
 
-			err = f.Parse(params, uid, server.Db, &server.Session)
+			err = f.Parse(params, uid, db, &sess)
 			if err != nil {
 				if tc.isInvalid {
 					t.Log("Success: error found as it expected - " + err.Error())
@@ -253,11 +257,18 @@ func TestInterests(t *testing.T) {
 
 func TestLocation(t *testing.T) {
 	uid := 1
-	server, err := apiServer.New("../../config/")
+	cfg, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (config error): " + err.Error())
 		return
 	}
+	db := postgres.New()
+	err = db.Connect(&cfg.Sql)
+	if err != nil {
+		t.Errorf("Cannot start test (connecting database): " + err.Error())
+		return
+	}
+	sess := session.CreateSession()
 
 	testCases := []struct {
 		name      string
@@ -334,7 +345,7 @@ func TestLocation(t *testing.T) {
 				return
 			}
 
-			err = f.Parse(params, uid, server.Db, &server.Session)
+			err = f.Parse(params, uid, db, &sess)
 			if err != nil {
 				if tc.isInvalid {
 					t.Log("Success: error found as it expected - " + err.Error())
@@ -357,11 +368,18 @@ func TestLocation(t *testing.T) {
 
 func TestRadius(t *testing.T) {
 	uid := 1
-	server, err := apiServer.New("../../config/")
+	cfg, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (config error): " + err.Error())
 		return
 	}
+	db := postgres.New()
+	err = db.Connect(&cfg.Sql)
+	if err != nil {
+		t.Errorf("Cannot start test (connecting database): " + err.Error())
+		return
+	}
+	sess := session.CreateSession()
 
 	testCases := []struct {
 		name      string
@@ -422,7 +440,7 @@ func TestRadius(t *testing.T) {
 				return
 			}
 
-			err = f.Parse(params, uid, server.Db, &server.Session)
+			err = f.Parse(params, uid, db, &sess)
 			if err != nil {
 				if tc.isInvalid {
 					t.Log("Success: error found as it expected - " + err.Error())
@@ -445,20 +463,22 @@ func TestRadius(t *testing.T) {
 
 func TestOnline(t *testing.T) {
 	uid := 1
-	server, err := apiServer.New("../../config/")
+	cfg, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (config error): " + err.Error())
 		return
 	}
-	_, err = server.Session.AddUserToSession(23)
+	db := postgres.New()
+	err = db.Connect(&cfg.Sql)
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test (connecting database): " + err.Error())
 		return
 	}
+	sess := session.CreateSession()
 
-	_, err = server.Session.AddUserToSession(42)
+	_, err = sess.AddUserToSession(42)
 	if err != nil {
-		t.Errorf("Cannot start test: "+err.Error())
+		t.Errorf("Cannot start test: " + err.Error())
 		return
 	}
 
@@ -494,9 +514,9 @@ func TestOnline(t *testing.T) {
 			}
 
 			if !tc.isInvalid {
-				err = f.Parse(params, uid, server.Db, &server.Session)
+				err = f.Parse(params, uid, db, &sess)
 			} else {
-				err = f.Parse(params, uid, server.Db, nil)
+				err = f.Parse(params, uid, db, nil)
 			}
 			if err != nil {
 				if tc.isInvalid {

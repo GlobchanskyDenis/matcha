@@ -2,11 +2,11 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"testing"
-	"net/http"
 	"context"
-	"strconv"
+	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"testing"
 )
 
 func TestSearch(t *testing.T) {
@@ -25,9 +25,9 @@ func TestSearch(t *testing.T) {
 	testUser.Orientation = ""
 	err = server.Db.UpdateUser(testUser)
 	if err != nil {
-			t.Errorf(RED_BG + "Cannot start test - token error: " + err.Error() + NO_COLOR + "\n")
-			return
-		}
+		t.Errorf(RED_BG + "Cannot start test - token error: " + err.Error() + NO_COLOR + "\n")
+		return
+	}
 	_ = server.TestTestUserAuthorize(t, testUser)
 	uid := testUser.Uid
 
@@ -42,8 +42,8 @@ func TestSearch(t *testing.T) {
 			name: "valid - radius",
 			payload: map[string]interface{}{
 				"radius": map[string]interface{}{
-					"radius": 111.0,
-					"latitude": 23.0,
+					"radius":    111.0,
+					"latitude":  23.0,
 					"longitude": 52.0,
 				},
 			},
@@ -76,9 +76,9 @@ func TestSearch(t *testing.T) {
 			name: "invalid",
 			payload: map[string]interface{}{
 				"radius": map[string]interface{}{
-				"radius": -111.0,
-				"latitude": 23.0,
-				"longitude": 52.0,
+					"radius":    -111.0,
+					"latitude":  23.0,
+					"longitude": 52.0,
 				},
 			},
 			expectedStatus: http.StatusUnprocessableEntity,

@@ -87,7 +87,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
 		}
 		date, err := time.Parse("2006-01-02", birth)
-		user.Birth.Time = &date//CustomDate(date)
+		user.Birth.Time = &date //CustomDate(date)
 		if err != nil {
 			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
