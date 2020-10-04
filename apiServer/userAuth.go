@@ -18,7 +18,7 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 	devices, err := server.Db.GetDevicesByUid(uid)
 	if err != nil {
 		server.LogError(r, "GetDevicesByUid returned error - "+err.Error())
-		return errDef.DatabaseError
+		return errDef.DatabaseError.WithArguments(err)
 	}
 	for _, device := range devices {
 		if device.Device == r.UserAgent() {
@@ -29,12 +29,12 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 		err = server.Db.SetNewDevice(uid, r.UserAgent())
 		if err != nil {
 			server.LogError(r, "SetNewDevice returned error - "+err.Error())
-			return errDef.DatabaseError
+			return errDef.DatabaseError.WithArguments(err)
 		}
 		err = server.Session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
 		if err != nil {
 			server.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
-			return errDef.WebSocketError
+			return errDef.WebSocketError.WithArguments(err)
 		}
 	}
 	return nil
@@ -100,7 +100,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUserForAuth returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 
@@ -120,7 +120,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	token, err = server.Session.AddUserToSession(user.Uid)
 	if err != nil {
 		server.LogError(r, "Cannot add user to session - "+err.Error())
-		server.error(w, errDef.UnknownInternalError)
+		server.error(w, errDef.UnknownInternalError.WithArguments(err))
 		return
 	}
 
@@ -136,7 +136,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.LogError(r, "cannot create web socket token - "+err.Error())
-		server.error(w, errDef.WebSocketError)
+		server.error(w, errDef.WebSocketError.WithArguments(err))
 		return
 	}
 

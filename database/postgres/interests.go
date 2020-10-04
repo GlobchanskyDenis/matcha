@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"MatchaServer/common"
-	"errors"
+	"MatchaServer/errDef"
 	"strconv"
 )
 
@@ -12,19 +12,19 @@ func (conn ConnDB) AddInterests(unknownInterests []common.Interest) error {
 	if len(unknownInterests) == 0 {
 		return nil
 	}
-	for nbr, interest := range unknownInterests {
+	for nbr, interest := range unknownInterests { ////// ПОХОЖЕ НА ГОВНОКОД. УЗНАТЬ ПОДРОБНЕЕ
 		query += "($" + strconv.Itoa(nbr+1) + "), "
-		nameArr = append(nameArr, interest.Name)
+		nameArr = append(nameArr, interest.Name) /// УБРАТЬ АЛЛОЦИРОВАНИЕ СЛАЙСА - ПРИНИМАТЬ СЛАЙС ИНТЕРФЕЙСОВ
 	}
 	query = string(query[:len(query)-2])
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
-		return errors.New(err.Error() + " in preparing")
+		return errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(nameArr...)
 	if err != nil {
-		return errors.New(err.Error() + " in executing")
+		return errDef.DatabaseExecutingError.AddOriginalError(err)
 	}
 	return nil
 }
@@ -35,16 +35,16 @@ func (conn ConnDB) GetInterests() ([]common.Interest, error) {
 
 	stmt, err := conn.db.Prepare("SELECT * FROM interests")
 	if err != nil {
-		return interests, errors.New(err.Error() + " in preparing")
+		return interests, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	rows, err := stmt.Query()
 	if err != nil {
-		return interests, errors.New(err.Error() + " in executing")
+		return interests, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
 		err = rows.Scan(&interest.Id, &interest.Name)
 		if err != nil {
-			return interests, errors.New(err.Error() + " in rows")
+			return interests, errDef.DatabaseScanError.AddOriginalError(err)
 		}
 		interests = append(interests, interest)
 	}

@@ -145,44 +145,14 @@ var (
 	UnknownInternalError = new(5004, http.StatusInternalServerError, // 500
 		"Произошла неизвестная ошибка",
 		"An unknown error occurred")
+
+	// Error arguments for the package of database queries
+	DatabasePreparingError = NewArg("ошибка во время подготовки к запросу",
+		"error during preparing")
+	DatabaseExecutingError = NewArg("ошибка во время выполнения запроса",
+		"error during executing query")
+	DatabaseQueryError = NewArg("ошибка во время выполнения запроса",
+		"error during executing query")
+	DatabaseScanError = NewArg("ошибка во время парсинга параметров",
+		"error during scaning")
 )
-
-// func IsRecordNotFoundError(err error) bool {
-// 	if err == nil {
-// 		return false
-// 	}
-// 	if err.Error() == RecordNotFound.Error() {
-// 		return true
-// 	}
-// 	return false
-// }
-
-// func IsUserNotExistError(err error) bool {
-// 	if err == nil {
-// 		return false
-// 	}
-// 	if err.Error() == UserNotLogged.Error() {
-// 		return true
-// 	}
-// 	return false
-// }
-
-// func IsUserNotLoggedError(err error) bool {
-// 	if err == nil {
-// 		return false
-// 	}
-// 	if err.Error() == UserNotExist.Error() {
-// 		return true
-// 	}
-// 	return false
-// }
-
-// func IsInvalidRequestBodyError(err error) bool {
-// 	if err == nil {
-// 		return false
-// 	}
-// 	if err.Error() == InvalidRequestBody.Error() {
-// 		return true
-// 	}
-// 	return false
-// }

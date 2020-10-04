@@ -44,7 +44,7 @@ func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 	photos, err := server.Db.GetPhotosByUid(authorUid)
 	if err != nil {
 		server.LogError(r, "GetPhotosByUid returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 

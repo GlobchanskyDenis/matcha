@@ -46,7 +46,7 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUserByUid returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
@@ -55,7 +55,7 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	users, err = server.Db.GetUsersByQuery(query)
 	if err != nil {
 		server.LogError(r, "GetUsersByQuery returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 

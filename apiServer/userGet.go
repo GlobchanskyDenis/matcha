@@ -29,7 +29,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 

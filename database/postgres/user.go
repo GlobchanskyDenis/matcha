@@ -12,12 +12,12 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, e
 	var user common.User
 	stmt, err := conn.db.Prepare("INSERT INTO users (mail, encryptedPass) VALUES ($1, $2) RETURNING uid, mail")
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return user, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	err = stmt.QueryRow(mail, encryptedPass).Scan(&user.Uid, &user.Mail)
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время выполнения запроса", "error during executing query").AddOriginalError(err)
+		return user, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	return user, nil
 }
@@ -25,12 +25,12 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, e
 func (conn *ConnDB) DeleteUser(uid int) error {
 	stmt, err := conn.db.Prepare("DELETE FROM users WHERE uid=$1")
 	if err != nil {
-		return errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uid)
 	if err != nil {
-		return errDef.NewArg("ошибка во время выполнения запроса", "error during executing query").AddOriginalError(err)
+		return errDef.DatabaseExecutingError.AddOriginalError(err)
 	}
 	return nil
 }
@@ -42,14 +42,14 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 		"orientation=$8, bio=$9, avaID=$10, latitude=$11, longitude=$12, " +
 		"interests='{" + interests + "}', status=$13, rating=$14 WHERE uid=$1")
 	if err != nil {
-		return errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
 		user.Lname, user.Birth.Time, user.Gender, user.Orientation,
 		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
 	if err != nil {
-		return errDef.NewArg("ошибка во время выполнения запроса", "error during executing query").AddOriginalError(err)
+		return errDef.DatabaseExecutingError.AddOriginalError(err)
 	}
 	return nil
 }
@@ -67,12 +67,12 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return user, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(uid)
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время запроса", "error during query").AddOriginalError(err)
+		return user, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -80,7 +80,7 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, errDef.NewArg("ошибка во время парсинга параметров", "error during scaning").AddOriginalError(err)
+			return user, errDef.DatabaseScanError.AddOriginalError(err)
 		}
 	} else {
 		return user, errDef.RecordNotFound
@@ -119,12 +119,12 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	)
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return user, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(mail)
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время запроса", "error during query").AddOriginalError(err)
+		return user, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -132,7 +132,7 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, errDef.NewArg("ошибка во время парсинга параметров", "error during scaning").AddOriginalError(err)
+			return user, errDef.DatabaseScanError.AddOriginalError(err)
 		}
 	} else {
 		return user, errDef.RecordNotFound
@@ -170,7 +170,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 	)
 	rows, err := conn.db.Query(query)
 	if err != nil {
-		return nil, errDef.NewArg("ошибка во время запроса", "error during query").AddOriginalError(err)
+		return nil, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
 		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -178,7 +178,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return nil, errDef.NewArg("ошибка во время парсинга параметров", "error during scaning").AddOriginalError(err)
+			return nil, errDef.DatabaseScanError.AddOriginalError(err)
 		}
 		// handle user Interests
 		if len(interests) > 2 {
@@ -217,12 +217,12 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1 AND encryptedPass=$2")
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return user, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(mail, encryptedPass)
 	if err != nil {
-		return user, errDef.NewArg("ошибка во время запроса", "error during query").AddOriginalError(err)
+		return user, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -230,7 +230,7 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, errDef.NewArg("ошибка во время парсинга параметров", "error during scaning").AddOriginalError(err)
+			return user, errDef.DatabaseScanError.AddOriginalError(err)
 		}
 	} else {
 		return user, errDef.RecordNotFound
@@ -261,12 +261,12 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
 	if err != nil {
-		return false, errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return false, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err := stmt.Query(mail)
 	if err != nil {
-		return false, errDef.NewArg("ошибка во время запроса", "error during query").AddOriginalError(err)
+		return false, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		return true, nil
@@ -277,12 +277,12 @@ func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {
 func (conn ConnDB) IsUserExistsByUid(uid int) (bool, error) {
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
 	if err != nil {
-		return false, errDef.NewArg("ошибка во время подготовки к запросу", "error during preparing").AddOriginalError(err)
+		return false, errDef.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err := stmt.Query(uid)
 	if err != nil {
-		return false, errDef.NewArg("ошибка во время запроса", "error during query").AddOriginalError(err)
+		return false, errDef.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		return true, nil

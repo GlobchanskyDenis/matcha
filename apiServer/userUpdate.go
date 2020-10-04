@@ -149,7 +149,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		if !ok {
 			return user, message,
 				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип",
-				"avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
+					"avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
 		}
 		if user.AvaID < 0 {
 			return user, message, errDef.InvalidArgument.WithArguments("Значение поля avaID недопустимо",
@@ -239,7 +239,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		knownInterests, err := server.Db.GetInterests()
 		if err != nil {
 			server.LogWarning(r, "GetInterests returned error - "+err.Error())
-			server.error(w, errDef.DatabaseError)
+			server.error(w, errDef.DatabaseError.WithArguments(err))
 			return
 		}
 		interfaceArr, ok := item.([]interface{})
@@ -270,7 +270,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		err = server.Db.AddInterests(unknownInterests)
 		if err != nil {
 			server.LogError(r, "AddInterests returned error - "+err.Error())
-			server.error(w, errDef.DatabaseError)
+			server.error(w, errDef.DatabaseError.WithArguments(err))
 			return
 		}
 	}
@@ -282,7 +282,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 
@@ -298,7 +298,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		server.LogError(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 

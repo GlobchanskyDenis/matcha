@@ -42,7 +42,7 @@ func (server *Server) PhotoUpload(w http.ResponseWriter, r *http.Request) {
 	pid, err = server.Db.SetNewPhoto(uid, src)
 	if err != nil {
 		server.LogError(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 

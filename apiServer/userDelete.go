@@ -44,7 +44,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	user, err := server.Db.GetUserByUid(uid)
 	if err != nil {
 		server.LogError(r, "GetUserByUid returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 
@@ -59,7 +59,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		server.LogError(r, "DeleteUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 

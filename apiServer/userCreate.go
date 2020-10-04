@@ -78,7 +78,7 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	isExist, err = server.Db.IsUserExistsByMail(mail)
 	if err != nil {
 		server.LogError(r, "IsUserExists returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 	if isExist {
@@ -90,7 +90,7 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	user, err = server.Db.SetNewUser(mail, handlers.PassHash(pass))
 	if err != nil {
 		server.LogError(r, "SetNewUser returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 
@@ -104,7 +104,7 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.SetNewDevice(user.Uid, r.UserAgent())
 	if err != nil {
 		server.LogError(r, "SetNewDevice returned error "+err.Error())
-		server.error(w, errDef.DatabaseError)
+		server.error(w, errDef.DatabaseError.WithArguments(err))
 		return
 	}
 
