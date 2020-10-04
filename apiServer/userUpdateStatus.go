@@ -26,39 +26,39 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	item, isExist = requestParams["x-reg-token"]
 	if !isExist {
-		server.LogError(r, "x-reg-token not exist in request")
+		server.Logger.LogError(r, "x-reg-token not exist in request")
 		server.error(w, errors.NoArgument.WithArguments("Поле x-reg-token отсутствует", "x-reg-token field expected"))
 		return
 	}
 
 	token, ok = item.(string)
 	if !ok {
-		server.LogError(r, "x-reg-token has wrong type")
+		server.Logger.LogError(r, "x-reg-token has wrong type")
 		server.error(w, errors.InvalidArgument.WithArguments("Поле x-reg-token имеет неверный тип",
 			"x-reg-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
-		server.LogError(r, "x-reg-token is empty")
+		server.Logger.LogError(r, "x-reg-token is empty")
 		server.error(w, errors.UserNotLogged)
 		return
 	}
 
 	mail, err = handlers.TokenMailDecode(token)
 	if err != nil {
-		server.LogWarning(r, "TokenMailDecode returned error - "+err.Error())
+		server.Logger.LogWarning(r, "TokenMailDecode returned error - "+err.Error())
 		server.error(w, errors.UserNotLogged)
 		return
 	}
 
 	user, err := server.Db.GetUserByMail(mail)
 	if errors.RecordNotFound.IsOverlapWithError(err) {
-		server.LogWarning(r, "GetUserByMail - record not found")
+		server.Logger.LogWarning(r, "GetUserByMail - record not found")
 		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
-		server.LogWarning(r, "GetUserByMail returned error - "+err.Error())
+		server.Logger.LogWarning(r, "GetUserByMail returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
@@ -67,12 +67,12 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	err = server.Db.UpdateUser(user)
 	if err != nil {
-		server.LogWarning(r, "UpdateUser returned error - "+err.Error())
+		server.Logger.LogWarning(r, "UpdateUser returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK) // 200
-	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
+	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated its status successfully. No response body")
 }

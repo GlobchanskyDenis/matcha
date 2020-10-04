@@ -238,13 +238,13 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		var interestsNameArr []string
 		knownInterests, err := server.Db.GetInterests()
 		if err != nil {
-			server.LogWarning(r, "GetInterests returned error - "+err.Error())
+			server.Logger.LogWarning(r, "GetInterests returned error - "+err.Error())
 			server.error(w, errors.DatabaseError.WithArguments(err))
 			return
 		}
 		interfaceArr, ok := item.([]interface{})
 		if !ok {
-			server.LogWarning(r, "wrong argument type (interests)")
+			server.Logger.LogWarning(r, "wrong argument type (interests)")
 			server.error(w, errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
 				"interests field has wrong type"))
 			return
@@ -252,14 +252,14 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		for _, item := range interfaceArr {
 			interest, ok := item.(string)
 			if !ok {
-				server.LogWarning(r, "wrong argument type (interests item)")
+				server.Logger.LogWarning(r, "wrong argument type (interests item)")
 				server.error(w, errors.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип",
 					"interests (item) field has wrong type"))
 				return
 			}
 			err = handlers.CheckInterest(interest)
 			if err != nil {
-				server.LogWarning(r, "invalid interest - "+err.Error())
+				server.Logger.LogWarning(r, "invalid interest - "+err.Error())
 				server.error(w, errors.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
 					"interests (item) field has wrong value"))
 				return
@@ -269,7 +269,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		unknownInterests := handlers.FindUnknownInterests(knownInterests, interestsNameArr)
 		err = server.Db.AddInterests(unknownInterests)
 		if err != nil {
-			server.LogError(r, "AddInterests returned error - "+err.Error())
+			server.Logger.LogError(r, "AddInterests returned error - "+err.Error())
 			server.error(w, errors.DatabaseError.WithArguments(err))
 			return
 		}
@@ -277,27 +277,27 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	user, err = server.Db.GetUserByUid(uid)
 	if errors.RecordNotFound.IsOverlapWithError(err) {
-		server.LogWarning(r, "GetUserByUid - record not found")
+		server.Logger.LogWarning(r, "GetUserByUid - record not found")
 		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
-		server.LogError(r, "GetUser returned error - "+err.Error())
+		server.Logger.LogError(r, "GetUser returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	user, message, err = fillUserStruct(requestParams, user)
 	if err != nil {
-		server.LogWarning(r, err.Error())
+		server.Logger.LogWarning(r, err.Error())
 		server.error(w, err.(errors.ApiError))
 		return
 	}
 
-	server.Log(r, message)
+	server.Logger.Log(r, message)
 
 	err = server.Db.UpdateUser(user)
 	if err != nil {
-		server.LogError(r, "UpdateUser returned error - "+err.Error())
+		server.Logger.LogError(r, "UpdateUser returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
@@ -305,6 +305,6 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	// Проверить - принадлежит ли фото юзеру
 
 	w.WriteHeader(http.StatusOK) // 200
-	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
+	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated successfully. No response body")
 }

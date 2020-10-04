@@ -26,34 +26,34 @@ func (server *Server) CheckAuthMiddleWare(next http.Handler) http.Handler {
 
 		item, isExist = requestParams["x-auth-token"]
 		if !isExist {
-			server.LogWarning(r, "x-auth-token not exist in request")
+			server.Logger.LogWarning(r, "x-auth-token not exist in request")
 			server.error(w, errors.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 			return
 		}
 
 		token, ok = item.(string)
 		if !ok {
-			server.LogWarning(r, "x-auth-token has wrong type")
+			server.Logger.LogWarning(r, "x-auth-token has wrong type")
 			server.error(w, errors.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 			return
 		}
 
 		if token == "" {
-			server.LogWarning(r, "x-auth-token is empty")
+			server.Logger.LogWarning(r, "x-auth-token is empty")
 			server.error(w, errors.UserNotLogged)
 			return
 		}
 
 		uid, err = handlers.TokenUidDecode(token)
 		if err != nil {
-			server.LogWarning(r, "TokenUidDecode returned error - "+err.Error())
+			server.Logger.LogWarning(r, "TokenUidDecode returned error - "+err.Error())
 			server.error(w, errors.UserNotLogged)
 			return
 		}
 
 		isLogged = server.Session.IsUserLoggedByUid(uid)
 		if !isLogged {
-			server.LogWarning(r, "User #"+strconv.Itoa(uid)+" is not logged")
+			server.Logger.LogWarning(r, "User #"+strconv.Itoa(uid)+" is not logged")
 			server.error(w, errors.UserNotLogged)
 			return
 		}
@@ -70,16 +70,16 @@ func (server *Server) PanicMiddleWare(next http.Handler) http.Handler {
 			if rec := recover(); rec != nil {
 				err, ok := rec.(error)
 				if ok {
-					server.LogError(r, "PANIC happened - "+err.Error())
+					server.Logger.LogError(r, "PANIC happened - "+err.Error())
 				} else {
-					server.LogError(r, "PANIC happened with unknown type of error")
+					server.Logger.LogError(r, "PANIC happened with unknown type of error")
 				}
 				server.error(w, errors.UnknownInternalError)
 				return
 			}
 		}()
 		next.ServeHTTP(w, r)
-		server.TimeLog(r, time.Since(t))
+		server.Logger.TimeLog(r, time.Since(t))
 	})
 }
 
@@ -96,17 +96,17 @@ func (server *Server) PostMethodMiddleWare(next http.Handler) http.Handler {
 		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
-			server.Log(r, "client wants to know what methods are allowed")
+			server.Logger.Log(r, "client wants to know what methods are allowed")
 			return
 		} else if r.Method != "POST" {
-			server.LogWarning(r, "wrong request method. Should be POST method")
+			server.Logger.LogWarning(r, "wrong request method. Should be POST method")
 			w.WriteHeader(http.StatusMethodNotAllowed) // 405
 			return
 		}
-		server.Log(r, "request from client was received")
+		server.Logger.Log(r, "request from client was received")
 		err = json.NewDecoder(r.Body).Decode(&requestParams)
 		if err != nil {
-			server.LogError(r, "request body json decode failed - "+err.Error())
+			server.Logger.LogError(r, "request body json decode failed - "+err.Error())
 			server.error(w, errors.InvalidRequestBody)
 			return
 		}
@@ -128,17 +128,17 @@ func (server *Server) PatchMethodMiddleWare(next http.Handler) http.Handler {
 		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
-			server.Log(r, "client wants to know what methods are allowed")
+			server.Logger.Log(r, "client wants to know what methods are allowed")
 			return
 		} else if r.Method != "PATCH" {
-			server.LogWarning(r, "wrong request method. Should be PATCH method")
+			server.Logger.LogWarning(r, "wrong request method. Should be PATCH method")
 			w.WriteHeader(http.StatusMethodNotAllowed) // 405
 			return
 		}
-		server.Log(r, "request from client was received")
+		server.Logger.Log(r, "request from client was received")
 		err = json.NewDecoder(r.Body).Decode(&requestParams)
 		if err != nil {
-			server.LogError(r, "request body json decode failed - "+err.Error())
+			server.Logger.LogError(r, "request body json decode failed - "+err.Error())
 			server.error(w, errors.InvalidRequestBody)
 			return
 		}
@@ -160,17 +160,17 @@ func (server *Server) DeleteMethodMiddleWare(next http.Handler) http.Handler {
 		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
-			server.Log(r, "client wants to know what methods are allowed")
+			server.Logger.Log(r, "client wants to know what methods are allowed")
 			return
 		} else if r.Method != "DELETE" {
-			server.LogWarning(r, "wrong request method. Should be DELETE method")
+			server.Logger.LogWarning(r, "wrong request method. Should be DELETE method")
 			w.WriteHeader(http.StatusMethodNotAllowed) // 405
 			return
 		}
-		server.Log(r, "request from client was received")
+		server.Logger.Log(r, "request from client was received")
 		err = json.NewDecoder(r.Body).Decode(&requestParams)
 		if err != nil {
-			server.LogError(r, "request body json decode failed - "+err.Error())
+			server.Logger.LogError(r, "request body json decode failed - "+err.Error())
 			server.error(w, errors.InvalidRequestBody)
 			return
 		}
@@ -186,14 +186,14 @@ func (server *Server) GetMethodMiddleWare(next http.Handler) http.Handler {
 		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
-			server.Log(r, "client wants to know what methods are allowed")
+			server.Logger.Log(r, "client wants to know what methods are allowed")
 			return
 		} else if r.Method != "GET" {
-			server.LogWarning(r, "wrong request method. Should be GET method")
+			server.Logger.LogWarning(r, "wrong request method. Should be GET method")
 			w.WriteHeader(http.StatusMethodNotAllowed) // 405
 			return
 		}
-		server.Log(r, "request from client was received")
+		server.Logger.Log(r, "request from client was received")
 		next.ServeHTTP(w, r)
 	})
 }

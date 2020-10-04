@@ -27,26 +27,26 @@ func (server *Server) PhotoUpload(w http.ResponseWriter, r *http.Request) {
 
 	item, isExist = requestParams["src"]
 	if !isExist {
-		server.LogWarning(r, "src not exist in request")
+		server.Logger.LogWarning(r, "src not exist in request")
 		server.error(w, errors.NoArgument.WithArguments("Поле src отсутствует", "src field expected"))
 		return
 	}
 
 	src, ok = item.(string)
 	if !ok {
-		server.LogWarning(r, "src has wrong type")
+		server.Logger.LogWarning(r, "src has wrong type")
 		server.error(w, errors.InvalidArgument.WithArguments("Поле src имеет неверный тип", "src field has wrong type"))
 		return
 	}
 
 	pid, err = server.Db.SetNewPhoto(uid, src)
 	if err != nil {
-		server.LogError(r, "UpdateUser returned error - "+err.Error())
+		server.Logger.LogError(r, "UpdateUser returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK) // 200
-	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
+	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
 		" was uploaded its photo successfully. photo id #"+BLUE+strconv.Itoa(pid)+NO_COLOR+". No response body")
 }

@@ -1,43 +1,52 @@
-package apiServer
+package logger
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/config"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-func (server *Server) Log(r *http.Request, message string) {
-	if server.isLogsEnabled == false {
+type Logger struct {
+	isLoggingEnabled bool
+}
+
+func (logger *Logger) Init(cfg *config.Config) {
+	logger.isLoggingEnabled = cfg.IsLogEnabled
+}
+
+func (logger Logger) Log(r *http.Request, message string) {
+	if logger.isLoggingEnabled == false {
 		return
 	}
 	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path, message)
 }
 
-func (server *Server) LogSuccess(r *http.Request, message string) {
-	if server.isLogsEnabled == false {
+func (logger Logger) LogSuccess(r *http.Request, message string) {
+	if logger.isLoggingEnabled == false {
 		return
 	}
 	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path, GREEN_BG+"SUCCESS: "+NO_COLOR+message)
 }
 
-func (server *Server) LogWarning(r *http.Request, message string) {
-	if server.isLogsEnabled == false {
+func (logger Logger) LogWarning(r *http.Request, message string) {
+	if logger.isLoggingEnabled == false {
 		return
 	}
 	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path, YELLOW_BG+"WARNING: "+NO_COLOR+message)
 }
 
-func (server *Server) LogError(r *http.Request, message string) {
-	if server.isLogsEnabled == false {
+func (logger Logger) LogError(r *http.Request, message string) {
+	if logger.isLoggingEnabled == false {
 		return
 	}
 	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path, RED_BG+"ERROR: "+NO_COLOR+message)
 }
 
-func (server *Server) TimeLog(r *http.Request, dur time.Duration) {
-	if server.isLogsEnabled == false {
+func (logger Logger) TimeLog(r *http.Request, dur time.Duration) {
+	if logger.isLoggingEnabled == false {
 		return
 	}
 	milliseconds := (int)(dur.Milliseconds())

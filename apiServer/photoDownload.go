@@ -28,14 +28,14 @@ func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 
 	item, isExist = requestParams["uid"]
 	if !isExist {
-		server.LogWarning(r, "uid not exist in request")
+		server.Logger.LogWarning(r, "uid not exist in request")
 		server.error(w, errors.NoArgument.WithArguments("Поле uid отсутствует", "uid field expected"))
 		return
 	}
 
 	tmpFloat64, ok = item.(float64)
 	if !ok {
-		server.LogWarning(r, "uid has wrong type")
+		server.Logger.LogWarning(r, "uid has wrong type")
 		server.error(w, errors.InvalidArgument.WithArguments("Поле uid имеет неверный тип", "uid field has wrong type"))
 		return
 	}
@@ -43,7 +43,7 @@ func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 
 	photos, err := server.Db.GetPhotosByUid(authorUid)
 	if err != nil {
-		server.LogError(r, "GetPhotosByUid returned error - "+err.Error())
+		server.Logger.LogError(r, "GetPhotosByUid returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
@@ -51,7 +51,7 @@ func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 	jsonPhotos, err := json.Marshal(photos)
 
 	w.WriteHeader(http.StatusOK) // 200
-	server.LogSuccess(r, "user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 		" was downloaded photos of user #"+BLUE+strconv.Itoa(authorUid)+NO_COLOR+
 		" successfully. Amount of photos: "+BLUE+strconv.Itoa(len(photos))+NO_COLOR)
 	w.Write(jsonPhotos)

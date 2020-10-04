@@ -14,7 +14,7 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 
 	interests, err := server.Db.GetInterests()
 	if err != nil {
-		server.LogError(r, "database returned error - "+err.Error())
+		server.Logger.LogError(r, "database returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
@@ -22,7 +22,7 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 	jsonInterests, err := json.Marshal(interests)
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
-		server.LogError(r, "Marshal returned error "+err.Error())
+		server.Logger.LogError(r, "Marshal returned error "+err.Error())
 		server.error(w, errors.MarshalError)
 		return
 	}
@@ -30,5 +30,5 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 	// This is my valid case.
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonInterests)
-	server.LogSuccess(r, "Interests was returned to user. Amount "+strconv.Itoa(len(interests)))
+	server.Logger.LogSuccess(r, "Interests was returned to user. Amount "+strconv.Itoa(len(interests)))
 }

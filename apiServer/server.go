@@ -1,6 +1,7 @@
 package apiServer
 
 import (
+	"MatchaServer/apiServer/logger"
 	. "MatchaServer/common"
 	"MatchaServer/config"
 	"MatchaServer/database"
@@ -12,11 +13,11 @@ import (
 )
 
 type Server struct {
-	Port          int
-	Db            database.Storage
-	Session       session.Session
-	isLogsEnabled bool
-	mailConf      config.Mail
+	Port     int
+	Db       database.Storage
+	Session  session.Session
+	Logger   logger.Logger
+	mailConf config.Mail
 }
 
 func (server Server) error(w http.ResponseWriter, err errors.ApiError) {
@@ -34,7 +35,7 @@ func New(confPath string) (*Server, error) {
 		return nil, err
 	}
 	println(GREEN + "Configuration file was received" + NO_COLOR)
-	server.isLogsEnabled = conf.IsLogEnabled
+	server.Logger.Init(conf)
 	server.mailConf = conf.Mail
 	server.Port = conf.Port
 
