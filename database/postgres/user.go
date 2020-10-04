@@ -4,6 +4,7 @@ import (
 	"MatchaServer/common"
 	"MatchaServer/errors"
 	"database/sql"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -28,9 +29,18 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(uid)
+	result, err := stmt.Exec(uid)
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	// handle results
+	nbr64, err := result.RowsAffected()
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	if int(nbr64) != 1 {
+		return errors.NewArg("Неожиданное количество измененных строк - "+strconv.Itoa(int(nbr64)),
+			"Unexpectable amount of changed lines - "+strconv.Itoa(int(nbr64)))
 	}
 	return nil
 }
@@ -45,11 +55,20 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
+	result, err := stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
 		user.Lname, user.Birth.Time, user.Gender, user.Orientation,
 		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	// handle results
+	nbr64, err := result.RowsAffected()
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	if int(nbr64) != 1 {
+		return errors.NewArg("Неожиданное количество измененных строк - "+strconv.Itoa(int(nbr64)),
+			"Unexpectable amount of changed lines - "+strconv.Itoa(int(nbr64)))
 	}
 	return nil
 }

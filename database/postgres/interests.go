@@ -22,7 +22,12 @@ func (conn ConnDB) AddInterests(unknownInterests []common.Interest) error {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(nameArr...)
+	result, err := stmt.Exec(nameArr...)
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	// handle results
+	_, err = result.RowsAffected()
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}

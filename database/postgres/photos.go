@@ -3,6 +3,7 @@ package postgres
 import (
 	"MatchaServer/common"
 	"MatchaServer/errors"
+	"strconv"
 )
 
 func (conn ConnDB) SetNewPhoto(uid int, src string) (int, error) {
@@ -31,9 +32,18 @@ func (conn ConnDB) DeletePhoto(pid int) error {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(pid)
+	result, err := stmt.Exec(pid)
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	// handle results
+	nbr64, err := result.RowsAffected()
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	if int(nbr64) != 1 {
+		return errors.NewArg("Неожиданное количество измененных строк - "+strconv.Itoa(int(nbr64)),
+			"Unexpectable amount of changed lines - "+strconv.Itoa(int(nbr64)))
 	}
 	return nil
 }

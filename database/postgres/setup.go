@@ -1,12 +1,10 @@
 package postgres
 
 import (
-	// "MatchaServer/common"
 	"MatchaServer/config"
 	"database/sql"
-	"strconv"
-
 	_ "github.com/lib/pq"
+	"strconv"
 )
 
 type ConnDB struct {
