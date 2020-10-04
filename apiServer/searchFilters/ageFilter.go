@@ -1,7 +1,7 @@
 package searchFilters
 
 import (
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"strconv"
 	"time"
 )
@@ -25,7 +25,7 @@ func newAgeFilter(in interface{}) (*ageFilter, error) {
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
-		return nil, errDef.NewArg("неверный тип фильтра age", "wrong type of age filter")
+		return nil, errors.NewArg("неверный тип фильтра age", "wrong type of age filter")
 	}
 
 	// Обрабатываю параметр
@@ -33,7 +33,7 @@ func newAgeFilter(in interface{}) (*ageFilter, error) {
 	if ok {
 		fl64, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра минимального возраста фильтра age",
+			return nil, errors.NewArg("неверный тип параметра минимального возраста фильтра age",
 				"wrong type of min age parameter")
 		}
 		filter.isMinSet = true
@@ -45,7 +45,7 @@ func newAgeFilter(in interface{}) (*ageFilter, error) {
 	if ok {
 		fl64, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра максимального возраста фильтра age",
+			return nil, errors.NewArg("неверный тип параметра максимального возраста фильтра age",
 				"wrong type of max age parameter")
 		}
 		filter.isMaxSet = true
@@ -54,13 +54,13 @@ func newAgeFilter(in interface{}) (*ageFilter, error) {
 
 	// Если ни одного параметра не найдено
 	if filter.isMinSet == false && filter.isMaxSet == false {
-		return nil, errDef.NewArg("отсутствует параметр возраста фильтра age", "no age parameters found")
+		return nil, errors.NewArg("отсутствует параметр возраста фильтра age", "no age parameters found")
 	}
 
 	// Валидация данных
 	if (filter.isMaxSet && filter.isMinSet && filter.minAge > filter.maxAge) ||
 		filter.minAge < 0 || filter.maxAge < 0 {
-		return nil, errDef.NewArg("ошибка в параметре возраста фильтра age", "invalid age parameter")
+		return nil, errors.NewArg("ошибка в параметре возраста фильтра age", "invalid age parameter")
 	}
 
 	return &filter, nil

@@ -2,7 +2,7 @@ package searchFilters
 
 import (
 	"MatchaServer/database"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"strconv"
 )
 
@@ -25,7 +25,7 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
-		return nil, errDef.NewArg("неверный тип фильтра радиуса", "wrong type of radius filter")
+		return nil, errors.NewArg("неверный тип фильтра радиуса", "wrong type of radius filter")
 	}
 
 	// Обрабатываю параметр
@@ -34,7 +34,7 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 		isLatSet = true
 		filter.latitude, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра широты фильтра радиуса", "wrong type of latitude parameter")
+			return nil, errors.NewArg("неверный тип параметра широты фильтра радиуса", "wrong type of latitude parameter")
 		}
 	}
 
@@ -44,7 +44,7 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 		isLonSet = true
 		filter.longitude, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра долготы фильтра радиуса", "wrong type of longitude parameter")
+			return nil, errors.NewArg("неверный тип параметра долготы фильтра радиуса", "wrong type of longitude parameter")
 		}
 	}
 
@@ -53,30 +53,30 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 	if ok {
 		filter.radius, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра радиуса фильтра радиуса", "wrong type of radius parameter")
+			return nil, errors.NewArg("неверный тип параметра радиуса фильтра радиуса", "wrong type of radius parameter")
 		}
 	} else {
-		return nil, errDef.NewArg("не найден параметр радиуса фильтра радиуса", "radius parameter expected")
+		return nil, errors.NewArg("не найден параметр радиуса фильтра радиуса", "radius parameter expected")
 	}
 
 	// Если ни одного параметра не найдено
 	if (!isLatSet && isLonSet) || (isLatSet && !isLonSet) {
-		return nil, errDef.NewArg("не верно заполнены параметры фильтра радиуса", "incomplete parameter found")
+		return nil, errors.NewArg("не верно заполнены параметры фильтра радиуса", "incomplete parameter found")
 	}
 
 	// Валидация радиуса
 	if filter.radius <= 0 {
-		return nil, errDef.NewArg("ошибка параметра радиус фильтра радиуса", "invalid radius")
+		return nil, errors.NewArg("ошибка параметра радиус фильтра радиуса", "invalid radius")
 	}
 
 	// Валидация широты
 	if isLatSet && (filter.latitude < -90 || filter.latitude > 90) {
-		return nil, errDef.NewArg("ошибка параметра широты фильтра радиуса", "invalid latitude")
+		return nil, errors.NewArg("ошибка параметра широты фильтра радиуса", "invalid latitude")
 	}
 
 	// Валидация долготы
 	if isLonSet && (filter.longitude < -180 || filter.longitude > 180) {
-		return nil, errDef.NewArg("ошибка параметра долготы фильтра радиуса", "invalid longitude")
+		return nil, errors.NewArg("ошибка параметра долготы фильтра радиуса", "invalid longitude")
 	}
 
 	// Если координаты пользователя не пришли в запросе
@@ -84,7 +84,7 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 		println("\033[33mCalling function 'get user by uid'\033[m")
 		user, err := connDB.GetUserByUid(uid)
 		if err != nil {
-			return nil, errDef.NewArg("ошибка соединения с базой данных", "database connecting error").AddOriginalError(err)
+			return nil, errors.NewArg("ошибка соединения с базой данных", "database connecting error").AddOriginalError(err)
 		}
 		filter.latitude = float64(user.Latitude)
 		filter.longitude = float64(user.Longitude)

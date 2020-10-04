@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
 	"context"
 	"net/http"
@@ -28,14 +28,14 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	item, isExist = requestParams["pass"]
 	if !isExist {
 		server.LogWarning(r, "password not exist")
-		server.error(w, errDef.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
+		server.error(w, errors.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
 		return
 	}
 
 	pass, ok = item.(string)
 	if !ok {
 		server.LogWarning(r, "password have wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
+		server.error(w, errors.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
 		return
 	}
 
@@ -44,13 +44,13 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	user, err := server.Db.GetUserByUid(uid)
 	if err != nil {
 		server.LogError(r, "GetUserByUid returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	if encryptedPass != user.EncryptedPass {
 		server.LogWarning(r, "password is incorrect")
-		server.error(w, errDef.InvalidArgument.WithArguments("неверный пароль", "password is wrong"))
+		server.error(w, errors.InvalidArgument.WithArguments("неверный пароль", "password is wrong"))
 		return
 	}
 
@@ -59,7 +59,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		server.LogError(r, "DeleteUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 

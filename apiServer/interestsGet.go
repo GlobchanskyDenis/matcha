@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -15,7 +15,7 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 	interests, err := server.Db.GetInterests()
 	if err != nil {
 		server.LogError(r, "database returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
@@ -23,7 +23,7 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.LogError(r, "Marshal returned error "+err.Error())
-		server.error(w, errDef.MarshalError)
+		server.error(w, errors.MarshalError)
 		return
 	}
 

@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -29,14 +29,14 @@ func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 	item, isExist = requestParams["uid"]
 	if !isExist {
 		server.LogWarning(r, "uid not exist in request")
-		server.error(w, errDef.NoArgument.WithArguments("Поле uid отсутствует", "uid field expected"))
+		server.error(w, errors.NoArgument.WithArguments("Поле uid отсутствует", "uid field expected"))
 		return
 	}
 
 	tmpFloat64, ok = item.(float64)
 	if !ok {
 		server.LogWarning(r, "uid has wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле uid имеет неверный тип", "uid field has wrong type"))
+		server.error(w, errors.InvalidArgument.WithArguments("Поле uid имеет неверный тип", "uid field has wrong type"))
 		return
 	}
 	authorUid = int(tmpFloat64)
@@ -44,7 +44,7 @@ func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 	photos, err := server.Db.GetPhotosByUid(authorUid)
 	if err != nil {
 		server.LogError(r, "GetPhotosByUid returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 

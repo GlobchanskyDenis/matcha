@@ -1,7 +1,7 @@
 package searchFilters
 
 import (
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"strconv"
 )
 
@@ -24,7 +24,7 @@ func newRatingFilter(in interface{}) (*ratingFilter, error) {
 	// Преобразую полезную нагрузку в нужный нам формат
 	payload, ok = in.(map[string]interface{})
 	if !ok {
-		return nil, errDef.NewArg("неверный тип фильтра рейтинга", "wrong type of rating filter")
+		return nil, errors.NewArg("неверный тип фильтра рейтинга", "wrong type of rating filter")
 	}
 
 	// Обрабатываю параметр
@@ -32,7 +32,7 @@ func newRatingFilter(in interface{}) (*ratingFilter, error) {
 	if ok {
 		fl64, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра минимума фильтра рейтинга", "wrong type of min rating parameter")
+			return nil, errors.NewArg("неверный тип параметра минимума фильтра рейтинга", "wrong type of min rating parameter")
 		}
 		filter.isMinSet = true
 		filter.minRating = int(fl64)
@@ -43,7 +43,7 @@ func newRatingFilter(in interface{}) (*ratingFilter, error) {
 	if ok {
 		fl64, ok = item.(float64)
 		if !ok {
-			return nil, errDef.NewArg("неверный тип параметра максимума фильтра рейтинга", "wrong type of max rating parameter")
+			return nil, errors.NewArg("неверный тип параметра максимума фильтра рейтинга", "wrong type of max rating parameter")
 		}
 		filter.isMaxSet = true
 		filter.maxRating = int(fl64)
@@ -51,13 +51,13 @@ func newRatingFilter(in interface{}) (*ratingFilter, error) {
 
 	// Если ни одного параметра не найдено
 	if !filter.isMinSet && !filter.isMaxSet {
-		return nil, errDef.NewArg("отсутствуют параметры фильтра рейтинга", "no rating parameters found")
+		return nil, errors.NewArg("отсутствуют параметры фильтра рейтинга", "no rating parameters found")
 	}
 
 	// Валидация данных
 	if filter.minRating < 0 || filter.maxRating < 0 ||
 		(filter.isMaxSet && filter.isMinSet && filter.maxRating < filter.minRating) {
-		return nil, errDef.NewArg("ошибка параметра фильтра рейтинга", "invalid rating parameter")
+		return nil, errors.NewArg("ошибка параметра фильтра рейтинга", "invalid rating parameter")
 	}
 
 	return &filter, nil

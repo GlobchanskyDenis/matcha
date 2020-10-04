@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
 	"context"
 	"encoding/json"
@@ -18,7 +18,7 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 	devices, err := server.Db.GetDevicesByUid(uid)
 	if err != nil {
 		server.LogError(r, "GetDevicesByUid returned error - "+err.Error())
-		return errDef.DatabaseError.WithArguments(err)
+		return errors.DatabaseError.WithArguments(err)
 	}
 	for _, device := range devices {
 		if device.Device == r.UserAgent() {
@@ -29,12 +29,12 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 		err = server.Db.SetNewDevice(uid, r.UserAgent())
 		if err != nil {
 			server.LogError(r, "SetNewDevice returned error - "+err.Error())
-			return errDef.DatabaseError.WithArguments(err)
+			return errors.DatabaseError.WithArguments(err)
 		}
 		err = server.Session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
 		if err != nil {
 			server.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
-			return errDef.WebSocketError.WithArguments(err)
+			return errors.WebSocketError.WithArguments(err)
 		}
 	}
 	return nil
@@ -58,28 +58,28 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	arg, isExist := requestParams["mail"]
 	if !isExist {
 		server.LogWarning(r, "mail not exist")
-		server.error(w, errDef.NoArgument.WithArguments("Поле mail отсутствует", "mail field expected"))
+		server.error(w, errors.NoArgument.WithArguments("Поле mail отсутствует", "mail field expected"))
 		return
 	}
 
 	mail, ok = arg.(string)
 	if !ok {
 		server.LogWarning(r, "mail has wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type"))
+		server.error(w, errors.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type"))
 		return
 	}
 
 	arg, isExist = requestParams["pass"]
 	if !isExist {
 		server.LogWarning(r, "password not exist")
-		server.error(w, errDef.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
+		server.error(w, errors.NoArgument.WithArguments("Поле pass отсутствует", "pass field expected"))
 		return
 	}
 
 	pass, ok = arg.(string)
 	if !ok {
 		server.LogWarning(r, "password has wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
+		server.error(w, errors.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type"))
 		return
 	}
 
@@ -89,38 +89,38 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	// Simple validation
 	if mail == "" || pass == "" {
 		server.LogWarning(r, "mail or password is empty")
-		server.error(w, errDef.AuthFail)
+		server.error(w, errors.AuthFail)
 		return
 	}
 
 	user, err := server.Db.GetUserForAuth(mail, handlers.PassHash(pass))
-	if errDef.RecordNotFound.IsOverlapWithError(err) {
+	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.LogWarning(r, "Authorization for user "+BLUE+mail+NO_COLOR+" failed")
-		server.error(w, errDef.AuthFail)
+		server.error(w, errors.AuthFail)
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUserForAuth returned error "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	if user.Status == "not confirmed" {
 		server.LogWarning(r, "user "+BLUE+user.Mail+NO_COLOR+" should confirm its email")
-		server.error(w, errDef.NotConfirmedMail)
+		server.error(w, errors.NotConfirmedMail)
 		return
 	}
 
 	// Check if this device is unknown yet - then make notification that new device if found
 	err = server.deviceHandler(w, r, user.Uid)
 	if err != nil {
-		server.error(w, err.(errDef.ApiError))
+		server.error(w, err.(errors.ApiError))
 		return
 	}
 
 	token, err = server.Session.AddUserToSession(user.Uid)
 	if err != nil {
 		server.LogError(r, "Cannot add user to session - "+err.Error())
-		server.error(w, errDef.UnknownInternalError.WithArguments(err))
+		server.error(w, errors.UnknownInternalError.WithArguments(err))
 		return
 	}
 
@@ -128,7 +128,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.LogError(r, "Marshal returned error "+err.Error())
-		server.error(w, errDef.MarshalError)
+		server.error(w, errors.MarshalError)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.LogError(r, "cannot create web socket token - "+err.Error())
-		server.error(w, errDef.WebSocketError.WithArguments(err))
+		server.error(w, errors.WebSocketError.WithArguments(err))
 		return
 	}
 

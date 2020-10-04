@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"strconv"
 )
 
@@ -19,12 +19,12 @@ func (conn ConnDB) AddInterests(unknownInterests []common.Interest) error {
 	query = string(query[:len(query)-2])
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
-		return errDef.DatabasePreparingError.AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(nameArr...)
 	if err != nil {
-		return errDef.DatabaseExecutingError.AddOriginalError(err)
+		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	return nil
 }
@@ -35,16 +35,16 @@ func (conn ConnDB) GetInterests() ([]common.Interest, error) {
 
 	stmt, err := conn.db.Prepare("SELECT * FROM interests")
 	if err != nil {
-		return interests, errDef.DatabasePreparingError.AddOriginalError(err)
+		return interests, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	rows, err := stmt.Query()
 	if err != nil {
-		return interests, errDef.DatabaseQueryError.AddOriginalError(err)
+		return interests, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
 		err = rows.Scan(&interest.Id, &interest.Name)
 		if err != nil {
-			return interests, errDef.DatabaseScanError.AddOriginalError(err)
+			return interests, errors.DatabaseScanError.AddOriginalError(err)
 		}
 		interests = append(interests, interest)
 	}

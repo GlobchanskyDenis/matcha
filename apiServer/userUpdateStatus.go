@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
 	"context"
 	"net/http"
@@ -27,39 +27,39 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	item, isExist = requestParams["x-reg-token"]
 	if !isExist {
 		server.LogError(r, "x-reg-token not exist in request")
-		server.error(w, errDef.NoArgument.WithArguments("Поле x-reg-token отсутствует", "x-reg-token field expected"))
+		server.error(w, errors.NoArgument.WithArguments("Поле x-reg-token отсутствует", "x-reg-token field expected"))
 		return
 	}
 
 	token, ok = item.(string)
 	if !ok {
 		server.LogError(r, "x-reg-token has wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-reg-token имеет неверный тип",
+		server.error(w, errors.InvalidArgument.WithArguments("Поле x-reg-token имеет неверный тип",
 			"x-reg-token field has wrong type"))
 		return
 	}
 
 	if token == "" {
 		server.LogError(r, "x-reg-token is empty")
-		server.error(w, errDef.UserNotLogged)
+		server.error(w, errors.UserNotLogged)
 		return
 	}
 
 	mail, err = handlers.TokenMailDecode(token)
 	if err != nil {
 		server.LogWarning(r, "TokenMailDecode returned error - "+err.Error())
-		server.error(w, errDef.UserNotLogged)
+		server.error(w, errors.UserNotLogged)
 		return
 	}
 
 	user, err := server.Db.GetUserByMail(mail)
-	if errDef.RecordNotFound.IsOverlapWithError(err) {
+	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.LogWarning(r, "GetUserByMail - record not found")
-		server.error(w, errDef.UserNotExist)
+		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
 		server.LogWarning(r, "GetUserByMail returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
@@ -68,7 +68,7 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		server.LogWarning(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 

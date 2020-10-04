@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -23,20 +23,20 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	uid = ctx.Value("uid").(int)
 
 	user, err = server.Db.GetUserByUid(uid)
-	if errDef.RecordNotFound.IsOverlapWithError(err) {
+	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.LogWarning(r, "GetUserByUid - record not found")
-		server.error(w, errDef.UserNotExist)
+		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	jsonUser, err := json.Marshal(user)
 	if err != nil {
 		server.LogError(r, "Marshal returned error "+err.Error())
-		server.error(w, errDef.MarshalError)
+		server.error(w, errors.MarshalError)
 		return
 	}
 

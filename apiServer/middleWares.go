@@ -1,7 +1,7 @@
 package apiServer
 
 import (
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
 	"context"
 	"encoding/json"
@@ -27,34 +27,34 @@ func (server *Server) CheckAuthMiddleWare(next http.Handler) http.Handler {
 		item, isExist = requestParams["x-auth-token"]
 		if !isExist {
 			server.LogWarning(r, "x-auth-token not exist in request")
-			server.error(w, errDef.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
+			server.error(w, errors.NoArgument.WithArguments("Поле x-auth-token отсутствует", "x-auth-token field expected"))
 			return
 		}
 
 		token, ok = item.(string)
 		if !ok {
 			server.LogWarning(r, "x-auth-token has wrong type")
-			server.error(w, errDef.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
+			server.error(w, errors.InvalidArgument.WithArguments("Поле x-auth-token имеет неверный тип", "x-auth-token field has wrong type"))
 			return
 		}
 
 		if token == "" {
 			server.LogWarning(r, "x-auth-token is empty")
-			server.error(w, errDef.UserNotLogged)
+			server.error(w, errors.UserNotLogged)
 			return
 		}
 
 		uid, err = handlers.TokenUidDecode(token)
 		if err != nil {
 			server.LogWarning(r, "TokenUidDecode returned error - "+err.Error())
-			server.error(w, errDef.UserNotLogged)
+			server.error(w, errors.UserNotLogged)
 			return
 		}
 
 		isLogged = server.Session.IsUserLoggedByUid(uid)
 		if !isLogged {
 			server.LogWarning(r, "User #"+strconv.Itoa(uid)+" is not logged")
-			server.error(w, errDef.UserNotLogged)
+			server.error(w, errors.UserNotLogged)
 			return
 		}
 
@@ -74,7 +74,7 @@ func (server *Server) PanicMiddleWare(next http.Handler) http.Handler {
 				} else {
 					server.LogError(r, "PANIC happened with unknown type of error")
 				}
-				server.error(w, errDef.UnknownInternalError)
+				server.error(w, errors.UnknownInternalError)
 				return
 			}
 		}()
@@ -107,7 +107,7 @@ func (server *Server) PostMethodMiddleWare(next http.Handler) http.Handler {
 		err = json.NewDecoder(r.Body).Decode(&requestParams)
 		if err != nil {
 			server.LogError(r, "request body json decode failed - "+err.Error())
-			server.error(w, errDef.InvalidRequestBody)
+			server.error(w, errors.InvalidRequestBody)
 			return
 		}
 		ctx = context.WithValue(r.Context(), "requestParams", requestParams)
@@ -139,7 +139,7 @@ func (server *Server) PatchMethodMiddleWare(next http.Handler) http.Handler {
 		err = json.NewDecoder(r.Body).Decode(&requestParams)
 		if err != nil {
 			server.LogError(r, "request body json decode failed - "+err.Error())
-			server.error(w, errDef.InvalidRequestBody)
+			server.error(w, errors.InvalidRequestBody)
 			return
 		}
 		ctx = context.WithValue(r.Context(), "requestParams", requestParams)
@@ -171,7 +171,7 @@ func (server *Server) DeleteMethodMiddleWare(next http.Handler) http.Handler {
 		err = json.NewDecoder(r.Body).Decode(&requestParams)
 		if err != nil {
 			server.LogError(r, "request body json decode failed - "+err.Error())
-			server.error(w, errDef.InvalidRequestBody)
+			server.error(w, errors.InvalidRequestBody)
 			return
 		}
 		ctx = context.WithValue(r.Context(), "requestParams", requestParams)

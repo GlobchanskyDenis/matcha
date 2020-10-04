@@ -3,7 +3,7 @@ package postgres
 import (
 	"MatchaServer/common"
 	"MatchaServer/config"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"testing"
 )
 
@@ -121,7 +121,7 @@ func TestPhotos(t *testing.T) {
 			return
 		}
 		_, err = repo.GetPhotoByPid(pid)
-		if errDef.RecordNotFound.IsOverlapWithError(err) {
+		if errors.RecordNotFound.IsOverlapWithError(err) {
 			t_.Log(common.GREEN_BG + "Success: there is `RecordNotFoundError` as it expected" + common.NO_COLOR)
 		} else if err != nil {
 			t_.Errorf(common.RED_BG + "Error: it should be RecordNotFound but it dont - " + err.Error() + common.NO_COLOR)

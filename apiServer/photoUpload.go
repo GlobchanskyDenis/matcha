@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"context"
 	"net/http"
 	"strconv"
@@ -28,21 +28,21 @@ func (server *Server) PhotoUpload(w http.ResponseWriter, r *http.Request) {
 	item, isExist = requestParams["src"]
 	if !isExist {
 		server.LogWarning(r, "src not exist in request")
-		server.error(w, errDef.NoArgument.WithArguments("Поле src отсутствует", "src field expected"))
+		server.error(w, errors.NoArgument.WithArguments("Поле src отсутствует", "src field expected"))
 		return
 	}
 
 	src, ok = item.(string)
 	if !ok {
 		server.LogWarning(r, "src has wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле src имеет неверный тип", "src field has wrong type"))
+		server.error(w, errors.InvalidArgument.WithArguments("Поле src имеет неверный тип", "src field has wrong type"))
 		return
 	}
 
 	pid, err = server.Db.SetNewPhoto(uid, src)
 	if err != nil {
 		server.LogError(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 

@@ -1,8 +1,8 @@
 package session
 
 import (
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
-	"errors"
 	"github.com/gorilla/websocket"
 	"strconv"
 	"sync"
@@ -58,20 +58,21 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 
 	ret = <-ch
 	if ret.err != nil {
-		return ret.token, ret.err
+		return ret.token, errors.NewArg("Ошибка добавления пользователя в сессию",
+			"user add to session error").AddOriginalError(ret.err)
 	}
 
 	T.mu.Lock()
 	T.session[uid] = newItem
 	T.mu.Unlock()
 
-	return ret.token, ret.err
+	return ret.token, nil
 }
 
 func (T *Session) IsUserLoggedByToken(token string) (bool, error) {
 	uid, err := handlers.TokenUidDecode(token)
 	if err != nil {
-		return false, err
+		return false, errors.NewArg("Ошибка декодирования токена", "Token decode error").AddOriginalError(err)
 	}
 	T.mu.Lock()
 	item, isExists := T.session[uid]
@@ -120,19 +121,20 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
-		return SessionItem{}, err
+		return SessionItem{}, errors.NewArg("Ошибка декодирования токена", "Token decode error").AddOriginalError(err)
 	}
 	T.mu.Lock()
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return SessionItem{}, errors.New("hmm... looks like user #" + strconv.Itoa(uid) + " isnt logged")
+		return SessionItem{}, errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
+			"user #"+strconv.Itoa(uid)+" isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return SessionItem{}, errors.New("this session is expired")
+		return SessionItem{}, errors.NewArg("Сессия просрочена", "this session is expired")
 	}
 	item.LastVisited = time.Now()
 	T.mu.Lock()
@@ -168,13 +170,14 @@ func (T *Session) CreateTokenWS(uid int) (string, error) {
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return "", errors.New("hmm... looks like user #" + strconv.Itoa(uid) + " isnt logged")
+		return "", errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
+			"user #"+strconv.Itoa(uid)+" isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return "", errors.New("this session is expired")
+		return "", errors.NewArg("Сессия просрочена", "this session is expired")
 	}
 	item.LastVisited = time.Now()
 	item.TokenWS = <-ch
@@ -192,13 +195,14 @@ func (T *Session) GetTokenWS(uid int) (string, error) {
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return "", errors.New("hmm... looks like user #" + strconv.Itoa(uid) + " isnt logged")
+		return "", errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
+			"user #"+strconv.Itoa(uid)+" isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return "", errors.New("this session is expired")
+		return "", errors.NewArg("Сессия просрочена", "this session is expired")
 	}
 	return item.TokenWS, nil
 }
@@ -215,7 +219,7 @@ func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn) {
 	T.mu.Unlock()
 }
 
-func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn) (isUserWasRemoved bool, err error) {
+func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn) (bool, error) {
 	var item SessionItem
 
 	T.mu.Lock()
@@ -225,7 +229,8 @@ func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn)
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return true, errors.New("hmm... looks like this user has no ws connections")
+		return true, errors.NewArg("у вашего пользователя нет открытых ws соединений",
+			"this user has no ws connections")
 	}
 	if len(item.ws) == 1 {
 		T.mu.Lock()
@@ -248,7 +253,8 @@ func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn)
 			return false, nil
 		}
 	}
-	return false, errors.New("hmm... looks like this websocket isnt belong to this user")
+	return false, errors.NewArg("Этот websocket не принадлежит вашему пользователю",
+		"this websocket isnt belong to this user")
 }
 
 func (T *Session) SendNotifToLoggedUser(uidReceiver int, uidSender int, notifBody string) error {

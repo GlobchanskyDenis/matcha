@@ -3,7 +3,7 @@ package postgres
 import (
 	. "MatchaServer/common"
 	"MatchaServer/config"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
 	"testing"
 )
@@ -64,7 +64,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("invalid GetUserByUid", func(t_ *testing.T) {
 		_, err := conn.GetUserByUid(0)
-		if !errDef.RecordNotFound.IsOverlapWithError(err) {
+		if !errors.RecordNotFound.IsOverlapWithError(err) {
 			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR)
 		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
@@ -86,7 +86,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("invalid GetUserByMail", func(t_ *testing.T) {
 		_, err := conn.GetUserByMail(mailFail)
-		if !errDef.RecordNotFound.IsOverlapWithError(err) {
+		if !errors.RecordNotFound.IsOverlapWithError(err) {
 			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR)
 		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
@@ -108,7 +108,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("invalid GetUserForAuth", func(t_ *testing.T) {
 		_, err := conn.GetUserForAuth(user.Mail, passFail)
-		if !errDef.RecordNotFound.IsOverlapWithError(err) {
+		if !errors.RecordNotFound.IsOverlapWithError(err) {
 			t_.Errorf(RED_BG + "ERROR: it should be Record not found error but it dont" + NO_COLOR)
 		} else if err == nil {
 			t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)

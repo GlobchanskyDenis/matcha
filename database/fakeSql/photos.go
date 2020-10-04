@@ -2,7 +2,7 @@ package fakeSql
 
 import (
 	"MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 )
 
 func (conn ConnFake) SetNewPhoto(uid int, src string) (int, error) {
@@ -47,5 +47,5 @@ func (conn ConnFake) GetPhotoByPid(pid int) (common.Photo, error) {
 			return photo, nil
 		}
 	}
-	return photo, errDef.RecordNotFound
+	return photo, errors.RecordNotFound
 }

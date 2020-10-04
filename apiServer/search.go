@@ -3,7 +3,7 @@ package apiServer
 import (
 	"MatchaServer/apiServer/searchFilters"
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -33,20 +33,20 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	err = filters.Parse(requestParams, uid, server.Db, &server.Session)
 	if err != nil {
 		server.LogWarning(r, "Cannot parse filter: "+BLUE+err.Error()+NO_COLOR)
-		server.error(w, errDef.InvalidArgument.WithArguments(err))
+		server.error(w, errors.InvalidArgument.WithArguments(err))
 		return
 	}
 
 	server.Log(r, "search filters: "+BLUE+filters.Print()+NO_COLOR)
 
 	user, err = server.Db.GetUserByUid(uid)
-	if errDef.RecordNotFound.IsOverlapWithError(err) {
+	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.LogWarning(r, "User with uid #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" not found")
-		server.error(w, errDef.UserNotExist)
+		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUserByUid returned error "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
@@ -55,14 +55,14 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	users, err = server.Db.GetUsersByQuery(query)
 	if err != nil {
 		server.LogError(r, "GetUsersByQuery returned error "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
 		server.LogError(r, "Marshal returned error"+err.Error())
-		server.error(w, errDef.MarshalError)
+		server.error(w, errors.MarshalError)
 		return
 	}
 	w.WriteHeader(http.StatusOK) // 200

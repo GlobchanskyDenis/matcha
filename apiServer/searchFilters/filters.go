@@ -2,7 +2,7 @@ package searchFilters
 
 import (
 	"MatchaServer/database"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/session"
 	"strconv"
 )
@@ -41,7 +41,7 @@ func (f *Filters) Parse(in map[string]interface{}, uid int,
 	)
 
 	if session == nil {
-		return errDef.NewArg("найден пустой указатель сессии", "empty session pointer found")
+		return errors.NewArg("найден пустой указатель сессии", "empty session pointer found")
 	}
 	item, isExist = in["age"]
 	if isExist {

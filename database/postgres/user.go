@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"database/sql"
 	"strings"
 	"time"
@@ -12,12 +12,12 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, e
 	var user common.User
 	stmt, err := conn.db.Prepare("INSERT INTO users (mail, encryptedPass) VALUES ($1, $2) RETURNING uid, mail")
 	if err != nil {
-		return user, errDef.DatabasePreparingError.AddOriginalError(err)
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	err = stmt.QueryRow(mail, encryptedPass).Scan(&user.Uid, &user.Mail)
 	if err != nil {
-		return user, errDef.DatabaseQueryError.AddOriginalError(err)
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	return user, nil
 }
@@ -25,12 +25,12 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, e
 func (conn *ConnDB) DeleteUser(uid int) error {
 	stmt, err := conn.db.Prepare("DELETE FROM users WHERE uid=$1")
 	if err != nil {
-		return errDef.DatabasePreparingError.AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uid)
 	if err != nil {
-		return errDef.DatabaseExecutingError.AddOriginalError(err)
+		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	return nil
 }
@@ -42,14 +42,14 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 		"orientation=$8, bio=$9, avaID=$10, latitude=$11, longitude=$12, " +
 		"interests='{" + interests + "}', status=$13, rating=$14 WHERE uid=$1")
 	if err != nil {
-		return errDef.DatabasePreparingError.AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
 		user.Lname, user.Birth.Time, user.Gender, user.Orientation,
 		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
 	if err != nil {
-		return errDef.DatabaseExecutingError.AddOriginalError(err)
+		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	return nil
 }
@@ -67,12 +67,12 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
 	if err != nil {
-		return user, errDef.DatabasePreparingError.AddOriginalError(err)
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(uid)
 	if err != nil {
-		return user, errDef.DatabaseQueryError.AddOriginalError(err)
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -80,10 +80,10 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, errDef.DatabaseScanError.AddOriginalError(err)
+			return user, errors.DatabaseScanError.AddOriginalError(err)
 		}
 	} else {
-		return user, errDef.RecordNotFound
+		return user, errors.RecordNotFound
 	}
 	// handle user Interests
 	if len(interests) > 2 {
@@ -99,7 +99,7 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 			user.Birth.Time = &date
 			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 		} else {
-			return user, errDef.NewArg("не верный тип данных birth", "wrong type of birth")
+			return user, errors.NewArg("не верный тип данных birth", "wrong type of birth")
 		}
 	} else {
 		user.Birth.Time = nil
@@ -119,12 +119,12 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	)
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
 	if err != nil {
-		return user, errDef.DatabasePreparingError.AddOriginalError(err)
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(mail)
 	if err != nil {
-		return user, errDef.DatabaseQueryError.AddOriginalError(err)
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -132,10 +132,10 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, errDef.DatabaseScanError.AddOriginalError(err)
+			return user, errors.DatabaseScanError.AddOriginalError(err)
 		}
 	} else {
-		return user, errDef.RecordNotFound
+		return user, errors.RecordNotFound
 	}
 	// handle user Interests
 	if len(interests) > 2 {
@@ -151,7 +151,7 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 			user.Birth.Time = &date
 			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 		} else {
-			return user, errDef.NewArg("не верный тип данных birth", "wrong type of birth")
+			return user, errors.NewArg("не верный тип данных birth", "wrong type of birth")
 		}
 	} else {
 		user.Birth.Time = nil
@@ -170,7 +170,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 	)
 	rows, err := conn.db.Query(query)
 	if err != nil {
-		return nil, errDef.DatabaseQueryError.AddOriginalError(err)
+		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
 		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -178,7 +178,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return nil, errDef.DatabaseScanError.AddOriginalError(err)
+			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}
 		// handle user Interests
 		if len(interests) > 2 {
@@ -194,7 +194,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 				user.Birth.Time = &date
 				user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 			} else {
-				return nil, errDef.NewArg("не верный тип данных birth", "wrong type of birth")
+				return nil, errors.NewArg("не верный тип данных birth", "wrong type of birth")
 			}
 		} else {
 			user.Birth.Time = nil
@@ -217,12 +217,12 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1 AND encryptedPass=$2")
 	if err != nil {
-		return user, errDef.DatabasePreparingError.AddOriginalError(err)
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err = stmt.Query(mail, encryptedPass)
 	if err != nil {
-		return user, errDef.DatabaseQueryError.AddOriginalError(err)
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
@@ -230,10 +230,10 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
 			&(user.Status), &(user.Rating))
 		if err != nil {
-			return user, errDef.DatabaseScanError.AddOriginalError(err)
+			return user, errors.DatabaseScanError.AddOriginalError(err)
 		}
 	} else {
-		return user, errDef.RecordNotFound
+		return user, errors.RecordNotFound
 	}
 	// handle user Interests
 	// parse string of interests into []string
@@ -250,7 +250,7 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 			user.Birth.Time = &date
 			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 		} else {
-			return user, errDef.NewArg("не верный тип данных birth", "wrong type of birth")
+			return user, errors.NewArg("не верный тип данных birth", "wrong type of birth")
 		}
 	} else {
 		user.Birth.Time = nil
@@ -261,12 +261,12 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
 	if err != nil {
-		return false, errDef.DatabasePreparingError.AddOriginalError(err)
+		return false, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err := stmt.Query(mail)
 	if err != nil {
-		return false, errDef.DatabaseQueryError.AddOriginalError(err)
+		return false, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		return true, nil
@@ -277,12 +277,12 @@ func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {
 func (conn ConnDB) IsUserExistsByUid(uid int) (bool, error) {
 	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
 	if err != nil {
-		return false, errDef.DatabasePreparingError.AddOriginalError(err)
+		return false, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	row, err := stmt.Query(uid)
 	if err != nil {
-		return false, errDef.DatabaseQueryError.AddOriginalError(err)
+		return false, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
 		return true, nil

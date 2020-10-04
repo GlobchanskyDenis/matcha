@@ -1,4 +1,4 @@
-package errDef
+package errors
 
 import (
 	"encoding/json"

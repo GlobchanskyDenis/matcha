@@ -6,7 +6,7 @@ import (
 	"MatchaServer/database"
 	"MatchaServer/database/fakeSql"
 	"MatchaServer/database/postgres"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/session"
 	"net/http"
 )
@@ -19,7 +19,7 @@ type Server struct {
 	mailConf      config.Mail
 }
 
-func (server Server) error(w http.ResponseWriter, err errDef.ApiError) {
+func (server Server) error(w http.ResponseWriter, err errors.ApiError) {
 	w.WriteHeader(err.HttpResponseStatus)
 	w.Write(err.ToJson())
 }

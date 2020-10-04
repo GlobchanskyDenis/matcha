@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/errDef"
+	"MatchaServer/errors"
 	"MatchaServer/handlers"
 	"context"
 	"fmt"
@@ -27,11 +27,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Mail, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле mail имеет неверный тип", "mail field has wrong type")
 		}
 		err = handlers.CheckMail(user.Mail)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " mail=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -41,12 +41,12 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Pass, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле pass имеет неверный тип", "pass field has wrong type")
 		}
 		user.EncryptedPass = handlers.PassHash(user.Pass)
 		err = handlers.CheckPass(user.Pass)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " password=hidden"
 	}
@@ -56,11 +56,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Fname, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле fname имеет неверный тип", "fname field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле fname имеет неверный тип", "fname field has wrong type")
 		}
 		err = handlers.CheckName(user.Fname)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " fname=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -70,11 +70,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Lname, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле lname имеет неверный тип", "lname field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле lname имеет неверный тип", "lname field has wrong type")
 		}
 		err = handlers.CheckName(user.Lname)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " lname=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -84,17 +84,17 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		birth, ok := arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
 		}
 		date, err := time.Parse("2006-01-02", birth)
 		user.Birth.Time = &date //CustomDate(date)
 		if err != nil {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
+				errors.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
 		}
 		user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 		if user.Age > 80 || user.Age < 16 {
-			return user, message, errDef.InvalidArgument.WithArguments("Значение поля birth недопустимо",
+			return user, message, errors.InvalidArgument.WithArguments("Значение поля birth недопустимо",
 				"birth field has wrong value")
 		}
 		message += " birth=" + BLUE + birth + NO_COLOR + " age=" + BLUE + strconv.Itoa(user.Age) + NO_COLOR
@@ -105,11 +105,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Gender, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле gender имеет неверный тип", "gender field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле gender имеет неверный тип", "gender field has wrong type")
 		}
 		err = handlers.CheckGender(user.Gender)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " gender=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -119,11 +119,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Orientation, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле orientation имеет неверный тип", "orientation field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле orientation имеет неверный тип", "orientation field has wrong type")
 		}
 		err = handlers.CheckOrientation(user.Orientation)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " orientation=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -133,11 +133,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.Bio, ok = arg.(string)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле bio имеет неверный тип", "bio field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле bio имеет неверный тип", "bio field has wrong type")
 		}
 		err = handlers.CheckBio(user.Bio)
 		if err != nil {
-			return user, message, errDef.InvalidArgument.WithArguments(err)
+			return user, message, errors.InvalidArgument.WithArguments(err)
 		}
 		message += " bio=" + BLUE + arg.(string) + NO_COLOR
 	}
@@ -148,11 +148,11 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.AvaID = int(tmpFloat)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип",
+				errors.InvalidArgument.WithArguments("Поле avaID имеет неверный тип",
 					"avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
 		}
 		if user.AvaID < 0 {
-			return user, message, errDef.InvalidArgument.WithArguments("Значение поля avaID недопустимо",
+			return user, message, errors.InvalidArgument.WithArguments("Значение поля avaID недопустимо",
 				"avaID field has wrong value")
 		}
 		message += " avaID=" + BLUE + strconv.Itoa(user.AvaID) + NO_COLOR
@@ -163,7 +163,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		tmpFloat, ok = arg.(float64)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле latitude имеет неверный тип", "latitude field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле latitude имеет неверный тип", "latitude field has wrong type")
 		}
 		user.Latitude = float32(tmpFloat)
 		message += " latitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
@@ -174,7 +174,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		tmpFloat, ok = arg.(float64)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле longitude имеет неверный тип", "longitude field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле longitude имеет неверный тип", "longitude field has wrong type")
 		}
 		user.Longitude = float32(tmpFloat)
 		message += " longitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
@@ -185,19 +185,19 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		interfaceArr, ok = arg.([]interface{})
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type")
+				errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type")
 		}
 		// вытираю старые интересы - чтобы не было дублирования
 		user.Interests = nil
 		for _, item := range interfaceArr {
 			tmpStr, ok := item.(string)
 			if !ok {
-				return user, message, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
+				return user, message, errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
 					"interests field has wrong type")
 			}
 			err = handlers.CheckInterest(tmpStr)
 			if err != nil {
-				return user, message, errDef.InvalidArgument.WithArguments(err)
+				return user, message, errors.InvalidArgument.WithArguments(err)
 			}
 			user.Interests = append(user.Interests, tmpStr)
 			interestsStr += tmpStr + ", "
@@ -209,7 +209,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	}
 
 	if !usefullFieldsExists {
-		return user, message, errDef.NoArgument
+		return user, message, errors.NoArgument
 	}
 	return user, message, nil
 }
@@ -239,13 +239,13 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		knownInterests, err := server.Db.GetInterests()
 		if err != nil {
 			server.LogWarning(r, "GetInterests returned error - "+err.Error())
-			server.error(w, errDef.DatabaseError.WithArguments(err))
+			server.error(w, errors.DatabaseError.WithArguments(err))
 			return
 		}
 		interfaceArr, ok := item.([]interface{})
 		if !ok {
 			server.LogWarning(r, "wrong argument type (interests)")
-			server.error(w, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
+			server.error(w, errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
 				"interests field has wrong type"))
 			return
 		}
@@ -253,14 +253,14 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 			interest, ok := item.(string)
 			if !ok {
 				server.LogWarning(r, "wrong argument type (interests item)")
-				server.error(w, errDef.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип",
+				server.error(w, errors.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип",
 					"interests (item) field has wrong type"))
 				return
 			}
 			err = handlers.CheckInterest(interest)
 			if err != nil {
 				server.LogWarning(r, "invalid interest - "+err.Error())
-				server.error(w, errDef.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
+				server.error(w, errors.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
 					"interests (item) field has wrong value"))
 				return
 			}
@@ -270,26 +270,26 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		err = server.Db.AddInterests(unknownInterests)
 		if err != nil {
 			server.LogError(r, "AddInterests returned error - "+err.Error())
-			server.error(w, errDef.DatabaseError.WithArguments(err))
+			server.error(w, errors.DatabaseError.WithArguments(err))
 			return
 		}
 	}
 
 	user, err = server.Db.GetUserByUid(uid)
-	if errDef.RecordNotFound.IsOverlapWithError(err) {
+	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.LogWarning(r, "GetUserByUid - record not found")
-		server.error(w, errDef.UserNotExist)
+		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
 		server.LogError(r, "GetUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
 	user, message, err = fillUserStruct(requestParams, user)
 	if err != nil {
 		server.LogWarning(r, err.Error())
-		server.error(w, err.(errDef.ApiError))
+		server.error(w, err.(errors.ApiError))
 		return
 	}
 
@@ -298,7 +298,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		server.LogError(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errDef.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
