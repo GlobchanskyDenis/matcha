@@ -81,7 +81,6 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 
 	// Если координаты пользователя не пришли в запросе
 	if !isLatSet && !isLonSet {
-		println("\033[33mCalling function 'get user by uid'\033[m")
 		user, err := connDB.GetUserByUid(uid)
 		if err != nil {
 			return nil, errors.NewArg("ошибка соединения с базой данных", "database connecting error").AddOriginalError(err)

@@ -50,7 +50,7 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
-	query := filters.PrepareQuery(sexRestrictions)
+	query := filters.PrepareQuery(sexRestrictions, &server.Logger)
 	// println(query)
 	users, err = server.Db.GetUsersByQuery(query)
 	if err != nil {

@@ -1,6 +1,7 @@
 package searchFilters
 
 import (
+	"MatchaServer/apiServer/logger"
 	"MatchaServer/database"
 	"MatchaServer/errors"
 	"MatchaServer/session"
@@ -108,7 +109,7 @@ func (f *Filters) Print() string {
 	return dst
 }
 
-func (f *Filters) PrepareQuery(sexRestrictions string) string {
+func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) string {
 	var query = "SELECT * FROM users WHERE uid!=" + strconv.Itoa(f.uid)
 
 	if sexRestrictions != "" {
@@ -117,5 +118,6 @@ func (f *Filters) PrepareQuery(sexRestrictions string) string {
 	for _, item := range f.filters {
 		query += " AND " + item.prepareQueryFilter()
 	}
+	logger.LogQuery(query)
 	return query
 }

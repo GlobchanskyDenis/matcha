@@ -13,6 +13,10 @@ type Logger struct {
 	isLoggingEnabled bool
 }
 
+func New() *Logger {
+	return &Logger{}
+}
+
 func (logger *Logger) Init(cfg *config.Config) {
 	logger.isLoggingEnabled = cfg.IsLogEnabled
 }
@@ -22,6 +26,13 @@ func (logger Logger) Log(r *http.Request, message string) {
 		return
 	}
 	log.Printf("%s %7s %20s %s\n", r.RemoteAddr, r.Method, r.URL.Path, message)
+}
+
+func (logger Logger) LogQuery(query string) {
+	if logger.isLoggingEnabled == false {
+		return
+	}
+	log.Printf("Query: %s\n", query)
 }
 
 func (logger Logger) LogSuccess(r *http.Request, message string) {

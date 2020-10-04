@@ -1,6 +1,7 @@
 package searchFilters
 
 import (
+	"MatchaServer/apiServer/logger"
 	"MatchaServer/database/postgres"
 	"MatchaServer/session"
 	// "MatchaServer/database/fakeSql"
@@ -9,6 +10,8 @@ import (
 	"strings"
 	"testing"
 )
+
+var Logger = logger.New()
 
 func TestAge(t *testing.T) {
 	uid := 1
@@ -92,7 +95,7 @@ func TestAge(t *testing.T) {
 			}
 
 			println(f.Print())
-			println(f.PrepareQuery(""))
+			println(f.PrepareQuery("", Logger))
 		})
 	}
 }
@@ -179,7 +182,7 @@ func TestRating(t *testing.T) {
 			}
 
 			println(f.Print())
-			println(f.PrepareQuery(""))
+			println(f.PrepareQuery("", Logger))
 		})
 	}
 }
@@ -250,7 +253,7 @@ func TestInterests(t *testing.T) {
 			}
 
 			println(f.Print())
-			println(f.PrepareQuery(""))
+			println(f.PrepareQuery("", Logger))
 		})
 	}
 }
@@ -361,7 +364,7 @@ func TestLocation(t *testing.T) {
 			}
 
 			println(f.Print())
-			println(f.PrepareQuery(""))
+			println(f.PrepareQuery("", Logger))
 		})
 	}
 }
@@ -456,7 +459,7 @@ func TestRadius(t *testing.T) {
 			}
 
 			println(f.Print())
-			println(f.PrepareQuery(""))
+			println(f.PrepareQuery("", Logger))
 		})
 	}
 }
@@ -533,7 +536,7 @@ func TestOnline(t *testing.T) {
 			}
 
 			println(f.Print())
-			println(f.PrepareQuery(""))
+			println(f.PrepareQuery("", Logger))
 		})
 	}
 }
