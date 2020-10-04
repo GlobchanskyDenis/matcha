@@ -34,7 +34,8 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	token, ok = item.(string)
 	if !ok {
 		server.LogError(r, "x-reg-token has wrong type")
-		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-reg-token имеет неверный тип", "x-reg-token field has wrong type"))
+		server.error(w, errDef.InvalidArgument.WithArguments("Поле x-reg-token имеет неверный тип",
+			"x-reg-token field has wrong type"))
 		return
 	}
 

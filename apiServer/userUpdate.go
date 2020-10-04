@@ -94,7 +94,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		}
 		user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
 		if user.Age > 80 || user.Age < 16 {
-			return user, message, errDef.InvalidArgument.WithArguments("Значение поля birth недопустимо", "birth field has wrong value")
+			return user, message, errDef.InvalidArgument.WithArguments("Значение поля birth недопустимо",
+				"birth field has wrong value")
 		}
 		message += " birth=" + BLUE + birth + NO_COLOR + " age=" + BLUE + strconv.Itoa(user.Age) + NO_COLOR
 	}
@@ -147,10 +148,12 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		user.AvaID = int(tmpFloat)
 		if !ok {
 			return user, message,
-				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип", "avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
+				errDef.InvalidArgument.WithArguments("Поле avaID имеет неверный тип",
+				"avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
 		}
 		if user.AvaID < 0 {
-			return user, message, errDef.InvalidArgument.WithArguments("Значение поля avaID недопустимо", "avaID field has wrong value")
+			return user, message, errDef.InvalidArgument.WithArguments("Значение поля avaID недопустимо",
+				"avaID field has wrong value")
 		}
 		message += " avaID=" + BLUE + strconv.Itoa(user.AvaID) + NO_COLOR
 	}
@@ -189,7 +192,8 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 		for _, item := range interfaceArr {
 			tmpStr, ok := item.(string)
 			if !ok {
-				return user, message, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type")
+				return user, message, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
+					"interests field has wrong type")
 			}
 			err = handlers.CheckInterest(tmpStr)
 			if err != nil {
@@ -241,14 +245,16 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		interfaceArr, ok := item.([]interface{})
 		if !ok {
 			server.LogWarning(r, "wrong argument type (interests)")
-			server.error(w, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип", "interests field has wrong type"))
+			server.error(w, errDef.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
+				"interests field has wrong type"))
 			return
 		}
 		for _, item := range interfaceArr {
 			interest, ok := item.(string)
 			if !ok {
 				server.LogWarning(r, "wrong argument type (interests item)")
-				server.error(w, errDef.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип", "interests (item) field has wrong type"))
+				server.error(w, errDef.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип",
+					"interests (item) field has wrong type"))
 				return
 			}
 			err = handlers.CheckInterest(interest)
