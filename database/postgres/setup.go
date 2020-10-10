@@ -56,11 +56,7 @@ func (Conn ConnDB) TruncateAllTables() error {
 
 func (Conn ConnDB) DropAllTables() error {
 	db := Conn.db
-	_, err := db.Exec("DROP TABLE IF EXISTS users")
-	if err != nil {
-		return err
-	}
-	_, err = db.Exec("DROP TABLE IF EXISTS notifs")
+	_, err := db.Exec("DROP TABLE IF EXISTS notifs")
 	if err != nil {
 		return err
 	}
@@ -77,6 +73,10 @@ func (Conn ConnDB) DropAllTables() error {
 		return err
 	}
 	_, err = db.Exec("DROP TABLE IF EXISTS interests")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS users")
 	if err != nil {
 		return err
 	}
@@ -130,9 +130,8 @@ func (conn ConnDB) CreateEnumTypes() error {
 
 func (conn ConnDB) CreateUsersTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE users (uid SERIAL NOT NULL, " +
-		"mail VARCHAR(" + strconv.Itoa(config.MAIL_MAX_LEN) + ") NOT NULL DEFAULT '', " +
-		"PRIMARY KEY (mail), " +
+	_, err := db.Exec("CREATE TABLE users (uid SERIAL PRIMARY KEY, " +
+		"mail VARCHAR(" + strconv.Itoa(config.MAIL_MAX_LEN) + ") UNIQUE NOT NULL DEFAULT '', " +
 		"encryptedPass VARCHAR(35) NOT NULL, " +
 		"fname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
 		"lname VARCHAR(" + strconv.Itoa(config.NAME_MAX_LEN) + ") NOT NULL DEFAULT '', " +
@@ -146,51 +145,79 @@ func (conn ConnDB) CreateUsersTable() error {
 		"interests VARCHAR(" + strconv.Itoa(config.INTEREST_MAX_LEN) + ")[] DEFAULT '{}'," +
 		"status enum_status NOT NULL DEFAULT 'not confirmed'," +
 		"rating INTEGER NOT NULL DEFAULT 0)")
-	return err
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("CREATE INDEX birth_idx ON users (birth)")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("CREATE INDEX sex_idx ON users (gender, orientation)")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("CREATE INDEX location_idx ON users (latitude, longitude)")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("CREATE INDEX interests_idx ON users (interests)")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("CREATE INDEX rating_idx ON users (rating)")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (conn ConnDB) CreateNotifsTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE notifs (nid SERIAL NOT NULL, " +
-		"PRIMARY KEY (nid), " +
+	_, err := db.Exec("CREATE TABLE notifs (nid SERIAL PRIMARY KEY, " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.NOTIF_MAX_LEN) + ") NOT NULL)")
+		"body VARCHAR(" + strconv.Itoa(config.NOTIF_MAX_LEN) + ") NOT NULL, " +
+		"CONSTRAINT notifSender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
+		"CONSTRAINT notifReceiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }
 
 func (conn ConnDB) CreateMessagesTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE messages (mid SERIAL NOT NULL, " +
-		"PRIMARY KEY (mid), " +
+	_, err := db.Exec("CREATE TABLE messages (mid SERIAL PRIMARY KEY, " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL)")
+		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL, " +
+		"CONSTRAINT message_Sender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
+		"CONSTRAINT message_Receiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }
 
 func (conn ConnDB) CreatePhotosTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE photos (pid SERIAL NOT NULL, " +
-		"PRIMARY KEY (pid), " +
+	_, err := db.Exec("CREATE TABLE photos (pid SERIAL PRIMARY KEY, " +
 		"uid INT NOT NULL, " +
-		"src VARCHAR(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL)") ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!      bytea
+		"src VARCHAR(" + strconv.Itoa(config.PHOTO_MAX_LEN) + ") NOT NULL, " + ///// ЗАМЕНИТЬ В ПОСЛЕДСТВИИ НА НУЖНЫЙ ТИП ДАННЫХ !!!!!!!!!!      bytea
+		"CONSTRAINT photos_fkey FOREIGN KEY (uid) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }
 
 func (conn ConnDB) CreateDevicesTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE devices (id SERIAL NOT NULL, " +
-		"PRIMARY KEY (id), " +
+	_, err := db.Exec("CREATE TABLE devices (id SERIAL PRIMARY KEY, " +
 		"uid INT NOT NULL, " +
-		"device VARCHAR(" + strconv.Itoa(config.DEVICE_MAX_LEN) + ") NOT NULL)")
+		"device VARCHAR(" + strconv.Itoa(config.DEVICE_MAX_LEN) + ") NOT NULL, " +
+		"CONSTRAINT device_fkey FOREIGN KEY (uid) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }
 
 func (conn ConnDB) CreateInterestsTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE interests (id SERIAL NOT NULL, " +
-		"PRIMARY KEY (id), " +
+	_, err := db.Exec("CREATE TABLE interests (id SERIAL PRIMARY KEY, " +
 		"name VARCHAR(" + strconv.Itoa(config.INTEREST_MAX_LEN) + ") NOT NULL)")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("CREATE INDEX interests_table_idx ON interests (name)")
 	return err
 }

@@ -1,29 +1,35 @@
 package postgres
 
 import (
-	"MatchaServer/common"
+	. "MatchaServer/common"
 	"MatchaServer/config"
 	"testing"
 )
 
-var connDev ConnDB
+var (
+	connDev ConnDB
+	deviceUser1 User
+	deviceUser2 User
+	deviceUser3 User
+)
 
-func TestInitTables(t *testing.T) {
-	print(common.NO_COLOR)
-	defer print(common.YELLOW)
-
-	var connDev = New()
+func TestConnect_DeviceTest(t *testing.T) {
 	conf, err := config.Create("../../config/")
 	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: Cannot get config file - " + err.Error() + common.NO_COLOR)
+		t.Errorf(RED_BG + "ERROR: Cannot get config file - " + err.Error() + NO_COLOR)
 		return
 	}
 	err = connDev.Connect(&conf.Sql)
 	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: Cannot connect to database - " + err.Error() + common.NO_COLOR)
+		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR)
 		return
 	}
-	defer connDev.Close()
+	t.Log(GREEN_BG + "SUCCESS: connection with database" + NO_COLOR)
+}
+
+func TestInitTables(t *testing.T) {
+	print(NO_COLOR)
+	defer print(YELLOW)
 
 	TestCases := []struct {
 		name     string
@@ -54,30 +60,36 @@ func TestInitTables(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			err := tc.function()
 			if err != nil {
-				t_.Errorf(common.RED_BG + "ERROR: " + err.Error() + common.NO_COLOR)
+				t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
 				return
 			}
-			t_.Log(common.GREEN_BG + "SUCCESS" + common.NO_COLOR)
+			t_.Log(GREEN_BG + "SUCCESS" + NO_COLOR)
 		})
 	}
 }
 
-func TestDevice(t *testing.T) {
-	print(common.NO_COLOR)
-	defer print(common.YELLOW)
+func TestCreateUsers_DeviceTest(t *testing.T) {
+	var err error
+	deviceUser1, err = connDev.SetNewUser("deviceUser1@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
+	deviceUser2, err = connDev.SetNewUser("deviceUser2@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
+	deviceUser3, err = connDev.SetNewUser("deviceUser3@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
+}
 
-	var connDev = New()
-	conf, err := config.Create("../../config/")
-	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: Cannot get config file - " + err.Error() + common.NO_COLOR)
-		return
-	}
-	err = connDev.Connect(&conf.Sql)
-	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: Cannot connect to database - " + err.Error() + common.NO_COLOR)
-		return
-	}
-	defer connDev.Close()
+func TestDevice(t *testing.T) {
+	print(NO_COLOR)
+	defer print(YELLOW)
 
 	setTestCases := []struct {
 		name   string
@@ -86,19 +98,19 @@ func TestDevice(t *testing.T) {
 	}{
 		{
 			name:   "set device #1",
-			uid:    1,
+			uid:    deviceUser1.Uid,
 			device: "device_1",
 		}, {
 			name:   "set device #2",
-			uid:    1,
+			uid:    deviceUser1.Uid,
 			device: "device_2",
 		}, {
 			name:   "set device #3",
-			uid:    1,
+			uid:    deviceUser1.Uid,
 			device: "device_3",
 		}, {
 			name:   "set device #4",
-			uid:    2,
+			uid:    deviceUser2.Uid,
 			device: "device_4",
 		},
 	}
@@ -107,10 +119,10 @@ func TestDevice(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			err := connDev.SetNewDevice(tc.uid, tc.device)
 			if err != nil {
-				t_.Errorf(common.RED_BG + "ERROR: " + err.Error() + common.NO_COLOR)
+				t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
 				return
 			}
-			t_.Log(common.GREEN_BG + "SUCCESS: device was added to database" + common.NO_COLOR)
+			t_.Log(GREEN_BG + "SUCCESS: device was added to database" + NO_COLOR)
 		})
 	}
 
@@ -121,19 +133,19 @@ func TestDevice(t *testing.T) {
 	}{
 		{
 			name:      "get device with uid=1 and delete them",
-			uid:       1,
+			uid:       deviceUser1.Uid,
 			devAmount: 3,
 		}, {
 			name:      "get device with uid=2 and delete them",
-			uid:       2,
+			uid:       deviceUser2.Uid,
 			devAmount: 1,
 		}, {
 			name:      "get device with uid=3 - it should be no devices",
-			uid:       3,
+			uid:       deviceUser3.Uid,
 			devAmount: 0,
 		}, {
 			name:      "get device with uid=1 - it should be no devices",
-			uid:       1,
+			uid:       deviceUser1.Uid,
 			devAmount: 0,
 		},
 	}
@@ -142,21 +154,21 @@ func TestDevice(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			devices, err := connDev.GetDevicesByUid(tc.uid)
 			if err != nil {
-				t_.Errorf(common.RED_BG + "ERROR: " + err.Error() + common.NO_COLOR)
+				t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
 				return
 			}
 			if len(devices) != tc.devAmount {
-				t_.Errorf(common.RED_BG+"ERROR: amount of devices is invalid. Expected %d, received %d"+common.NO_COLOR+"\n", tc.devAmount, len(devices))
+				t_.Errorf(RED_BG+"ERROR: amount of devices is invalid. Expected %d, received %d"+NO_COLOR+"\n", tc.devAmount, len(devices))
 				return
 			}
-			t_.Log(common.GREEN_BG + "SUCCESS: devices was received from database" + common.NO_COLOR)
+			t_.Log(GREEN_BG + "SUCCESS: devices was received from database" + NO_COLOR)
 			for _, device := range devices {
 				err = connDev.DeleteDevice(device.Id)
 				if err != nil {
-					t_.Errorf(common.RED_BG + "ERROR: " + err.Error() + common.NO_COLOR)
+					t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
 					return
 				}
-				t_.Logf(common.GREEN_BG+"SUCCESS: device with id #%d was removed from database"+common.NO_COLOR+"\n", device.Id)
+				t_.Logf(GREEN_BG+"SUCCESS: device with id #%d was removed from database"+NO_COLOR+"\n", device.Id)
 			}
 		})
 	}

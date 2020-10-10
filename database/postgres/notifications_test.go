@@ -7,7 +7,13 @@ import (
 	"testing"
 )
 
-var connNotif ConnDB
+var (
+	connNotif ConnDB
+	notifUser1 User
+	notifUser2 User
+	notifUser3 User
+	notifUser4 User
+)
 
 func TestConnect_NotifTest(t *testing.T) {
 	conf, err := config.Create("../../config/")
@@ -33,34 +39,58 @@ func TestDropTables_NotifTest(t *testing.T) {
 }
 
 func TestCreateTables_NotifTest(t *testing.T) {
-	err := connNotif.CreateUsersTable()
+	err := connMes.CreateUsersTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR)
 		return
 	}
-	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR)
-	err = connNotif.CreateMessagesTable()
+	t.Log(GREEN_BG + "SUCCESS: users table was created" + NO_COLOR)
+	err = connMes.CreateMessagesTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR)
 		return
 	}
-	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR)
-	err = connNotif.CreateNotifsTable()
+	t.Log(GREEN_BG + "SUCCESS: messages table was created" + NO_COLOR)
+	err = connMes.CreateNotifsTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR)
 		return
 	}
-	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR)
-	err = connNotif.CreatePhotosTable()
+	t.Log(GREEN_BG + "SUCCESS: notifs table was created" + NO_COLOR)
+	err = connMes.CreatePhotosTable()
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: Cannot connect to database - " + err.Error() + NO_COLOR)
 		return
 	}
-	t.Log(GREEN_BG + "SUCCESS: all tables was droped" + NO_COLOR)
+	t.Log(GREEN_BG + "SUCCESS: photos table was created" + NO_COLOR)
+}
+
+func TestCreateUsers_NotifTest(t *testing.T) {
+	var err error
+	notifUser1, err = connNotif.SetNewUser("notifUser1@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
+	notifUser2, err = connNotif.SetNewUser("notifUser2@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
+	notifUser3, err = connNotif.SetNewUser("notifUser3@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
+	notifUser4, err = connNotif.SetNewUser("notifUser4@gmail.com", "qwerty")
+	if err != nil {
+		t.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+		return
+	}
 }
 
 func TestSetNotif_1(t *testing.T) {
-	_, err := connNotif.SetNewNotif(1, 4, "test notification. User #1")
+	_, err := connNotif.SetNewNotif(notifUser1.Uid, notifUser4.Uid, "test notification. User #1")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -69,7 +99,7 @@ func TestSetNotif_1(t *testing.T) {
 }
 
 func TestSetNotif_2(t *testing.T) {
-	_, err := connNotif.SetNewNotif(1, 4, "test notification. User #1")
+	_, err := connNotif.SetNewNotif(notifUser1.Uid, notifUser4.Uid, "test notification. User #1")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -78,7 +108,7 @@ func TestSetNotif_2(t *testing.T) {
 }
 
 func TestSetNotif_3(t *testing.T) {
-	_, err := connNotif.SetNewNotif(2, 4, "test notification. User #2")
+	_, err := connNotif.SetNewNotif(notifUser2.Uid, notifUser4.Uid, "test notification. User #2")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -87,7 +117,7 @@ func TestSetNotif_3(t *testing.T) {
 }
 
 func TestSetNotif_4(t *testing.T) {
-	_, err := connNotif.SetNewNotif(3, 4, "test notification. User #3")
+	_, err := connNotif.SetNewNotif(notifUser3.Uid, notifUser4.Uid, "test notification. User #3")
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -96,7 +126,7 @@ func TestSetNotif_4(t *testing.T) {
 }
 
 func TestGetNotif_1(t *testing.T) {
-	notifs, err := connNotif.GetNotifByUidReceiver(1)
+	notifs, err := connNotif.GetNotifByUidReceiver(notifUser1.Uid)
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -117,7 +147,7 @@ func TestGetNotif_1(t *testing.T) {
 }
 
 func TestGetNotif_2(t *testing.T) {
-	notifs, err := connNotif.GetNotifByUidReceiver(2)
+	notifs, err := connNotif.GetNotifByUidReceiver(notifUser2.Uid)
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -138,7 +168,7 @@ func TestGetNotif_2(t *testing.T) {
 }
 
 func TestGetNotif_3(t *testing.T) {
-	notifs, err := connNotif.GetNotifByUidReceiver(3)
+	notifs, err := connNotif.GetNotifByUidReceiver(notifUser3.Uid)
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
@@ -159,7 +189,7 @@ func TestGetNotif_3(t *testing.T) {
 }
 
 func TestGetNotif_4(t *testing.T) {
-	notifs, err := connNotif.GetNotifByUidReceiver(4)
+	notifs, err := connNotif.GetNotifByUidReceiver(notifUser4.Uid)
 	if err != nil {
 		t.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)
 		return
