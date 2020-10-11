@@ -3,6 +3,7 @@ package apiServer
 import (
 	. "MatchaServer/common"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -14,18 +15,23 @@ func TestUserCreate(t *testing.T) {
 	print(NO_COLOR)
 	defer print(YELLOW)
 
-	/////////// INITIALIZE ///////////
+	var server *Server
 
-	server, err := New("../config/")
-	if err != nil {
-		t.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR + "\n")
-		return
-	}
-	testUser := server.TestTestUserCreate(t, mail, pass)
-	defer server.Db.DeleteUser(testUser.Uid)
+	/*
+	**	Initialize server
+	 */
+	t.Run("Initialize", func(t_ *testing.T) {
+		var err error
+		server, err = New("../config/")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+	})
 
-	/////////// TESTING ///////////
-
+	/*
+	**	Test cases. Main part of testing
+	 */
 	testCases := []struct {
 		name           string
 		payload        map[string]interface{}
@@ -47,12 +53,12 @@ func TestUserCreate(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "same user already exists",
+			name: "valid",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": pass,
 			},
-			expectedStatus: http.StatusNotAcceptable,
+			expectedStatus: http.StatusCreated,
 		}, {
 			name: "password not exists",
 			payload: map[string]interface{}{
@@ -101,10 +107,58 @@ func TestUserCreate(t *testing.T) {
 			server.UserCreate(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
-			} else if tc.expectedStatus != http.StatusOK {
+			} else if tc.expectedStatus != http.StatusCreated {
 				t_.Logf(GREEN_BG + "SUCCESS: user create was failed as it expected" + NO_COLOR + "\n")
 			} else {
 				t_.Logf(GREEN_BG + "SUCCESS: user was created" + NO_COLOR + "\n")
+			}
+			/*
+			**	Delete user if it was created
+			 */
+			if tc.expectedStatus == http.StatusCreated {
+				/*
+				**	Handle response
+				 */
+				var response map[string]interface{}
+				err := json.NewDecoder(rec.Body).Decode(&response)
+				if err != nil {
+					t_.Errorf(RED_BG+"ERROR: decoding response body error: %s, response body %s. Cannot delete user"+NO_COLOR, err.Error(), rec.Body)
+					return
+				}
+				item, isExist := response["uid"]
+				if !isExist {
+					t_.Errorf(RED_BG + "ERROR: uid not found in response" + NO_COLOR)
+					return
+				}
+				uid64, ok := item.(float64)
+				if !ok {
+					t_.Errorf(RED_BG + "ERROR: uid have wrong type" + NO_COLOR)
+					return
+				}
+				uid := int(uid64)
+				/*
+				**	Delete devices of test user
+				 */
+				devices, err := server.Db.GetDevicesByUid(uid)
+				if err != nil {
+					t_.Errorf(RED_BG + "Error: cannot get devices of user that i trying to delete - " + err.Error() + NO_COLOR)
+					return
+				}
+				for _, device := range devices {
+					err = server.Db.DeleteDevice(device.Id)
+					if err != nil {
+						t_.Errorf(RED_BG + "Error: cannot delete device of user - " + err.Error() + NO_COLOR)
+						return
+					}
+				}
+				/*
+				**	Delete user
+				 */
+				err = server.Db.DeleteUser(uid)
+				if err != nil {
+					t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
+					return
+				}
 			}
 		})
 	}

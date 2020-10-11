@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"MatchaServer/handlers"
+	// "MatchaServer/handlers"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -15,24 +15,36 @@ func TestUserDelete(t *testing.T) {
 	print(NO_COLOR)
 	defer print(YELLOW)
 
-	/////////// INITIALIZE ///////////
+	var (
+		server *Server
+		user   User
+	)
 
-	server, err := New("../config/")
-	if err != nil {
-		t.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR + "\n")
-		return
-	}
-	testUser := server.TestTestUserCreate(t, mail, pass)
-	defer server.Db.DeleteUser(testUser.Uid)
-	token := server.TestTestUserAuthorize(t, testUser)
-	uid, err := handlers.TokenUidDecode(token)
-	if err != nil {
-		t.Errorf(RED_BG + "Cannot start test - token error: " + err.Error() + NO_COLOR + "\n")
-		return
-	}
+	/*
+	**	Initialize server and test user
+	 */
+	t.Run("Initialize", func(t_ *testing.T) {
+		var err error
+		server, err = New("../config/")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user, err = server.CreateTestUser(mail, pass)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		err = server.AuthorizeTestUser(user)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot authorize test user - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+	})
 
-	/////////// TESTING ///////////
-
+	/*
+	**	Test cases. Main part of testing
+	 */
 	testCases := []struct {
 		name           string
 		payload        map[string]interface{}
@@ -84,16 +96,43 @@ func TestUserDelete(t *testing.T) {
 
 			// put info from middlewares into context
 			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)
-			ctx = context.WithValue(ctx, "uid", uid)
+			ctx = context.WithValue(ctx, "uid", user.Uid)
 
 			// start test
 			server.UserDelete(rec, req.WithContext(ctx))
 			if rec.Code != tc.expectedStatus {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR+"\n", rec.Code, tc.expectedStatus)
-			} else if rec.Code != http.StatusOK {
-				t_.Logf(GREEN_BG + "SUCCESS: user removing was failed as it expected" + NO_COLOR + "\n")
-			} else {
-				t_.Logf(GREEN_BG + "SUCCESS: user was removed" + NO_COLOR + "\n")
+
+				/*
+				**	Delete test user. In case of test case that should be valid is failed
+				 */
+				if tc.expectedStatus == http.StatusOK {
+					t_.Run("delete test user after fail", func(t_ *testing.T) {
+						//	Delete devices of test user
+						devices, err := server.Db.GetDevicesByUid(user.Uid)
+						if err != nil {
+							t_.Errorf(RED_BG + "Error: cannot get devices of user that i trying to delete - " + err.Error() + NO_COLOR)
+							return
+						}
+						for _, device := range devices {
+							err = server.Db.DeleteDevice(device.Id)
+							if err != nil {
+								t_.Errorf(RED_BG + "Error: cannot delete device of user - " + err.Error() + NO_COLOR)
+								return
+							}
+						}
+						//	Delete user
+						err = server.Db.DeleteUser(user.Uid)
+						if err != nil {
+							t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
+							return
+						}
+					})
+				} else if rec.Code != http.StatusOK {
+					t_.Logf(GREEN_BG + "SUCCESS: user removing was failed as it expected" + NO_COLOR + "\n")
+				} else {
+					t_.Logf(GREEN_BG + "SUCCESS: user was removed" + NO_COLOR + "\n")
+				}
 			}
 		})
 	}

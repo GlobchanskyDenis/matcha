@@ -7,6 +7,7 @@ import (
 	"MatchaServer/handlers"
 	"context"
 	"net/http"
+	"strconv"
 )
 
 // HTTP HANDLER FOR DOMAIN /user/create/
@@ -109,7 +110,8 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(201)
-	server.Logger.LogSuccess(r, "user "+BLUE+mail+NO_COLOR+" was created successfully. No response body")
+	w.Write([]byte(`{"uid":` + strconv.Itoa(user.Uid) + `}`))
+	server.Logger.LogSuccess(r, "user "+BLUE+mail+NO_COLOR+" was created successfully. Uid #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR)
 
 	go func(mail string, xRegToken string, r *http.Request, mailConf *config.Mail) {
 		err := handlers.SendMail(mail, xRegToken, mailConf)

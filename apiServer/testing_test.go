@@ -5,10 +5,12 @@ import (
 	"MatchaServer/handlers"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
-	"testing"
+	// "testing"
 )
 
 var (
@@ -47,28 +49,28 @@ var (
 	interests3Fail []string = nil
 )
 
-func (server *Server) TestTestUserCreate(t *testing.T, mail string, pass string) common.User {
-	t.Helper()
-
+/*
+**	Function that used only in unit testing
+ */
+func (server *Server) CreateTestUser(mail string, pass string) (common.User, error) {
 	user, err := server.Db.SetNewUser(mail, handlers.PassHash(pass))
 	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: Cannot create test user - " + err.Error() + common.NO_COLOR + "\n")
-		return user
+		return user, err
 	}
 	user.Pass = pass
 	user.EncryptedPass = handlers.PassHash(pass)
 	user.Status = "confirmed"
 	err = server.Db.UpdateUser(user)
 	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: Cannot update test user - " + err.Error() + common.NO_COLOR + "\n")
-		return user
+		return user, err
 	}
-	return user
+	return user, nil
 }
 
-func (server *Server) TestTestUserAuthorize(t *testing.T, user common.User) string {
-	t.Helper()
-
+/*
+**	Function that used only in unit testing
+ */
+func (server *Server) AuthorizeTestUser(user common.User) error {
 	var (
 		requestParams map[string]interface{}
 		err           error
@@ -81,30 +83,25 @@ func (server *Server) TestTestUserAuthorize(t *testing.T, user common.User) stri
 
 	err = json.NewDecoder(req.Body).Decode(&requestParams)
 	if err != nil {
-		t.Errorf(common.RED_BG + "Cannot start test because of error: " + err.Error() + common.NO_COLOR + "\n")
-		return ""
+		return errors.New("Cannot start test because of error: " + err.Error())
 	}
 	ctx = context.WithValue(req.Context(), "requestParams", requestParams)
 	server.UserAuth(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
-		t.Errorf(common.RED_BG+"ERROR: wrong response status in user authentication. Expected %d got %d"+common.NO_COLOR+"\n", http.StatusOK, rec.Code)
-		t.Fatal()
+		return errors.New("User auth - wrong response status. Expected 200 got " + strconv.Itoa(rec.Code))
 	}
 	var response map[string]interface{}
 	err = json.NewDecoder(rec.Body).Decode(&response)
 	if err != nil {
-		t.Errorf(common.RED_BG + "ERROR: json decode error while user authentication - " + err.Error() + common.NO_COLOR + "\n")
-		t.Fatal()
+		return errors.New("json decode error - " + err.Error())
 	}
 	item, isExist := response["x-auth-token"]
 	if !isExist {
-		t.Errorf(common.RED_BG + "ERROR: x-auth-token not exists in response of user authentication" + common.NO_COLOR + "\n")
-		t.Fatal()
+		return errors.New("x-auth-token not exist in response of test user auth")
 	}
 	_, ok := item.(string)
 	if !ok {
-		t.Errorf(common.RED_BG + "ERROR: x-auth-token have wrong type" + common.NO_COLOR + "\n")
-		t.Fatal()
+		return errors.New("x-auth-token have wrong type")
 	}
-	return item.(string)
+	return nil
 }

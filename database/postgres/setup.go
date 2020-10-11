@@ -187,9 +187,7 @@ func (conn ConnDB) CreateMessagesTable() error {
 	_, err := db.Exec("CREATE TABLE messages (mid SERIAL PRIMARY KEY, " +
 		"uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL, " +
-		"CONSTRAINT message_Sender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
-		"CONSTRAINT message_Receiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
+		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL)")
 	return err
 }
 

@@ -20,13 +20,13 @@ func (conn ConnDB) SetNewMessage(uidSender int, uidReceiver int, body string) (i
 	return mid, nil
 }
 
-func (conn ConnDB) DeleteMessage(nid int) error {
+func (conn ConnDB) DeleteMessage(mid int) error {
 	stmt, err := conn.db.Prepare("DELETE FROM messages WHERE mid=$1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	result, err := stmt.Exec(nid)
+	result, err := stmt.Exec(mid)
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}

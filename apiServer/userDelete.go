@@ -54,7 +54,53 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	server.Session.DeleteUserSessionByUid(user.Uid)
+	//	Delete devices of user before user
+	devices, err := server.Db.GetDevicesByUid(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "GetDevicesByUid returned error - "+err.Error())
+		server.error(w, errors.DatabaseError.WithArguments(err))
+		return
+	}
+	for _, device := range devices {
+		err = server.Db.DeleteDevice(device.Id)
+		if err != nil {
+			server.Logger.LogError(r, "Cannot delete user device - "+err.Error())
+			server.error(w, errors.DatabaseError.WithArguments(err))
+			return
+		}
+	}
+
+	//	Delete notifs of user before user
+	notifs, err := server.Db.GetNotifByUidReceiver(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "GetNotifByUidReceiver returned error - "+err.Error())
+		server.error(w, errors.DatabaseError.WithArguments(err))
+		return
+	}
+	for _, notif := range notifs {
+		err = server.Db.DeleteNotif(notif.Nid)
+		if err != nil {
+			server.Logger.LogError(r, "Cannot delete user notifications - "+err.Error())
+			server.error(w, errors.DatabaseError.WithArguments(err))
+			return
+		}
+	}
+
+	//	Delete photos of user before user
+	photos, err := server.Db.GetPhotosByUid(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "GetPhotosByUid returned error - "+err.Error())
+		server.error(w, errors.DatabaseError.WithArguments(err))
+		return
+	}
+	for _, photo := range photos {
+		err = server.Db.DeleteNotif(photo.Pid)
+		if err != nil {
+			server.Logger.LogError(r, "Cannot delete user photos - "+err.Error())
+			server.error(w, errors.DatabaseError.WithArguments(err))
+			return
+		}
+	}
 
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
@@ -62,6 +108,8 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
+
+	server.Session.DeleteUserSessionByUid(user.Uid)
 
 	w.WriteHeader(http.StatusOK) // 200
 	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+

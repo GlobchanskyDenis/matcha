@@ -20,9 +20,11 @@
 
 	req.Header.Add(tc.requestHeaderName, tc.requestHeaderValue)
 
-/////////////////////////////////////////////////////////////
-// Старая функция, которая уже не нужна в проекте
-// Сохраняю чтобы не забыть как делать SELECT из известного списка uid
+/////////////////////////////////////////////////////////////////////////
+/*
+**	Старая функция, которая уже не нужна в проекте
+**	Сохраняю чтобы не забыть как делать SELECT из известного списка uid
+*/
 
 func (conn *ConnDB) GetLoggedUsers(uid []int) ([]common.User, error) {
 	var users = []common.User{}
@@ -79,3 +81,50 @@ func (conn *ConnDB) GetLoggedUsers(uid []int) ([]common.User, error) {
 	return users, nil
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+
+/*
+**	Сохранить эту тестировочную функцию. Тут я использую указатель на функцию
+**	Использовать такую штуку скорее всего буду редко. Поэтому чтобы не забыть - сохраняю
+*/
+
+func TestInitTables(t *testing.T) {
+	print(NO_COLOR)
+	defer print(YELLOW)
+
+	TestCases := []struct {
+		name     string
+		function func() error
+	}{
+		{
+			name:     "Drop all tables",
+			function: connDev.DropAllTables,
+		}, {
+			name:     "Create users table",
+			function: connDev.CreateUsersTable,
+		}, {
+			name:     "Create messages table",
+			function: connDev.CreateMessagesTable,
+		}, {
+			name:     "Create notifications table",
+			function: connDev.CreateNotifsTable,
+		}, {
+			name:     "Create photos table",
+			function: connDev.CreatePhotosTable,
+		}, {
+			name:     "Create devices table",
+			function: connDev.CreateDevicesTable,
+		},
+	}
+
+	for _, tc := range TestCases {
+		t.Run(tc.name, func(t_ *testing.T) {
+			err := tc.function()
+			if err != nil {
+				t_.Errorf(RED_BG + "ERROR: " + err.Error() + NO_COLOR)
+				return
+			}
+			t_.Log(GREEN_BG + "SUCCESS" + NO_COLOR)
+		})
+	}
+}
