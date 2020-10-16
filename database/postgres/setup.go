@@ -76,6 +76,11 @@ func (Conn ConnDB) DropAllTables() error {
 	if err != nil {
 		return err
 	}
+	_, err = db.Exec("DROP TABLE IF EXISTS likes")
+	if err != nil {
+		return err
+	}
+
 	_, err = db.Exec("DROP TABLE IF EXISTS users")
 	if err != nil {
 		return err
@@ -217,5 +222,15 @@ func (conn ConnDB) CreateInterestsTable() error {
 		return err
 	}
 	_, err = db.Exec("CREATE INDEX interests_table_idx ON interests (name)")
+	return err
+}
+
+func (conn ConnDB) CreateLikesTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE likes (uidSender INT NOT NULL, " +
+		"uidReceiver INT NOT NULL, " +
+		"PRIMARY KEY (uidSender, uidReceiver), " +
+		"CONSTRAINT likeSender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
+		"CONSTRAINT likeReceiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }

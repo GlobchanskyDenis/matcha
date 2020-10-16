@@ -12,6 +12,10 @@ type ConnFake struct {
 	notif     map[int]common.Notif
 	photos    map[int]common.Photo
 	interests map[int]common.Interest
+	likes	  map[int]struct{
+		uidSender int
+		uidReceiver int
+	}
 }
 
 func New() *ConnFake {
@@ -25,6 +29,10 @@ func (conn *ConnFake) Connect(conf *config.Sql) error {
 	conn.notif = map[int]common.Notif{}
 	conn.photos = map[int]common.Photo{}
 	conn.interests = map[int]common.Interest{}
+	conn.likes = map[int]struct{
+		uidSender int
+		uidReceiver int
+	}{}
 	return nil
 }
 
@@ -46,6 +54,9 @@ func (conn ConnFake) TruncateAllTables() error {
 	}
 	for key, _ := range conn.interests {
 		delete(conn.interests, key)
+	}
+	for key, _ := range conn.likes {
+		delete(conn.likes, key)
 	}
 	return nil
 }
@@ -104,5 +115,13 @@ func (conn *ConnFake) CreateDevicesTable() error {
 
 func (conn *ConnFake) CreateInterestsTable() error {
 	conn.interests = map[int]common.Interest{}
+	return nil
+}
+
+func (conn *ConnFake) CreateLikesTable() error {
+	conn.likes = map[int]struct{
+		uidSender int
+		uidReceiver int
+	}{}
 	return nil
 }

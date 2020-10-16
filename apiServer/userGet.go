@@ -5,6 +5,7 @@ import (
 	"MatchaServer/errors"
 	"context"
 	"encoding/json"
+	"strconv"
 	"net/http"
 )
 
@@ -43,5 +44,5 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	// This is my valid case
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonUser)
-	server.Logger.LogSuccess(r, "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
+	server.Logger.LogSuccess(r, "User #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+" was found and transmitted successfully")
 }

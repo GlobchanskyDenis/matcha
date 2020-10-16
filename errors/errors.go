@@ -133,16 +133,16 @@ var (
 	DatabaseError = new(5000, http.StatusInternalServerError, // 500
 		"База данных вернула ошибку",
 		"Database returned error")
-	WebSocketError = new(5001, http.StatusInternalServerError, // 500
+	WebSocketError = new(5002, http.StatusInternalServerError, // 500
 		"Произошла ошибка веб сокета",
 		"Websocket error")
-	MarshalError = new(5002, http.StatusInternalServerError, // 500
+	MarshalError = new(5003, http.StatusInternalServerError, // 500
 		"Произошла ошибка при упаковке данных",
 		"An error occurred while packing data")
-	UnmarshalError = new(5003, http.StatusInternalServerError, // 500
+	UnmarshalError = new(5004, http.StatusInternalServerError, // 500
 		"Произошла ошибка при распаковке данных",
 		"An error occurred while unpacking data")
-	UnknownInternalError = new(5004, http.StatusInternalServerError, // 500
+	UnknownInternalError = new(5005, http.StatusInternalServerError, // 500
 		"Произошла неизвестная ошибка",
 		"An unknown error occurred")
 
@@ -155,4 +155,6 @@ var (
 		"error during executing query")
 	DatabaseScanError = NewArg("ошибка во время парсинга параметров",
 		"error during scaning")
+	DatabaseTransactionError = NewArg("Ошибка обработки сложного запроса",
+		"error during handling")
 )

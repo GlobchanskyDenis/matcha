@@ -19,6 +19,7 @@ type Storage interface {
 	CreatePhotosTable() error
 	CreateDevicesTable() error
 	CreateInterestsTable() error
+	CreateLikesTable() error
 
 	// user
 	SetNewUser(mail string, passwd string) (common.User, error)
