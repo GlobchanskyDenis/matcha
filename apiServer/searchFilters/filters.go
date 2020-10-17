@@ -110,7 +110,7 @@ func (f *Filters) Print() string {
 }
 
 func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) string {
-	var query = "SELECT * FROM users WHERE uid!=" + strconv.Itoa(f.uid)
+	var query = "SELECT * FROM users LEFT JOIN (SELECT uidReceiver FROM likes WHERE uidSender=1) AS tmp ON users.uid = tmp.uidReceiver WHERE uid!=" + strconv.Itoa(f.uid)
 
 	if sexRestrictions != "" {
 		query += " AND " + sexRestrictions

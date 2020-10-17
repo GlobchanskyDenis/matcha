@@ -49,7 +49,7 @@ func (conn *ConnFake) GetUserByMail(mail string) (common.User, error) {
 	return common.User{}, errors.RecordNotFound
 }
 
-func (conn *ConnFake) GetUsersByQuery(query string) ([]common.User, error) {
+func (conn *ConnFake) GetUsersByQuery(query string) ([]common.SearchUser, error) {
 	return nil, nil
 }
 

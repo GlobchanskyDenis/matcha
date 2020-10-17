@@ -22,7 +22,7 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 		uid             int
 		err             error
 		user            User
-		users           []User
+		searchUsers     []SearchUser
 		sexRestrictions string
 	)
 
@@ -52,14 +52,14 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
 	query := filters.PrepareQuery(sexRestrictions, &server.Logger)
 	// println(query)
-	users, err = server.Db.GetUsersByQuery(query)
+	searchUsers, err = server.Db.GetUsersByQuery(query)
 	if err != nil {
 		server.Logger.LogError(r, "GetUsersByQuery returned error "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
 
-	jsonUsers, err := json.Marshal(users)
+	jsonUsers, err := json.Marshal(searchUsers)
 	if err != nil {
 		server.Logger.LogError(r, "Marshal returned error"+err.Error())
 		server.error(w, errors.MarshalError)
@@ -67,5 +67,5 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonUsers)
-	server.Logger.LogSuccess(r, "array of users was transmitted. Users amount "+strconv.Itoa(len(users)))
+	server.Logger.LogSuccess(r, "array of users was transmitted. Users amount "+strconv.Itoa(len(searchUsers)))
 }

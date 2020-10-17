@@ -26,6 +26,11 @@ type User struct {
 	Rating        int        `json:"rating"`
 }
 
+type SearchUser struct {
+	User
+	IsLiked bool `json:"isLiked"`
+}
+
 type Notif struct {
 	Nid         int    `json:"nid"`
 	UidSender   int    `json:"uidSender"`

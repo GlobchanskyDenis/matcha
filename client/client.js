@@ -178,7 +178,7 @@
 
 			socket.onopen = function () {
 				console.log("web socket successfully connected")
-				sendMessage()
+				sendMessage(1, "test message")
 			}
 
 			socket.onclose = function (event) {
@@ -193,10 +193,14 @@
 				console.log("rx: ", message.data)
 			}
 
-			function sendMessage() {
-				message = `{"type":"message","uidReceiver":1,"body":"test message"}`
-				console.log("tx: " + message)
-				socket.send(message)
+			function sendMessage(receiver, body) {
+				var message = new Object();
+				message.type = "message";
+				message.uidReceiver = receiver;
+				message.body = body;
+				jsonMessage = JSON.stringify(message)
+				console.log("tx: " + jsonMessage)
+				socket.send(jsonMessage)
 			}
 
 			// setInterval(sendMessage, 7000)

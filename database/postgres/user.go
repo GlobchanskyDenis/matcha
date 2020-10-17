@@ -178,12 +178,13 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	return user, nil
 }
 
-func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
+func (conn *ConnDB) GetUsersByQuery(query string) ([]common.SearchUser, error) {
 	var (
-		user      common.User
-		users     []common.User
+		user      common.SearchUser
+		users     []common.SearchUser
 		interests string
 		birth     interface{}
+		intPtr	  *int
 		date      time.Time
 		ok        bool
 	)
@@ -195,7 +196,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
 			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
 			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating))
+			&(user.Status), &(user.Rating), &(intPtr))
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -217,6 +218,12 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.User, error) {
 			}
 		} else {
 			user.Birth.Time = nil
+		}
+		// handle flag that user was liked by user who searches
+		if intPtr == nil {
+			user.IsLiked = false
+		} else {
+			user.IsLiked = true
 		}
 		users = append(users, user)
 	}
