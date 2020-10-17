@@ -39,7 +39,7 @@ type Notif struct {
 }
 
 type Message struct {
-	Mid         int    `json:"nid"`
+	Mid         int    `json:"mid"`
 	UidSender   int    `json:"uidSender"`
 	UidReceiver int    `json:"uidReceiver"`
 	Body        string `json:"body"`

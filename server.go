@@ -31,6 +31,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
 	mux.Handle("/search/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.Search))))
+	mux.Handle("/message/get", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageGet))))
 
 	// PATCH
 	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(
