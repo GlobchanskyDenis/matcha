@@ -27,6 +27,9 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 	defer stmt.Close()
 	result, err := stmt.Exec(uidSender, uidReceiver)
 	if err != nil {
+		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "likes_pkey"`) {
+			return errors.ImpossibleToExecute
+		}
 		return errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	// handle results
@@ -35,7 +38,7 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.RecordNotFound
+		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Добавлено " + strconv.Itoa(int(nbr64)) + " лайков",
@@ -58,7 +61,7 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.RecordNotFound
+		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Уменьшено " + strconv.Itoa(int(nbr64)) + " рейтинга",
@@ -102,7 +105,7 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.RecordNotFound
+		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Удалено " + strconv.Itoa(int(nbr64)) + " лайков",
@@ -125,7 +128,7 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.RecordNotFound
+		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Убрано " + strconv.Itoa(int(nbr64)) + " рейтинга",

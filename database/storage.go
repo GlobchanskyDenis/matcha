@@ -56,4 +56,10 @@ type Storage interface {
 	DeletePhoto(pid int) error
 	GetPhotosByUid(uid int) ([]common.Photo, error)
 	GetPhotoByPid(pid int) (common.Photo, error)
+
+	// likes
+	SetNewLike(uidSender int, uidReceiver int) error
+	UnsetLike(uidSender int, uidReceiver int) error
+	GetUsersThatICanSpeak(myUid int) ([]common.User, error)
+	IsICanSpeakWithUser(myUid, otherUid int) (bool, error)
 }

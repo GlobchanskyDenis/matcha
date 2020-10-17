@@ -100,6 +100,9 @@ var (
 	RecordNotFound = new(1000, http.StatusUnprocessableEntity, // 422
 		"Такой записи не существует в базе данных",
 		"Record not found in database")
+	ImpossibleToExecute = new(1001, http.StatusNotAcceptable, // 406
+		"Невозможно выполнить команду - не выполнены ключевые условия",
+		"Imposible to execute command")
 
 	// User errors (Code 2000 - 2999)
 	UserNotLogged = new(2000, http.StatusUnauthorized, // 401
