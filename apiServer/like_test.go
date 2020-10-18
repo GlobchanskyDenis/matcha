@@ -65,28 +65,28 @@ func TestLikes(t *testing.T) {
 			name: "valid - set like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user2.Uid,
+				"otherUid":  float64(user2.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - set like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
 			uid:	user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user1.Uid,
+				"otherUid":  float64(user1.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - set like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user3.Uid,
+				"otherUid":  float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - set like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:	user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user3.Uid,
+				"otherUid":  float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
@@ -98,7 +98,7 @@ func TestLikes(t *testing.T) {
 			name: "invalid - repeating like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user2.Uid,
+				"otherUid":  float64(user2.Uid),
 			},
 			expectedStatus: http.StatusNotAcceptable,
 		},
@@ -146,28 +146,28 @@ func TestLikes(t *testing.T) {
 			name: "valid - unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user2.Uid,
+				"otherUid":  float64(user2.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - unset like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
 			uid:	user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user1.Uid,
+				"otherUid":  float64(user1.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user3.Uid,
+				"otherUid":  float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - unset like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:	user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user3.Uid,
+				"otherUid":  float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
@@ -179,7 +179,7 @@ func TestLikes(t *testing.T) {
 			name: "invalid - repeating unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user2.Uid,
+				"otherUid":  float64(user2.Uid),
 			},
 			expectedStatus: http.StatusNotAcceptable,
 		},

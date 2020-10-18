@@ -14,6 +14,7 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) MessageGet(w http.ResponseWriter, r *http.Request) {
 	var (
+		uid64			float64
 		messages		[]Message
 		myUid, otherUid int
 		requestParams	map[string]interface{}
@@ -37,12 +38,13 @@ func (server *Server) MessageGet(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.NoArgument.WithArguments("отсутствует параметр otherUid", "param otherUid expected"))
 		return
 	}
-	otherUid, ok = item.(int)
+	uid64, ok = item.(float64)
 	if !ok {
 		server.Logger.LogWarning(r, "Id of another user has wrong type")
 		server.error(w, errors.InvalidArgument.WithArguments("otherUid имеет неверный тип", "otherUid has wrong type"))
 		return
 	}
+	otherUid = int(uid64)
 
 	messages, err = server.Db.GetMessagesFromChat(myUid, otherUid)
 	if err != nil {

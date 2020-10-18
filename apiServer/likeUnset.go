@@ -13,6 +13,7 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 	var (
+		uid64			float64
 		myUid, otherUid int
 		requestParams	map[string]interface{}
 		item			interface{}
@@ -35,12 +36,13 @@ func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.NoArgument.WithArguments("отсутствует параметр otherUid", "param otherUid expected"))
 		return
 	}
-	otherUid, ok = item.(int)
+	uid64, ok = item.(float64)
 	if !ok {
 		server.Logger.LogWarning(r, "Id of another user has wrong type")
 		server.error(w, errors.InvalidArgument.WithArguments("otherUid имеет неверный тип", "otherUid has wrong type"))
 		return
 	}
+	otherUid = int(uid64)
 
 	err = server.Db.UnsetLike(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {

@@ -95,7 +95,7 @@ func TestMessageGet(t *testing.T) {
 			name: "valid - uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user2.Uid,
+				"otherUid":  float64(user2.Uid),
 			},
 			expectedAmount: 3,
 			expectedStatus: http.StatusOK,
@@ -103,7 +103,7 @@ func TestMessageGet(t *testing.T) {
 			name: "valid - uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
 			uid:	user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user1.Uid,
+				"otherUid":  float64(user1.Uid),
 			},
 			expectedAmount: 3,
 			expectedStatus: http.StatusOK,
@@ -111,7 +111,7 @@ func TestMessageGet(t *testing.T) {
 			name: "valid - uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:	user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user3.Uid,
+				"otherUid":  float64(user3.Uid),
 			},
 			expectedAmount: 1,
 			expectedStatus: http.StatusOK,
@@ -119,7 +119,7 @@ func TestMessageGet(t *testing.T) {
 			name: "valid - uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:	user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  user3.Uid,
+				"otherUid":  float64(user3.Uid),
 			},
 			expectedAmount: 0,
 			expectedStatus: http.StatusOK,
