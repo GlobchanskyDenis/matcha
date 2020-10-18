@@ -14,10 +14,10 @@ func TestLikes(t *testing.T) {
 	defer print(YELLOW)
 
 	var (
-		server *Server
-		user1   User
-		user2   User
-		user3   User
+		server     *Server
+		user1      User
+		user2      User
+		user3      User
 		messageIds []int
 	)
 
@@ -25,7 +25,6 @@ func TestLikes(t *testing.T) {
 	**	Initialize server and test user
 	 */
 	t.Run("Initialize", func(t_ *testing.T) {
-		// var id int
 		var err error
 		server, err = New("../config/")
 		if err != nil {
@@ -34,7 +33,7 @@ func TestLikes(t *testing.T) {
 		}
 		/*
 		**	Creating users
-		*/
+		 */
 		user1, err = server.CreateTestUser("user1@gmail.com", pass)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
@@ -57,48 +56,48 @@ func TestLikes(t *testing.T) {
 	 */
 	testCasesSet := []struct {
 		name           string
-		uid			   int
+		uid            int
 		payload        map[string]interface{}
 		expectedStatus int
 	}{
 		{
 			name: "valid - set like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user2.Uid),
+				"otherUid": float64(user2.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - set like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
-			uid:	user2.Uid,
+			uid:  user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user1.Uid),
+				"otherUid": float64(user1.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - set like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user3.Uid),
+				"otherUid": float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - set like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
-			uid:	user2.Uid,
+			uid:  user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user3.Uid),
+				"otherUid": float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "invalid no otherUid",
-			uid:	user2.Uid,
-			payload: map[string]interface{}{},
+			name:           "invalid no otherUid",
+			uid:            user2.Uid,
+			payload:        map[string]interface{}{},
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name: "invalid - repeating like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user2.Uid),
+				"otherUid": float64(user2.Uid),
 			},
 			expectedStatus: http.StatusNotAcceptable,
 		},
@@ -110,7 +109,6 @@ func TestLikes(t *testing.T) {
 				ctx context.Context
 				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
 				rec = httptest.NewRecorder()
-				// response []interface{}
 				req *http.Request
 			)
 			// all request params should be handled in middlewares
@@ -138,48 +136,48 @@ func TestLikes(t *testing.T) {
 	 */
 	testCasesUnset := []struct {
 		name           string
-		uid			   int
+		uid            int
 		payload        map[string]interface{}
 		expectedStatus int
 	}{
 		{
 			name: "valid - unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user2.Uid),
+				"otherUid": float64(user2.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - unset like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
-			uid:	user2.Uid,
+			uid:  user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user1.Uid),
+				"otherUid": float64(user1.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user3.Uid),
+				"otherUid": float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - unset like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
-			uid:	user2.Uid,
+			uid:  user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user3.Uid),
+				"otherUid": float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "invalid no otherUid",
-			uid:	user2.Uid,
-			payload: map[string]interface{}{},
+			name:           "invalid no otherUid",
+			uid:            user2.Uid,
+			payload:        map[string]interface{}{},
 			expectedStatus: http.StatusBadRequest,
 		}, {
 			name: "invalid - repeating unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user2.Uid),
+				"otherUid": float64(user2.Uid),
 			},
 			expectedStatus: http.StatusNotAcceptable,
 		},
@@ -191,7 +189,6 @@ func TestLikes(t *testing.T) {
 				ctx context.Context
 				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
 				rec = httptest.NewRecorder()
-				// response []interface{}
 				req *http.Request
 			)
 			// all request params should be handled in middlewares

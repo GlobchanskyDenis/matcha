@@ -11,7 +11,7 @@ import (
 func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 	/*
 	**	Transaction start
-	*/
+	 */
 	tx, err := conn.db.Begin()
 	if err != nil {
 		return errors.DatabaseTransactionError.AddOriginalError(err)
@@ -19,7 +19,7 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 	defer tx.Rollback()
 	/*
 	**	Set like into likes table
-	*/
+	 */
 	stmt, err := tx.Prepare("INSERT INTO likes (uidSender, uidReceiver) VALUES ($1, $2)")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
@@ -41,12 +41,12 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
-		return errors.NewArg("Добавлено " + strconv.Itoa(int(nbr64)) + " лайков",
-			strconv.Itoa(int(nbr64)) + " likes was added")
+		return errors.NewArg("Добавлено "+strconv.Itoa(int(nbr64))+" лайков",
+			strconv.Itoa(int(nbr64))+" likes was added")
 	}
 	/*
 	**	Increment users rating
-	*/
+	 */
 	stmt, err = tx.Prepare("UPDATE users SET rating=rating+1 WHERE uid=$1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
@@ -64,12 +64,12 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
-		return errors.NewArg("Уменьшено " + strconv.Itoa(int(nbr64)) + " рейтинга",
-			strconv.Itoa(int(nbr64)) + " of user rating was decreased")
+		return errors.NewArg("Уменьшено "+strconv.Itoa(int(nbr64))+" рейтинга",
+			strconv.Itoa(int(nbr64))+" of user rating was decreased")
 	}
 	/*
 	**	Close transaction
-	*/
+	 */
 	err = tx.Commit()
 	if err != nil {
 		return errors.DatabaseTransactionError.AddOriginalError(err)
@@ -80,7 +80,7 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 	/*
 	**	Transaction start
-	*/
+	 */
 	tx, err := conn.db.Begin()
 	if err != nil {
 		return errors.DatabaseTransactionError.AddOriginalError(err)
@@ -89,7 +89,7 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 
 	/*
 	**	Unset like into likes table
-	*/
+	 */
 	stmt, err := tx.Prepare("DELETE FROM likes WHERE uidSender=$1 AND uidReceiver=$2")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
@@ -108,12 +108,12 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
-		return errors.NewArg("Удалено " + strconv.Itoa(int(nbr64)) + " лайков",
-			strconv.Itoa(int(nbr64)) + " likes was deleted")
+		return errors.NewArg("Удалено "+strconv.Itoa(int(nbr64))+" лайков",
+			strconv.Itoa(int(nbr64))+" likes was deleted")
 	}
 	/*
 	**	Decrement users rating
-	*/
+	 */
 	stmt, err = tx.Prepare("UPDATE users SET rating=rating-1 WHERE uid=$1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
@@ -131,12 +131,12 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 		return errors.ImpossibleToExecute
 	}
 	if int(nbr64) != 1 {
-		return errors.NewArg("Убрано " + strconv.Itoa(int(nbr64)) + " рейтинга",
-			strconv.Itoa(int(nbr64)) + " of user rating was decreased")
+		return errors.NewArg("Убрано "+strconv.Itoa(int(nbr64))+" рейтинга",
+			strconv.Itoa(int(nbr64))+" of user rating was decreased")
 	}
 	/*
 	**	Close transaction
-	*/
+	 */
 	err = tx.Commit()
 	if err != nil {
 		return errors.DatabaseTransactionError.AddOriginalError(err)

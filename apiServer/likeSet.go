@@ -4,8 +4,8 @@ import (
 	. "MatchaServer/common"
 	"MatchaServer/errors"
 	"context"
-	"strconv"
 	"net/http"
+	"strconv"
 )
 
 // HTTP HANDLER FOR DOMAIN /message/get/ . IT HANDLES:
@@ -13,13 +13,13 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid64			float64
+		uid64           float64
 		myUid, otherUid int
-		requestParams	map[string]interface{}
-		item			interface{}
+		requestParams   map[string]interface{}
+		item            interface{}
 		ok, isExist     bool
-		err  error
-		ctx  context.Context
+		err             error
+		ctx             context.Context
 	)
 
 	ctx = r.Context()

@@ -5,8 +5,8 @@ import (
 	"MatchaServer/errors"
 	"context"
 	"encoding/json"
-	"strconv"
 	"net/http"
+	"strconv"
 )
 
 // HTTP HANDLER FOR DOMAIN /message/get/ . IT HANDLES:
@@ -14,14 +14,14 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) MessageGet(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid64			float64
-		messages		[]Message
+		uid64           float64
+		messages        []Message
 		myUid, otherUid int
-		requestParams	map[string]interface{}
-		item			interface{}
+		requestParams   map[string]interface{}
+		item            interface{}
 		ok, isExist     bool
-		err  error
-		ctx  context.Context
+		err             error
+		ctx             context.Context
 	)
 
 	ctx = r.Context()

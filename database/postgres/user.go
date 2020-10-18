@@ -184,7 +184,7 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.SearchUser, error) {
 		users     []common.SearchUser
 		interests string
 		birth     interface{}
-		intPtr	  *int
+		intPtr    *int
 		date      time.Time
 		ok        bool
 	)

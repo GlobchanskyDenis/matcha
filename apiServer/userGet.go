@@ -5,8 +5,8 @@ import (
 	"MatchaServer/errors"
 	"context"
 	"encoding/json"
-	"strconv"
 	"net/http"
+	"strconv"
 )
 
 // HTTP HANDLER FOR DOMAIN /user/get/ . IT HANDLES:

@@ -2,13 +2,13 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"encoding/json"
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
-	"fmt"
 )
 
 func TestMessageGet(t *testing.T) {
@@ -16,10 +16,10 @@ func TestMessageGet(t *testing.T) {
 	defer print(YELLOW)
 
 	var (
-		server *Server
-		user1   User
-		user2   User
-		user3   User
+		server     *Server
+		user1      User
+		user2      User
+		user3      User
 		messageIds []int
 	)
 
@@ -36,7 +36,7 @@ func TestMessageGet(t *testing.T) {
 		}
 		/*
 		**	Creating users
-		*/
+		 */
 		user1, err = server.CreateTestUser("user1@gmail.com", pass)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
@@ -54,7 +54,7 @@ func TestMessageGet(t *testing.T) {
 		}
 		/*
 		**	Creating messages in database
-		*/
+		 */
 		id, err = server.Db.SetNewMessage(user1.Uid, user2.Uid, "message from user1 to user2")
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot set message - " + err.Error() + NO_COLOR)
@@ -86,47 +86,47 @@ func TestMessageGet(t *testing.T) {
 	 */
 	testCases := []struct {
 		name           string
-		uid			   int
+		uid            int
 		payload        map[string]interface{}
 		expectedAmount int
 		expectedStatus int
 	}{
 		{
 			name: "valid - uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user2.Uid),
+				"otherUid": float64(user2.Uid),
 			},
 			expectedAmount: 3,
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
-			uid:	user2.Uid,
+			uid:  user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user1.Uid),
+				"otherUid": float64(user1.Uid),
 			},
 			expectedAmount: 3,
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
-			uid:	user1.Uid,
+			uid:  user1.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user3.Uid),
+				"otherUid": float64(user3.Uid),
 			},
 			expectedAmount: 1,
 			expectedStatus: http.StatusOK,
 		}, {
 			name: "valid - uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
-			uid:	user2.Uid,
+			uid:  user2.Uid,
 			payload: map[string]interface{}{
-				"otherUid":  float64(user3.Uid),
+				"otherUid": float64(user3.Uid),
 			},
 			expectedAmount: 0,
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "invalid no otherUid",
-			uid:	user2.Uid,
-			payload: map[string]interface{}{},
+			name:           "invalid no otherUid",
+			uid:            user2.Uid,
+			payload:        map[string]interface{}{},
 			expectedAmount: 0,
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -135,11 +135,11 @@ func TestMessageGet(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
-				ctx context.Context
-				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
-				rec = httptest.NewRecorder()
+				ctx      context.Context
+				url      = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
+				rec      = httptest.NewRecorder()
 				response []interface{}
-				req *http.Request
+				req      *http.Request
 			)
 			// all request params should be handled in middlewares
 			// so new request body is nil
@@ -159,7 +159,7 @@ func TestMessageGet(t *testing.T) {
 				fmt.Printf("%T\n", response)
 				messageLen := len(response)
 				if messageLen == tc.expectedAmount {
-					t_.Logf(GREEN_BG + "SUCCESS: message amount #%d status code #%d" + NO_COLOR, messageLen, rec.Code)
+					t_.Logf(GREEN_BG+"SUCCESS: message amount #%d status code #%d"+NO_COLOR, messageLen, rec.Code)
 				} else {
 					t_.Errorf(RED_BG+"ERROR: wrong message amount: got %d, expected %d"+NO_COLOR, messageLen, tc.expectedAmount)
 				}
@@ -169,7 +169,7 @@ func TestMessageGet(t *testing.T) {
 				if err != nil {
 					t_.Errorf(RED_BG+"ERROR in unmarshal: %s"+NO_COLOR, err.Error())
 				} else {
-					t_.Logf(GREEN_BG + "SUCCESS: error found as it expected - %s" + NO_COLOR, errorInterface)
+					t_.Logf(GREEN_BG+"SUCCESS: error found as it expected - %s"+NO_COLOR, errorInterface)
 				}
 			} else {
 				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR, rec.Code, tc.expectedStatus)
