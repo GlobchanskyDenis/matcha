@@ -110,8 +110,26 @@ func (f *Filters) Print() string {
 }
 
 func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) string {
-	var query = "SELECT * FROM users LEFT JOIN (SELECT uidReceiver FROM likes WHERE uidSender=" + strconv.Itoa(f.uid) +
-		") AS tmp ON users.uid = tmp.uidReceiver WHERE uid!=" + strconv.Itoa(f.uid)
+	/*
+	**	Это предварительный шаблон в который остается только вставить параметры поисковых фильтров.
+	**	Что тут происходит?
+	**	Сначала в таблицу юзеров мы присоединяем аватарки, потом мы добавляем поле uidReceiver, которое
+	**	либо содержит значение своего же uid если с этим юзером уже произошел обмен лайками, либо значение
+	**	null - если кто-то (или оба) еще не поставили лайк. Фактически в следующем коде это поле используется
+	**	для заполнения поля типа bool - разрешено ли общение пользователей или нет
+	*/
+
+	var query = `SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+		bio, avaid, latitude, longitude, interests, status, rating, src, uidSender FROM
+	(SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+		bio, avaid, latitude, longitude, interests, status, rating, src FROM
+	users LEFT JOIN photos ON avaId = pid)
+	AS full_users LEFT JOIN
+	(SELECT uidSender FROM
+	(SELECT uidSender FROM likes WHERE uidReceiver = ` + strconv.Itoa(f.uid) + `) AS T1 INNER JOIN
+	(SELECT uidReceiver FROM likes WHERE uidSender = ` + strconv.Itoa(f.uid) + `) AS T2
+		ON T1.uidSender = T2.uidReceiver)
+	AS can_talk ON full_users.uid = can_talk.uidSender WHERE uid != ` + strconv.Itoa(f.uid)
 
 	if sexRestrictions != "" {
 		query += " AND " + sexRestrictions

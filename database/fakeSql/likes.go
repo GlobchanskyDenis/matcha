@@ -12,7 +12,7 @@ func (conn ConnFake) UnsetLike(uidSender int, uidReceiver int) error {
 	return nil
 }
 
-func (conn ConnFake) GetUsersThatICanSpeak(myUid int) ([]common.User, error) {
+func (conn ConnFake) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	return nil, nil
 }
 

@@ -83,8 +83,10 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 		ok        bool
 		interests string
 	)
-
-	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE uid=$1")
+	query := `SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
+		latitude, longitude, interests, status, rating, src FROM
+		users LEFT JOIN photos ON avaId = pid WHERE users.uid=$1`
+	stmt, err := conn.db.Prepare(query)
 	if err != nil {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
@@ -94,10 +96,10 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
-		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating))
+		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar)
 		if err != nil {
 			return user, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -136,7 +138,10 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 		ok        bool
 		interests string
 	)
-	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1")
+	query := `SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
+		latitude, longitude, interests, status, rating, src FROM
+		users LEFT JOIN photos ON avaId = pid WHERE users.mail=$1`
+	stmt, err := conn.db.Prepare(query)
 	if err != nil {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
@@ -146,10 +151,10 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
-		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating))
+		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar)
 		if err != nil {
 			return user, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -193,10 +198,10 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.SearchUser, error) {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating), &(intPtr))
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar, &intPtr)
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -241,7 +246,10 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 		ok        bool
 	)
 
-	stmt, err := conn.db.Prepare("SELECT * FROM users WHERE mail=$1 AND encryptedPass=$2")
+	query := `SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
+		latitude, longitude, interests, status, rating, src FROM
+		users LEFT JOIN photos ON avaId = pid WHERE mail=$1 AND encryptedPass=$2`
+	stmt, err := conn.db.Prepare(query)
 	if err != nil {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
@@ -251,10 +259,10 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if row.Next() {
-		err = row.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating))
+		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar)
 		if err != nil {
 			return user, errors.DatabaseScanError.AddOriginalError(err)
 		}

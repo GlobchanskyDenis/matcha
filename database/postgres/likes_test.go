@@ -5,6 +5,7 @@ import (
 	"MatchaServer/config"
 	"strconv"
 	"testing"
+	"fmt"
 )
 
 func TestLikes(t *testing.T) {
@@ -206,12 +207,15 @@ func TestLikes(t *testing.T) {
 
 	for _, tc := range testCasesGetUsers {
 		t.Run(tc.name, func(t_ *testing.T) {
-			users, err := conn.GetUsersThatICanSpeak(tc.uid)
+			users, err := conn.GetFriendUsers(tc.uid)
 			if err != nil {
 				t_.Errorf(RED_BG+"Error: %s"+NO_COLOR, err.Error())
 				t_.FailNow()
 			}
 			if len(users) != tc.expectedAmount {
+				for nbr, usr := range users {
+					fmt.Printf("nbr %d uid %d mail %s\n", nbr, usr.Uid, usr.Mail)
+				}
 				t_.Errorf(RED_BG+"Error: wrong number of detected users. Expected %d found %d"+NO_COLOR, tc.expectedAmount, len(users))
 				t_.FailNow()
 			}

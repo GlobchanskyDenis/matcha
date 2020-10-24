@@ -157,17 +157,53 @@ func (conn ConnDB) DropUsersLikes(uid int) error {
 	return nil
 }
 
-func (conn ConnDB) GetUsersThatICanSpeak(myUid int) ([]common.User, error) {
+func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	var (
-		user      common.User
-		users     []common.User
+		user      common.FriendUser
+		users     []common.FriendUser
 		interests string
 		birth     interface{}
+		// stringPtr *string
 		date      time.Time
 		ok        bool
 	)
-	query := "SELECT * FROM users WHERE uid IN (SELECT uidReceiver FROM likes " +
-		"WHERE uidSender=$1 AND uidReceiver IN (SELECT uidSender FROM likes WHERE uidReceiver=$1))"
+
+	// Стэк запроса: добавление последнего сообщения к пользователю, добавление фотографии к пользователю,
+	//  поиск пользователей удовлетворяющих условию - пользователи поставили друг другу лайк.
+
+	query := `SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+		bio, avaid, latitude, longitude, interests, status, rating, src, uidSender, uidReceiver, body FROM
+	(SELECT permitted_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+		bio, avaid, latitude, longitude, interests, status, rating, src FROM
+	(SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+		bio, avaid, latitude, longitude, interests, status, rating FROM
+	users INNER JOIN
+	(SELECT uidSender FROM
+	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
+	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
+	 ON T1.uidSender = T2.uidReceiver)
+	AS can_talk ON users.uid = can_talk.uidSender)
+	AS permitted_users LEFT JOIN photos ON avaId = pid WHERE permitted_users.uid != $1) AS T3 LEFT JOIN
+	(SELECT * FROM messages WHERE uidSender = $1 or uidReceiver = $1 ORDER BY mid DESC LIMIT 1) AS
+	T4 ON uid = uidSender OR uid = uidReceiver`
+
+	// Неполный запрос - нет присоединенного тела сообщения
+	// query := `SELECT permitted_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+	//  							bio, avaid, latitude, longitude, interests, status, rating, src FROM
+	// (SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
+	//  						bio, avaid, latitude, longitude, interests, status, rating FROM
+	// users INNER JOIN
+	// 	(SELECT uidSender FROM
+	// 	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
+	// 	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
+	// 	ON T1.uidSender = T2.uidReceiver)
+	// AS can_talk ON users.uid = can_talk.uidSender)
+	// AS permitted_users LEFT JOIN photos ON avaId = pid WHERE permitted_users.uid != $1`
+
+	// Старый интересный запрос. Сохранить на будущее. По идее он менее эффективен чем новый
+	// query := "SELECT * FROM users WHERE uid IN (SELECT uidReceiver FROM likes " +
+	// 	"WHERE uidSender=$1 AND uidReceiver IN (SELECT uidSender FROM likes WHERE uidReceiver=$1))"
+
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
 		return nil, errors.DatabasePreparingError.AddOriginalError(err)
@@ -178,10 +214,11 @@ func (conn ConnDB) GetUsersThatICanSpeak(myUid int) ([]common.User, error) {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&(user.Uid), &(user.Mail), &(user.EncryptedPass), &(user.Fname),
-			&(user.Lname), &birth, &(user.Gender), &(user.Orientation),
-			&(user.Bio), &(user.AvaID), &user.Latitude, &user.Longitude, &interests,
-			&(user.Status), &(user.Rating))
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar, &user.UidSender,
+			&user.UidReceiver, &user.LastMessageBody)
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -204,6 +241,11 @@ func (conn ConnDB) GetUsersThatICanSpeak(myUid int) ([]common.User, error) {
 		} else {
 			user.Birth.Time = nil
 		}
+		// if stringPtr == nil {
+		// 	user.WasTalk = false
+		// } else {
+		// 	user.WasTalk = true
+		// }
 		users = append(users, user)
 	}
 	return users, nil

@@ -29,6 +29,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoUpload))))
 	mux.Handle("/user/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
+	mux.Handle("/user/getFriends/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetFriends))))
 	mux.Handle("/search/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.Search))))
 	mux.Handle("/message/get", server.PostMethodMiddleWare(
