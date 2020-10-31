@@ -33,11 +33,11 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetFriends))))
 	mux.Handle("/search/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.Search))))
-	mux.Handle("/message/get", server.PostMethodMiddleWare(
+	mux.Handle("/message/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageGet))))
-	mux.Handle("/like/set", server.PostMethodMiddleWare(
+	mux.Handle("/like/set/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeSet))))
-	mux.Handle("/like/unset", server.PostMethodMiddleWare(
+	mux.Handle("/like/unset/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeUnset))))
 
 	// PATCH
