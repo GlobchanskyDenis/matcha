@@ -44,6 +44,8 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 	}
 	otherUid = int(uid64)
 
+	// Вот тут проверить чтобы у этого юзера были фотки
+
 	err = server.Db.SetNewLike(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to set like from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+

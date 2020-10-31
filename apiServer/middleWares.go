@@ -93,7 +93,7 @@ func (server *Server) PostMethodMiddleWare(next http.Handler) http.Handler {
 
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Access-Control-Allow-Methods", "POST,OPTIONS")
-		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Content-Length")
 
 		if r.Method == "OPTIONS" {
 			server.Logger.Log(r, "client wants to know what methods are allowed")
@@ -125,7 +125,7 @@ func (server *Server) PatchMethodMiddleWare(next http.Handler) http.Handler {
 
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Access-Control-Allow-Methods", "PATCH,OPTIONS")
-		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Content-Length")
 
 		if r.Method == "OPTIONS" {
 			server.Logger.Log(r, "client wants to know what methods are allowed")
@@ -157,7 +157,7 @@ func (server *Server) DeleteMethodMiddleWare(next http.Handler) http.Handler {
 
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Access-Control-Allow-Methods", "DELETE,OPTIONS")
-		w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Content-Length")
 
 		if r.Method == "OPTIONS" {
 			server.Logger.Log(r, "client wants to know what methods are allowed")
