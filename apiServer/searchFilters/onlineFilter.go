@@ -3,6 +3,7 @@ package searchFilters
 import (
 	"MatchaServer/session"
 	"strconv"
+	"strings"
 )
 
 type onlineFilter struct {
@@ -34,14 +35,9 @@ func (f onlineFilter) prepareQueryFilter() string {
 		return "uid=" + strconv.Itoa(f.uidSlice[0])
 	}
 
-	var queryFilter string
+	var uidArray []string
 	for _, uid := range f.uidSlice {
-		if queryFilter == "" {
-			queryFilter = "(uid=" + strconv.Itoa(uid)
-		} else {
-			queryFilter += " OR uid=" + strconv.Itoa(uid)
-		}
+		uidArray = append(uidArray, strconv.Itoa(uid))
 	}
-	queryFilter += ")"
-	return queryFilter
+	return "(uid IN (" + strings.Join(uidArray, ",") + "))"
 }

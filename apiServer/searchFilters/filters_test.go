@@ -485,6 +485,12 @@ func TestOnline(t *testing.T) {
 		return
 	}
 
+	_, err = sess.AddUserToSession(21)
+	if err != nil {
+		t.Errorf("Cannot start test: " + err.Error())
+		return
+	}
+
 	testCases := []struct {
 		name      string
 		payload   string
