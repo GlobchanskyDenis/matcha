@@ -2,13 +2,13 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	"encoding/json"
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
-	"fmt"
 )
 
 func TestSearch(t *testing.T) {
@@ -144,23 +144,23 @@ func TestSearch(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 			expectedAmount: 0,
-			}, {
-				name: "valid - search users that wasnt liked",
-				payload: map[string]interface{}{
-					"wasntLiked": map[string]interface{}{},
-				},
-				expectedStatus: http.StatusOK,
-				expectedAmount: 1,
+		}, {
+			name: "valid - search users that wasnt liked",
+			payload: map[string]interface{}{
+				"wasntLiked": map[string]interface{}{},
 			},
+			expectedStatus: http.StatusOK,
+			expectedAmount: 1,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
-				ctx context.Context
-				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
-				rec = httptest.NewRecorder()
-				req *http.Request
+				ctx      context.Context
+				url      = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
+				rec      = httptest.NewRecorder()
+				req      *http.Request
 				response []interface{}
 			)
 			// all request params should be handled in middlewares

@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func (conn ConnDB) SetNewNotif(uidReceiver int, uidSender int, body string) (int, error) {
+func (conn ConnDB) SetNewNotif(uidSender int, uidReceiver int, body string) (int, error) {
 	var nid int
 	stmt, err := conn.db.Prepare("INSERT INTO notifs (uidSender, uidReceiver, body) VALUES ($1, $2, $3) RETURNING nid")
 	if err != nil {
@@ -34,6 +34,9 @@ func (conn ConnDB) DeleteNotif(nid int) error {
 	nbr64, err := result.RowsAffected()
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	if int(nbr64) == 0 {
+		return errors.RecordNotFound
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Неожиданное количество измененных строк - "+strconv.Itoa(int(nbr64)),

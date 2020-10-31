@@ -119,7 +119,7 @@ func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) st
 	**	либо содержит значение своего же uid если с этим юзером уже произошел обмен лайками, либо значение
 	**	null - если кто-то (или оба) еще не поставили лайк. Фактически в следующем коде это поле используется
 	**	для заполнения поля типа bool - разрешено ли общение пользователей или нет
-	*/
+	 */
 
 	var query = `SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
 		bio, avaid, latitude, longitude, interests, status, rating, src, uidSender FROM

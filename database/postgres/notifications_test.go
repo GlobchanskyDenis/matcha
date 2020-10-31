@@ -70,23 +70,23 @@ func TestNotif(t *testing.T) {
 	}{
 		{
 			name:         "set notification #1",
-			uid1:         user1.Uid,
-			uid2:         user4.Uid,
+			uid1:         user4.Uid,
+			uid2:         user1.Uid,
 			notification: "test notification",
 		}, {
 			name:         "set notification #2",
-			uid1:         user1.Uid,
-			uid2:         user4.Uid,
+			uid1:         user4.Uid,
+			uid2:         user1.Uid,
 			notification: "test notification",
 		}, {
 			name:         "set notification #3",
-			uid1:         user2.Uid,
-			uid2:         user4.Uid,
+			uid1:         user4.Uid,
+			uid2:         user2.Uid,
 			notification: "test notification",
 		}, {
 			name:         "set notification #4",
-			uid1:         user3.Uid,
-			uid2:         user4.Uid,
+			uid1:         user4.Uid,
+			uid2:         user3.Uid,
 			notification: "test notification",
 		},
 	}

@@ -164,8 +164,8 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 		interests string
 		birth     interface{}
 		// stringPtr *string
-		date      time.Time
-		ok        bool
+		date time.Time
+		ok   bool
 	)
 
 	// Стэк запроса: добавление последнего сообщения к пользователю, добавление фотографии к пользователю,

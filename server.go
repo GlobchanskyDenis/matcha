@@ -35,6 +35,10 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.Search))))
 	mux.Handle("/message/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageGet))))
+	mux.Handle("/notification/get/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationGet))))
+	mux.Handle("/notification/delete/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationDelete))))
 	mux.Handle("/like/set/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeSet))))
 	mux.Handle("/like/unset/", server.PostMethodMiddleWare(

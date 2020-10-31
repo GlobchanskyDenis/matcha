@@ -217,10 +217,10 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 // CHECK THAT PHOTO WITH PID IS EXISTING AND BELONGS TO CURRENT USER
 func (server *Server) checkPid(r *http.Request, uid int, item interface{}) error {
 	var (
-		ok bool
+		ok         bool
 		pidFloat64 float64
-		photo Photo
-		err error
+		photo      Photo
+		err        error
 	)
 	pidFloat64, ok = item.(float64)
 	if !ok {
@@ -230,17 +230,17 @@ func (server *Server) checkPid(r *http.Request, uid int, item interface{}) error
 	}
 	photo, err = server.Db.GetPhotoByPid(int(pidFloat64))
 	if err != nil && errors.RecordNotFound.IsOverlapWithError(err) {
-		server.Logger.LogWarning(r, "Photo #" + strconv.Itoa(int(pidFloat64)) + " not found")
+		server.Logger.LogWarning(r, "Photo #"+strconv.Itoa(int(pidFloat64))+" not found")
 		return errors.ImpossibleToExecute.WithArguments("Такого фото не существует",
 			"Photo not exists")
 	} else if err != nil {
-		server.Logger.LogWarning(r, "GetPhotoByPid returned error " + err.Error())
+		server.Logger.LogWarning(r, "GetPhotoByPid returned error "+err.Error())
 		return errors.DatabaseError.WithArguments(err)
 	}
 	// fmt.Printf("photo: %#v\n", photo)
 	// fmt.Println("uid =", uid)
 	if photo.Uid != uid {
-		server.Logger.LogWarning(r, "Photo #" + strconv.Itoa(int(pidFloat64)) + " not belongs to user #" + strconv.Itoa(uid))
+		server.Logger.LogWarning(r, "Photo #"+strconv.Itoa(int(pidFloat64))+" not belongs to user #"+strconv.Itoa(uid))
 		return errors.ImpossibleToExecute.WithArguments("Это не ваше фото", "Photo is not yours")
 	}
 	return nil

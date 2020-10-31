@@ -15,9 +15,9 @@ import (
 func (server *Server) UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	var (
 		users []FriendUser
-		uid  int
-		err  error
-		ctx  context.Context
+		uid   int
+		err   error
+		ctx   context.Context
 	)
 
 	ctx = r.Context()

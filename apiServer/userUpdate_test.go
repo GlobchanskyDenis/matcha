@@ -15,9 +15,9 @@ func TestUserUpdate(t *testing.T) {
 	defer print(YELLOW)
 
 	var (
-		server *Server
-		user   User
-		pid	   int
+		server     *Server
+		user       User
+		pid        int
 		invalidPid int
 	)
 

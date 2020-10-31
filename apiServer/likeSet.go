@@ -20,7 +20,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		ok, isExist     bool
 		err             error
 		ctx             context.Context
-		user			User
+		user            User
 	)
 
 	ctx = r.Context()
