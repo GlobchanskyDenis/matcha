@@ -20,6 +20,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		ok, isExist     bool
 		err             error
 		ctx             context.Context
+		user			User
 	)
 
 	ctx = r.Context()
@@ -45,6 +46,37 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 	otherUid = int(uid64)
 
 	// Вот тут проверить чтобы у этого юзера были фотки
+	user, err = server.Db.GetUserByUid(myUid)
+	if errors.RecordNotFound.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+" not exists")
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
+		return
+	} else if err != nil {
+		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.error(w, errors.DatabaseError.WithArguments(err))
+		return
+	} else if user.AvaID == 0 {
+		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no avatar")
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Нельзя лайкать не имея аватарки",
+			"Forbidden to like without avatar"))
+		return
+	}
+
+	user, err = server.Db.GetUserByUid(otherUid)
+	if errors.RecordNotFound.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "User#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" not exists")
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Такого пользователя не существует", "This user isnt exist"))
+		return
+	} else if err != nil {
+		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.error(w, errors.DatabaseError.WithArguments(err))
+		return
+	} else if user.AvaID == 0 {
+		server.Logger.LogWarning(r, "User#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no photos")
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Нельзя лайкать пользователей без фото",
+			"Forbidden to like users without photo"))
+		return
+	}
 
 	err = server.Db.SetNewLike(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
