@@ -9,13 +9,13 @@ type onlineFilter struct {
 	uidSlice []int
 }
 
-func newOnlineFilter(session *session.Session) (*onlineFilter, error) {
+func newOnlineFilter(session *session.Session) *onlineFilter {
 	var filter onlineFilter
 
 	// Получаю слайс пользователей
 	filter.uidSlice = session.GetLoggedUsersUidSlice()
 
-	return &filter, nil
+	return &filter
 }
 
 func (f onlineFilter) print() string {

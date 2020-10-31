@@ -126,7 +126,6 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 
 	jsonUser, err := json.Marshal(user)
 	if err != nil {
-		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.Logger.LogError(r, "Marshal returned error "+err.Error())
 		server.error(w, errors.MarshalError)
 		return
@@ -134,7 +133,6 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 
 	tokenWS, err = server.Session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
 	if err != nil {
-		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.Logger.LogError(r, "cannot create web socket token - "+err.Error())
 		server.error(w, errors.WebSocketError.WithArguments(err))
 		return

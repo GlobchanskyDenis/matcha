@@ -9,10 +9,10 @@ func PrepareSexRestrictions(user common.User) string {
 	// натурал - только противоположный пол
 	// би - без ограничений
 	// нет инфы - без ограничений
-	if user.Orientation == "" || user.Gender == "" {
+	if user.Gender == "" {
 		return ""
 	}
-	if user.Orientation == "bi" {
+	if user.Orientation == "bi" || user.Orientation == "" {
 		if user.Gender == "male" {
 			return "((gender='male' AND orientation='homo') OR (gender='female' AND orientation='hetero')" +
 				" OR orientation='bi' OR gender='' OR orientation='')"

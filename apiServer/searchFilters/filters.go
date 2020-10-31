@@ -15,6 +15,7 @@ const (
 	interestsFilterType
 	locationFilterType
 	radiusFilterType
+	likeFilterType
 )
 
 type Filter interface {
@@ -70,10 +71,7 @@ func (f *Filters) Parse(in map[string]interface{}, uid int,
 	}
 	_, isExist = in["online"]
 	if isExist {
-		filter, err = newOnlineFilter(session)
-		if err != nil {
-			return nil
-		}
+		filter = newOnlineFilter(session)
 		f.filters = append(f.filters, filter)
 	}
 	item, isExist = in["rating"]
@@ -86,11 +84,15 @@ func (f *Filters) Parse(in map[string]interface{}, uid int,
 	}
 	item, isExist = in["radius"]
 	if isExist {
-
 		filter, err = newRadiusFilter(item, uid, connDB)
 		if err != nil {
 			return err
 		}
+		f.filters = append(f.filters, filter)
+	}
+	item, isExist = in["wasntLiked"]
+	if isExist {
+		filter = newLikeFilter(uid)
 		f.filters = append(f.filters, filter)
 	}
 	f.uid = uid

@@ -21,7 +21,6 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 
 	jsonInterests, err := json.Marshal(interests)
 	if err != nil {
-		// удалить пользователя из сессии (потом - когда решится вопрос со множественностью веб сокетов)
 		server.Logger.LogError(r, "Marshal returned error "+err.Error())
 		server.error(w, errors.MarshalError)
 		return

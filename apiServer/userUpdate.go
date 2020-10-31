@@ -87,7 +87,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 				errors.InvalidArgument.WithArguments("Поле birth имеет неверный тип", "birth field has wrong type")
 		}
 		date, err := time.Parse("2006-01-02", birth)
-		user.Birth.Time = &date //CustomDate(date)
+		user.Birth.Time = &date
 		if err != nil {
 			return user, message,
 				errors.InvalidArgument.WithArguments("Поле birth имеет неверный формат", "birth field has wrong format")
@@ -214,6 +214,76 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	return user, message, nil
 }
 
+// CHECK THAT PHOTO WITH PID IS EXISTING AND BELONGS TO CURRENT USER
+func (server *Server) checkPid(r *http.Request, uid int, item interface{}) error {
+	var (
+		ok bool
+		pidFloat64 float64
+		photo Photo
+		err error
+	)
+	pidFloat64, ok = item.(float64)
+	if !ok {
+		server.Logger.LogWarning(r, "avaId has wrong type")
+		return errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
+			"interests field has wrong type")
+	}
+	photo, err = server.Db.GetPhotoByPid(int(pidFloat64))
+	if err != nil && errors.RecordNotFound.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "Photo #" + strconv.Itoa(int(pidFloat64)) + " not found")
+		return errors.ImpossibleToExecute.WithArguments("Такого фото не существует",
+			"Photo not exists")
+	} else if err != nil {
+		server.Logger.LogWarning(r, "GetPhotoByPid returned error " + err.Error())
+		return errors.DatabaseError.WithArguments(err)
+	}
+	// fmt.Printf("photo: %#v\n", photo)
+	// fmt.Println("uid =", uid)
+	if photo.Uid != uid {
+		server.Logger.LogWarning(r, "Photo #" + strconv.Itoa(int(pidFloat64)) + " not belongs to user #" + strconv.Itoa(uid))
+		return errors.ImpossibleToExecute.WithArguments("Это не ваше фото", "Photo is not yours")
+	}
+	return nil
+}
+
+// ADD IN DATABASE ALL UNKNOWN INTERESTS (TABLE INTERESTS, NOT USER)
+func (server *Server) handleInterests(r *http.Request, item interface{}) error {
+	var interestsNameArr []string
+	knownInterests, err := server.Db.GetInterests()
+	if err != nil {
+		server.Logger.LogWarning(r, "GetInterests returned error - "+err.Error())
+		return errors.DatabaseError.WithArguments(err)
+	}
+	interfaceArr, ok := item.([]interface{})
+	if !ok {
+		server.Logger.LogWarning(r, "wrong argument type (interests)")
+		return errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
+			"interests field has wrong type")
+	}
+	for _, item := range interfaceArr {
+		interest, ok := item.(string)
+		if !ok {
+			server.Logger.LogWarning(r, "wrong argument type (interests item)")
+			return errors.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип",
+				"interests (item) field has wrong type")
+		}
+		err = handlers.CheckInterest(interest)
+		if err != nil {
+			server.Logger.LogWarning(r, "invalid interest - "+err.Error())
+			return errors.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
+				"interests (item) field has wrong value")
+		}
+		interestsNameArr = append(interestsNameArr, interest)
+	}
+	unknownInterests := handlers.FindUnknownInterests(knownInterests, interestsNameArr)
+	err = server.Db.AddInterests(unknownInterests)
+	if err != nil {
+		server.Logger.LogError(r, "AddInterests returned error - "+err.Error())
+		return errors.DatabaseError.WithArguments(err)
+	}
+	return nil
+}
+
 // HTTP HANDLER FOR DOMAIN /user/update/
 // REQUEST BODY IS JSON
 // RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
@@ -235,42 +305,19 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	item, isExist = requestParams["interests"]
 	if isExist {
-		var interestsNameArr []string
-		knownInterests, err := server.Db.GetInterests()
+		err = server.handleInterests(r, item)
 		if err != nil {
-			server.Logger.LogWarning(r, "GetInterests returned error - "+err.Error())
-			server.error(w, errors.DatabaseError.WithArguments(err))
+			server.error(w, err.(errors.ApiError))
 			return
 		}
-		interfaceArr, ok := item.([]interface{})
-		if !ok {
-			server.Logger.LogWarning(r, "wrong argument type (interests)")
-			server.error(w, errors.InvalidArgument.WithArguments("Поле interests имеет неверный тип",
-				"interests field has wrong type"))
-			return
-		}
-		for _, item := range interfaceArr {
-			interest, ok := item.(string)
-			if !ok {
-				server.Logger.LogWarning(r, "wrong argument type (interests item)")
-				server.error(w, errors.InvalidArgument.WithArguments("Поле interests (item) имеет неверный тип",
-					"interests (item) field has wrong type"))
-				return
-			}
-			err = handlers.CheckInterest(interest)
-			if err != nil {
-				server.Logger.LogWarning(r, "invalid interest - "+err.Error())
-				server.error(w, errors.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
-					"interests (item) field has wrong value"))
-				return
-			}
-			interestsNameArr = append(interestsNameArr, interest)
-		}
-		unknownInterests := handlers.FindUnknownInterests(knownInterests, interestsNameArr)
-		err = server.Db.AddInterests(unknownInterests)
+	}
+
+	item, isExist = requestParams["avaID"]
+	if isExist {
+		// println("CHECK PID FUNC")
+		err = server.checkPid(r, uid, item)
 		if err != nil {
-			server.Logger.LogError(r, "AddInterests returned error - "+err.Error())
-			server.error(w, errors.DatabaseError.WithArguments(err))
+			server.error(w, err.(errors.ApiError))
 			return
 		}
 	}

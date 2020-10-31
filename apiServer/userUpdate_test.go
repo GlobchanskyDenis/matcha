@@ -2,7 +2,6 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	// "MatchaServer/handlers"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -18,6 +17,8 @@ func TestUserUpdate(t *testing.T) {
 	var (
 		server *Server
 		user   User
+		pid	   int
+		invalidPid int
 	)
 
 	/*
@@ -38,6 +39,16 @@ func TestUserUpdate(t *testing.T) {
 		err = server.AuthorizeTestUser(user)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot authorize test user - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		pid, err = server.Db.SetNewPhoto(user.Uid, "photo source")
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot create test photo - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		invalidPid, err = server.Db.SetNewPhoto(1, "invalid photo source")
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot create test photo - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
 	})
@@ -102,7 +113,7 @@ func TestUserUpdate(t *testing.T) {
 		}, {
 			name: "valid avaPhotoID",
 			payload: map[string]interface{}{
-				"avaID": avaIDNew,
+				"avaID": float64(pid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
@@ -184,11 +195,23 @@ func TestUserUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid avaPhotoID",
+			name: "invalid avaPhotoID wrong type",
 			payload: map[string]interface{}{
 				"avaID": avaIDFail,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
+		}, {
+			name: "invalid avaPhotoID not found",
+			payload: map[string]interface{}{
+				"avaID": float64(100500),
+			},
+			expectedStatus: http.StatusNotAcceptable,
+		}, {
+			name: "invalid avaPhotoID wrong owner",
+			payload: map[string]interface{}{
+				"avaID": float64(invalidPid),
+			},
+			expectedStatus: http.StatusNotAcceptable,
 		}, {
 			name: "invalid latitude",
 			payload: map[string]interface{}{
@@ -297,18 +320,25 @@ func TestUserUpdate(t *testing.T) {
 	**	I should satisfy constraints and delete all data for this user from other tables
 	 */
 	t.Run("delete test user", func(t_ *testing.T) {
+		//	Delete test photos
+		err := server.Db.DeletePhoto(pid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot delete test photo - " + err.Error() + NO_COLOR)
+		}
+		err = server.Db.DeletePhoto(invalidPid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot delete test photo - " + err.Error() + NO_COLOR)
+		}
 
 		//	Delete devices of test user
 		devices, err := server.Db.GetDevicesByUid(user.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot get devices of user that i trying to delete - " + err.Error() + NO_COLOR)
-			return
 		}
 		for _, device := range devices {
 			err = server.Db.DeleteDevice(device.Id)
 			if err != nil {
 				t_.Errorf(RED_BG + "Error: cannot delete device of user - " + err.Error() + NO_COLOR)
-				return
 			}
 		}
 
@@ -316,7 +346,6 @@ func TestUserUpdate(t *testing.T) {
 		err = server.Db.DeleteUser(user.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
-			return
 		}
 	})
 }

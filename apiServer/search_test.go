@@ -2,11 +2,13 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"encoding/json"
 	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"fmt"
 )
 
 func TestSearch(t *testing.T) {
@@ -15,7 +17,9 @@ func TestSearch(t *testing.T) {
 
 	var (
 		server *Server
-		user   User
+		myUser User
+		user1  User
+		user2  User
 	)
 
 	/*
@@ -28,21 +32,54 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user, err = server.CreateTestUser(mail, pass)
+		myUser, err = server.CreateTestUser(mail, pass)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user.Longitude = 21.0
-		user.Latitude = 42.0
-		user.Gender = "female"
-		user.Orientation = ""
-		err = server.Db.UpdateUser(user)
+		myUser.Longitude = 21.0
+		myUser.Latitude = 42.0
+		myUser.Gender = "female"
+		myUser.Orientation = ""
+		err = server.Db.UpdateUser(myUser)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		err = server.AuthorizeTestUser(user)
+		user1, err = server.CreateTestUser("testUser1@gmail.com", "pass")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user1.Longitude = 21.0
+		user1.Latitude = 42.0
+		user1.Gender = "male"
+		user1.Orientation = "hetero"
+		err = server.Db.UpdateUser(user1)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user2, err = server.CreateTestUser("testUser2@gmail.com", "pass")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user2.Longitude = 21.0
+		user2.Latitude = 42.0
+		user2.Gender = "male"
+		user2.Orientation = "homo"
+		err = server.Db.UpdateUser(user2)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		err = server.AuthorizeTestUser(myUser)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot authorize test user - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		err = server.Db.SetNewLike(myUser.Uid, 1)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot authorize test user - " + err.Error() + NO_COLOR)
 			t.FailNow()
@@ -56,6 +93,7 @@ func TestSearch(t *testing.T) {
 		name           string
 		payload        map[string]interface{}
 		expectedStatus int
+		expectedAmount int
 	}{
 		{
 			name: "valid - radius",
@@ -67,12 +105,14 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			expectedStatus: http.StatusOK,
+			expectedAmount: 0,
 		}, {
 			name: "valid - online",
 			payload: map[string]interface{}{
 				"online": map[string]interface{}{},
 			},
 			expectedStatus: http.StatusOK,
+			expectedAmount: 0,
 		}, {
 			name: "valid - age",
 			payload: map[string]interface{}{
@@ -82,6 +122,7 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			expectedStatus: http.StatusOK,
+			expectedAmount: 1,
 		}, {
 			name: "valid - interests",
 			payload: map[string]interface{}{
@@ -91,6 +132,7 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			expectedStatus: http.StatusOK,
+			expectedAmount: 0,
 		}, {
 			name: "invalid",
 			payload: map[string]interface{}{
@@ -101,7 +143,15 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
-		},
+			expectedAmount: 0,
+			}, {
+				name: "valid - search users that wasnt liked",
+				payload: map[string]interface{}{
+					"wasntLiked": map[string]interface{}{},
+				},
+				expectedStatus: http.StatusOK,
+				expectedAmount: 1,
+			},
 	}
 
 	for _, tc := range testCases {
@@ -111,6 +161,7 @@ func TestSearch(t *testing.T) {
 				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
 				rec = httptest.NewRecorder()
 				req *http.Request
+				response []interface{}
 			)
 			// all request params should be handled in middlewares
 			// so new request body is nil
@@ -118,7 +169,7 @@ func TestSearch(t *testing.T) {
 
 			// put info from middlewares into context
 			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)
-			ctx = context.WithValue(ctx, "uid", user.Uid)
+			ctx = context.WithValue(ctx, "uid", myUser.Uid)
 
 			// start test
 			server.Search(rec, req.WithContext(ctx))
@@ -127,6 +178,17 @@ func TestSearch(t *testing.T) {
 			} else if rec.Code != http.StatusOK {
 				t_.Logf(GREEN_BG + "SUCCESS: search was failed as it expected" + NO_COLOR)
 			} else {
+				err := json.NewDecoder(rec.Body).Decode(&response)
+				if err != nil {
+					t_.Errorf(RED_BG+"ERROR in unmarshal: %s"+NO_COLOR, err.Error())
+				}
+				fmt.Printf("%#v\n", response)
+				usersAmount := len(response)
+				if usersAmount == tc.expectedAmount {
+					t_.Logf(GREEN_BG+"SUCCESS: users amount #%d status code #%d"+NO_COLOR, usersAmount, rec.Code)
+				} else {
+					t_.Errorf(RED_BG+"ERROR: wrong message amount: got %d, expected %d"+NO_COLOR, usersAmount, tc.expectedAmount)
+				}
 				t_.Logf(GREEN_BG + "SUCCESS: search is done" + NO_COLOR)
 			}
 		})
@@ -139,24 +201,40 @@ func TestSearch(t *testing.T) {
 	t.Run("delete test user", func(t_ *testing.T) {
 
 		//	Delete devices of test user
-		devices, err := server.Db.GetDevicesByUid(user.Uid)
+		devices, err := server.Db.GetDevicesByUid(myUser.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot get devices of user that i trying to delete - " + err.Error() + NO_COLOR)
-			return
+			// return
 		}
 		for _, device := range devices {
 			err = server.Db.DeleteDevice(device.Id)
 			if err != nil {
 				t_.Errorf(RED_BG + "Error: cannot delete device of user - " + err.Error() + NO_COLOR)
-				return
+				// return
 			}
 		}
 
-		//	Delete user
-		err = server.Db.DeleteUser(user.Uid)
+		//	Unset like
+		err = server.Db.UnsetLike(myUser.Uid, 1)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
-			return
+		}
+
+		//	Delete user
+		err = server.Db.DeleteUser(myUser.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
+			// return
+		}
+		err = server.Db.DeleteUser(user1.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
+			// return
+		}
+		err = server.Db.DeleteUser(user2.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
+			// return
 		}
 	})
 }

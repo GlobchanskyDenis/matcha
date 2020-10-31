@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	// "fmt"
 )
 
 // Фильтры по онлайну, возрасту, рейтингу, локации (или радиус от заданной точки), интересам,
@@ -51,7 +52,6 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
 	query := filters.PrepareQuery(sexRestrictions, &server.Logger)
-	// println(query)
 	searchUsers, err = server.Db.GetUsersByQuery(query)
 	if err != nil {
 		server.Logger.LogError(r, "GetUsersByQuery returned error "+err.Error())

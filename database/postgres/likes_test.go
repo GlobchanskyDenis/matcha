@@ -129,26 +129,6 @@ func TestLikes(t *testing.T) {
 		isValid bool
 	}{
 		{
-			// 	name: "Unset like uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
-			// 	uid1: user1.Uid,
-			// 	uid2: user2.Uid,
-			// 	isValid: true,
-			// },{
-			// 	name: "Unset like uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
-			// 	uid1: user1.Uid,
-			// 	uid2: user3.Uid,
-			// 	isValid: true,
-			// },{
-			// 	name: "Unset like uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user1.Uid),
-			// 	uid1: user3.Uid,
-			// 	uid2: user1.Uid,
-			// 	isValid: true,
-			// },{
-			// 	name: "Unset like uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user1.Uid),
-			// 	uid1: user2.Uid,
-			// 	uid2: user1.Uid,
-			// 	isValid: true,
-			// },{
 			name:    "Unset like uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
 			uid1:    user2.Uid,
 			uid2:    user3.Uid,
