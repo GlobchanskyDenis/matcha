@@ -16,6 +16,10 @@ type ConnFake struct {
 		uidSender   int
 		uidReceiver int
 	}
+	ignore map[int]struct {
+		uidSender   int
+		uidReceiver int
+	}
 }
 
 func New() *ConnFake {
@@ -30,6 +34,10 @@ func (conn *ConnFake) Connect(conf *config.Sql) error {
 	conn.photos = map[int]common.Photo{}
 	conn.interests = map[int]common.Interest{}
 	conn.likes = map[int]struct {
+		uidSender   int
+		uidReceiver int
+	}{}
+	conn.ignore = map[int]struct {
 		uidSender   int
 		uidReceiver int
 	}{}
@@ -120,6 +128,14 @@ func (conn *ConnFake) CreateInterestsTable() error {
 
 func (conn *ConnFake) CreateLikesTable() error {
 	conn.likes = map[int]struct {
+		uidSender   int
+		uidReceiver int
+	}{}
+	return nil
+}
+
+func (conn *ConnFake) CreateIgnoreTable() error {
+	conn.ignore = map[int]struct {
 		uidSender   int
 		uidReceiver int
 	}{}

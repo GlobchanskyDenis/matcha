@@ -28,7 +28,10 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 	result, err := stmt.Exec(uidSender, uidReceiver)
 	if err != nil {
 		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "likes_pkey"`) {
-			return errors.ImpossibleToExecute
+			return errors.ImpossibleToExecute //.AddOriginalError(err)
+		}
+		if strings.Contains(err.Error(), `likeSender_fkey`) || strings.Contains(err.Error(), `likeReceiver_fkey`) {
+			return errors.UserNotExist //.AddOriginalError(err)
 		}
 		return errors.DatabaseQueryError.AddOriginalError(err)
 	}
@@ -163,9 +166,8 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 		users     []common.FriendUser
 		interests string
 		birth     interface{}
-		// stringPtr *string
-		date time.Time
-		ok   bool
+		date      time.Time
+		ok        bool
 	)
 
 	// Стэк запроса: добавление последнего сообщения к пользователю, добавление фотографии к пользователю,

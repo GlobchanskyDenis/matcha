@@ -8,10 +8,10 @@ import (
 	"strconv"
 )
 
-// HTTP HANDLER FOR DOMAIN /like/unset/ . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /ignore/set/ . IT HANDLES:
 // IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
 // REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
+func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid64           float64
 		myUid, otherUid int
@@ -44,20 +44,24 @@ func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 	}
 	otherUid = int(uid64)
 
-	err = server.Db.UnsetLike(myUid, otherUid)
+	err = server.Db.SetNewIgnore(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to set like from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 			" to user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
-		server.error(w, errors.ImpossibleToExecute.WithArguments("Лайк отсутствует в базе", "like not exists in database"))
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Игнорирование уже существует", "ignor already exists"))
+		return
+	} else if errors.UserNotExist.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "User not exist - "+BLUE+err.Error()+NO_COLOR)
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Такого пользователя не существует", "User not exist"))
 		return
 	} else if err != nil {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 
 	// This is my valid case
 	w.WriteHeader(http.StatusOK) // 200
-	server.Logger.LogSuccess(r, "Like was unset successfully from user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+	server.Logger.LogSuccess(r, "Ignore was set successfully from user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 		" to user #"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
 }

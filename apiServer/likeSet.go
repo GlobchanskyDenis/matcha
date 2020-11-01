@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// HTTP HANDLER FOR DOMAIN /message/get/ . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /like/set/ . IT HANDLES:
 // IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +69,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	} else if user.AvaID == 0 {
 		server.Logger.LogWarning(r, "User#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no photos")
@@ -84,9 +84,13 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 			" to user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Лайк уже существует", "like already exists"))
 		return
+	} else if errors.UserNotExist.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "User not exist - "+BLUE+err.Error()+NO_COLOR)
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Такого пользователя не существует", "User not exist"))
+		return
 	} else if err != nil {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

@@ -107,6 +107,15 @@ func main() {
 		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
+	print("Create ignore table\t\t")
+	err = server.Db.CreateIgnoreTable()
+	if err != nil {
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
+		return
+	} else {
+		println(common.GREEN + " - done" + common.NO_COLOR)
+	}
+
 	print("Add admin@gmail.com user\t")
 	user, err := server.Db.SetNewUser("admin@gmail.com", handlers.PassHash("admin"))
 	if err != nil {

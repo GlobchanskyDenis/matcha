@@ -3,13 +3,15 @@ package apiServer
 import (
 	. "MatchaServer/common"
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
 )
 
-func TestLikes(t *testing.T) {
+func TestIgnores(t *testing.T) {
 	print(NO_COLOR)
 	defer print(YELLOW)
 
@@ -69,7 +71,7 @@ func TestLikes(t *testing.T) {
 	})
 
 	/*
-	**	Test cases. Set likes
+	**	Test cases. Set ignores
 	 */
 	testCasesSet := []struct {
 		name           string
@@ -78,28 +80,28 @@ func TestLikes(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name: "valid - set like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
+			name: "valid - set ignore from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid - set like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
+			name: "valid - set ignore from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
 			uid:  user2.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user1.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid - set like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
+			name: "valid - set ignore from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid - set like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
+			name: "valid - set ignore from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:  user2.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user3.Uid),
@@ -137,9 +139,9 @@ func TestLikes(t *testing.T) {
 			ctx = context.WithValue(ctx, "uid", tc.uid)
 
 			// start test
-			server.LikeSet(rec, req.WithContext(ctx))
+			server.IgnoreSet(rec, req.WithContext(ctx))
 			if rec.Code == tc.expectedStatus && tc.expectedStatus == http.StatusOK {
-				t_.Logf(GREEN_BG + "SUCCESS: like was set" + NO_COLOR)
+				t_.Logf(GREEN_BG + "SUCCESS: ignore was set" + NO_COLOR)
 			} else if rec.Code == tc.expectedStatus {
 				t_.Logf(GREEN_BG + "SUCCESS: test was failed as it expected" + NO_COLOR)
 			} else {
@@ -149,7 +151,73 @@ func TestLikes(t *testing.T) {
 	}
 
 	/*
-	**	Test cases. Unset likes
+	**	Test cases. Get ignored users
+	 */
+	testCasesGet := []struct {
+		name           string
+		uid            int
+		expectedStatus int
+		expectedAmount int
+	}{
+		{
+			name:           "get ignored users of user#" + strconv.Itoa(user1.Uid),
+			uid:            user1.Uid,
+			expectedStatus: http.StatusOK,
+			expectedAmount: 2,
+		}, {
+			name:           "get ignored users of user#" + strconv.Itoa(user2.Uid),
+			uid:            user2.Uid,
+			expectedStatus: http.StatusOK,
+			expectedAmount: 2,
+		}, {
+			name:           "get ignored users of user#" + strconv.Itoa(user3.Uid),
+			uid:            user3.Uid,
+			expectedStatus: http.StatusOK,
+			expectedAmount: 0,
+		},
+	}
+	for _, tc := range testCasesGet {
+		t.Run(tc.name, func(t_ *testing.T) {
+			var (
+				ctx      context.Context
+				url      = "http://localhost:" + strconv.Itoa(server.Port) + "/user/get/ignored/"
+				rec      = httptest.NewRecorder()
+				req      *http.Request
+				response []interface{}
+			)
+			// all request params should be handled in middlewares
+			// so new request body is nil
+			req = httptest.NewRequest("POST", url, nil)
+
+			// put info from middlewares into context
+			// ctx = context.WithValue(req.Context(), "requestParams", tc.payload)
+			ctx = context.WithValue(ctx, "uid", tc.uid)
+
+			// start test
+			server.UserGetIgnored(rec, req.WithContext(ctx))
+			if rec.Code != tc.expectedStatus {
+				t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR, rec.Code, tc.expectedStatus)
+			} else if rec.Code != http.StatusOK {
+				t_.Logf(GREEN_BG + "SUCCESS: search was failed as it expected" + NO_COLOR)
+			} else {
+				err := json.NewDecoder(rec.Body).Decode(&response)
+				if err != nil {
+					t_.Errorf(RED_BG+"ERROR in unmarshal: %s"+NO_COLOR, err.Error())
+				}
+				fmt.Printf("%#v\n", response)
+				usersAmount := len(response)
+				if usersAmount == tc.expectedAmount {
+					t_.Logf(GREEN_BG+"SUCCESS: users amount #%d status code #%d"+NO_COLOR, usersAmount, rec.Code)
+				} else {
+					t_.Errorf(RED_BG+"ERROR: wrong message amount: got %d, expected %d"+NO_COLOR, usersAmount, tc.expectedAmount)
+				}
+				t_.Logf(GREEN_BG + "SUCCESS: search is done" + NO_COLOR)
+			}
+		})
+	}
+
+	/*
+	**	Test cases. Unset ignores
 	 */
 	testCasesUnset := []struct {
 		name           string
@@ -158,28 +226,28 @@ func TestLikes(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name: "valid - unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
+			name: "valid - unset ignore from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid - unset like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
+			name: "valid - unset ignore from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user1.Uid),
 			uid:  user2.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user1.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid - unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
+			name: "valid - unset ignore from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user3.Uid),
 			},
 			expectedStatus: http.StatusOK,
 		}, {
-			name: "valid - unset like from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
+			name: "valid - unset ignore from uid#" + strconv.Itoa(user2.Uid) + " and uid#" + strconv.Itoa(user3.Uid),
 			uid:  user2.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user3.Uid),
@@ -191,7 +259,7 @@ func TestLikes(t *testing.T) {
 			payload:        map[string]interface{}{},
 			expectedStatus: http.StatusBadRequest,
 		}, {
-			name: "invalid - repeating unset like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
+			name: "invalid - repeating unset ignore from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
@@ -217,7 +285,7 @@ func TestLikes(t *testing.T) {
 			ctx = context.WithValue(ctx, "uid", tc.uid)
 
 			// start test
-			server.LikeUnset(rec, req.WithContext(ctx))
+			server.IgnoreUnset(rec, req.WithContext(ctx))
 			if rec.Code == tc.expectedStatus && tc.expectedStatus == http.StatusOK {
 				t_.Logf(GREEN_BG + "SUCCESS: like was set" + NO_COLOR)
 			} else if rec.Code == tc.expectedStatus {

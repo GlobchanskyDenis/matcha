@@ -27,10 +27,12 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoDownload))))
 	mux.Handle("/photo/upload/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoUpload))))
+	mux.Handle("/user/get/friends/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetFriends))))
+	mux.Handle("/user/get/ignored/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetIgnored))))
 	mux.Handle("/user/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
-	mux.Handle("/user/getFriends/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetFriends))))
 	mux.Handle("/search/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.Search))))
 	mux.Handle("/message/get/", server.PostMethodMiddleWare(
@@ -43,6 +45,10 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeSet))))
 	mux.Handle("/like/unset/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeUnset))))
+	mux.Handle("/ignore/set/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreSet))))
+	mux.Handle("/ignore/unset/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreUnset))))
 
 	// PATCH
 	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(

@@ -234,3 +234,13 @@ func (conn ConnDB) CreateLikesTable() error {
 		"CONSTRAINT likeReceiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }
+
+func (conn ConnDB) CreateIgnoreTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE ignore (uidSender INT NOT NULL, " +
+		"uidReceiver INT NOT NULL, " +
+		"PRIMARY KEY (uidSender, uidReceiver), " +
+		"CONSTRAINT ignoreSender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
+		"CONSTRAINT ignoreReceiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
+	return err
+}

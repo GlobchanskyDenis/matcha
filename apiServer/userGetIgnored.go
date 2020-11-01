@@ -9,12 +9,12 @@ import (
 	"strconv"
 )
 
-// HTTP HANDLER FOR DOMAIN /user/get/friends/ . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /user/get/ignored/ . IT HANDLES:
 // IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
 // REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) UserGetFriends(w http.ResponseWriter, r *http.Request) {
+func (server *Server) UserGetIgnored(w http.ResponseWriter, r *http.Request) {
 	var (
-		users []FriendUser
+		users []User
 		uid   int
 		err   error
 		ctx   context.Context
@@ -23,9 +23,9 @@ func (server *Server) UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	ctx = r.Context()
 	uid = ctx.Value("uid").(int)
 
-	users, err = server.Db.GetFriendUsers(uid)
+	users, err = server.Db.GetIgnoredUsers(uid)
 	if err != nil {
-		server.Logger.LogError(r, "GetFriendUsers returned error - "+err.Error())
+		server.Logger.LogError(r, "GetIgnoredUsers returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}
