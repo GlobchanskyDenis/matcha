@@ -28,10 +28,11 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 	result, err := stmt.Exec(uidSender, uidReceiver)
 	if err != nil {
 		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "likes_pkey"`) {
-			return errors.ImpossibleToExecute //.AddOriginalError(err)
+			return errors.ImpossibleToExecute.WithArguments("Вы уже лайкали этого пользователя",
+				"You are already liked this user")
 		}
 		if strings.Contains(err.Error(), `likeSender_fkey`) || strings.Contains(err.Error(), `likeReceiver_fkey`) {
-			return errors.UserNotExist //.AddOriginalError(err)
+			return errors.UserNotExist
 		}
 		return errors.DatabaseQueryError.AddOriginalError(err)
 	}
@@ -64,7 +65,8 @@ func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Не получилось изменить рейтинг пользователя",
+			"Failed to change user rating")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Уменьшено "+strconv.Itoa(int(nbr64))+" рейтинга",
@@ -108,7 +110,8 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Вы не лайкали этого пользователя",
+			"You are not liked this user")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Удалено "+strconv.Itoa(int(nbr64))+" лайков",
@@ -131,7 +134,8 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Не получилось изменить рейтинг пользователя",
+			"Failed to change user rating")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Убрано "+strconv.Itoa(int(nbr64))+" рейтинга",

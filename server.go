@@ -31,6 +31,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetFriends))))
 	mux.Handle("/user/get/ignored/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetIgnored))))
+	mux.Handle("/user/get/claimed/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetClaimed))))
 	mux.Handle("/user/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
 	mux.Handle("/search/", server.PostMethodMiddleWare(
@@ -49,6 +51,10 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreSet))))
 	mux.Handle("/ignore/unset/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreUnset))))
+	mux.Handle("/claim/set/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimSet))))
+	mux.Handle("/claim/unset/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimUnset))))
 
 	// PATCH
 	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(

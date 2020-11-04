@@ -46,16 +46,16 @@ func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 
 	err = server.Db.SetNewIgnore(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
-		server.Logger.LogWarning(r, "Imposible to set like from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+		server.Logger.LogWarning(r, "Imposible to set ignore from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 			" to user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
-		server.error(w, errors.ImpossibleToExecute.WithArguments("Игнорирование уже существует", "ignor already exists"))
+		server.error(w, err.(errors.ApiError))
 		return
 	} else if errors.UserNotExist.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "User not exist - "+BLUE+err.Error()+NO_COLOR)
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Такого пользователя не существует", "User not exist"))
 		return
 	} else if err != nil {
-		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.Logger.LogError(r, "SetNewIgnore returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}

@@ -16,7 +16,11 @@ type ConnFake struct {
 		uidSender   int
 		uidReceiver int
 	}
-	ignore map[int]struct {
+	ignores map[int]struct {
+		uidSender   int
+		uidReceiver int
+	}
+	claims map[int]struct {
 		uidSender   int
 		uidReceiver int
 	}
@@ -37,7 +41,11 @@ func (conn *ConnFake) Connect(conf *config.Sql) error {
 		uidSender   int
 		uidReceiver int
 	}{}
-	conn.ignore = map[int]struct {
+	conn.ignores = map[int]struct {
+		uidSender   int
+		uidReceiver int
+	}{}
+	conn.claims = map[int]struct {
 		uidSender   int
 		uidReceiver int
 	}{}
@@ -66,6 +74,12 @@ func (conn ConnFake) TruncateAllTables() error {
 	for key, _ := range conn.likes {
 		delete(conn.likes, key)
 	}
+	for key, _ := range conn.ignores {
+		delete(conn.ignores, key)
+	}
+	for key, _ := range conn.claims {
+		delete(conn.claims, key)
+	}
 	return nil
 }
 
@@ -84,6 +98,15 @@ func (conn ConnFake) DropAllTables() error {
 	}
 	for key, _ := range conn.interests {
 		delete(conn.interests, key)
+	}
+	for key, _ := range conn.likes {
+		delete(conn.likes, key)
+	}
+	for key, _ := range conn.ignores {
+		delete(conn.ignores, key)
+	}
+	for key, _ := range conn.claims {
+		delete(conn.claims, key)
 	}
 	return nil
 }
@@ -134,8 +157,16 @@ func (conn *ConnFake) CreateLikesTable() error {
 	return nil
 }
 
-func (conn *ConnFake) CreateIgnoreTable() error {
-	conn.ignore = map[int]struct {
+func (conn *ConnFake) CreateIgnoresTable() error {
+	conn.ignores = map[int]struct {
+		uidSender   int
+		uidReceiver int
+	}{}
+	return nil
+}
+
+func (conn *ConnFake) CreateClaimsTable() error {
+	conn.claims = map[int]struct {
 		uidSender   int
 		uidReceiver int
 	}{}

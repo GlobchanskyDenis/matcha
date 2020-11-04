@@ -48,10 +48,10 @@ func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to set like from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 			" to user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
-		server.error(w, errors.ImpossibleToExecute.WithArguments("Лайк отсутствует в базе", "like not exists in database"))
+		server.error(w, err.(errors.ApiError))
 		return
 	} else if err != nil {
-		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.Logger.LogError(r, "UnsetLike returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
 	}

@@ -107,8 +107,17 @@ func main() {
 		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
 
-	print("Create ignore table\t\t")
-	err = server.Db.CreateIgnoreTable()
+	print("Create ignores table\t\t")
+	err = server.Db.CreateIgnoresTable()
+	if err != nil {
+		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
+		return
+	} else {
+		println(common.GREEN + " - done" + common.NO_COLOR)
+	}
+
+	print("Create claims table\t\t")
+	err = server.Db.CreateClaimsTable()
 	if err != nil {
 		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return

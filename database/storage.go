@@ -20,7 +20,8 @@ type Storage interface {
 	CreateDevicesTable() error
 	CreateInterestsTable() error
 	CreateLikesTable() error
-	CreateIgnoreTable() error
+	CreateIgnoresTable() error
+	CreateClaimsTable() error
 
 	// user
 	SetNewUser(mail string, passwd string) (common.User, error)
@@ -64,8 +65,13 @@ type Storage interface {
 	GetFriendUsers(myUid int) ([]common.FriendUser, error)
 	IsICanSpeakWithUser(myUid, otherUid int) (bool, error)
 
-	// ignore
+	// ignores
 	SetNewIgnore(uidSender int, uidReceiver int) error
 	UnsetIgnore(uidSender int, uidReceiver int) error
 	GetIgnoredUsers(uidSender int) ([]common.User, error)
+
+	// claims
+	SetNewClaim(uidSender int, uidReceiver int) error
+	UnsetClaim(uidSender int, uidReceiver int) error
+	GetClaimedUsers(uidSender int) ([]common.User, error)
 }

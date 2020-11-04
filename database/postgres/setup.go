@@ -39,15 +39,15 @@ func (Conn ConnDB) TruncateAllTables() error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("TRUNCATE TABLE notif") //IF EXISTS
+	_, err = db.Exec("TRUNCATE TABLE notifs") //IF EXISTS
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("TRUNCATE TABLE message") //IF EXISTS
+	_, err = db.Exec("TRUNCATE TABLE messages") //IF EXISTS
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("TRUNCATE TABLE photo") //IF EXISTS
+	_, err = db.Exec("TRUNCATE TABLE photos") //IF EXISTS
 	if err != nil {
 		return err
 	}
@@ -77,6 +77,14 @@ func (Conn ConnDB) DropAllTables() error {
 		return err
 	}
 	_, err = db.Exec("DROP TABLE IF EXISTS likes")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS ignores")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DROP TABLE IF EXISTS claims")
 	if err != nil {
 		return err
 	}
@@ -149,6 +157,7 @@ func (conn ConnDB) CreateUsersTable() error {
 		"longitude FLOAT DEFAULT 0, " +
 		"interests VARCHAR(" + strconv.Itoa(config.INTEREST_MAX_LEN) + ")[] DEFAULT '{}'," +
 		"status enum_status NOT NULL DEFAULT 'not confirmed'," +
+		"search_visibility BOOL NOT NULL DEFAULT false, " +
 		"rating INTEGER NOT NULL DEFAULT 0)")
 	if err != nil {
 		return err
@@ -235,12 +244,22 @@ func (conn ConnDB) CreateLikesTable() error {
 	return err
 }
 
-func (conn ConnDB) CreateIgnoreTable() error {
+func (conn ConnDB) CreateIgnoresTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE ignore (uidSender INT NOT NULL, " +
+	_, err := db.Exec("CREATE TABLE ignores (uidSender INT NOT NULL, " +
 		"uidReceiver INT NOT NULL, " +
 		"PRIMARY KEY (uidSender, uidReceiver), " +
-		"CONSTRAINT ignoreSender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
-		"CONSTRAINT ignoreReceiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
+		"CONSTRAINT ignores_sender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
+		"CONSTRAINT ignores_receiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
+	return err
+}
+
+func (conn ConnDB) CreateClaimsTable() error {
+	db := conn.db
+	_, err := db.Exec("CREATE TABLE claims (uidSender INT NOT NULL, " +
+		"uidReceiver INT NOT NULL, " +
+		"PRIMARY KEY (uidSender, uidReceiver), " +
+		"CONSTRAINT claims_sender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
+		"CONSTRAINT claims_receiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
 	return err
 }

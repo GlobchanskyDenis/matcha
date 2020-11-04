@@ -20,17 +20,18 @@ func (conn ConnDB) SetNewIgnore(uidSender int, uidReceiver int) error {
 	/*
 	**	Set ignore to its table
 	 */
-	stmt, err := tx.Prepare("INSERT INTO ignore (uidSender, uidReceiver) VALUES ($1, $2)")
+	stmt, err := tx.Prepare("INSERT INTO ignores (uidSender, uidReceiver) VALUES ($1, $2)")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	result, err := stmt.Exec(uidSender, uidReceiver)
 	if err != nil {
-		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "ignore_pkey"`) {
-			return errors.ImpossibleToExecute
+		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "ignores_pkey"`) {
+			return errors.ImpossibleToExecute.WithArguments("Вы уже игнорируете этого пользователя",
+				"You are already ignoring this user")
 		}
-		if strings.Contains(err.Error(), `ignoreSender_fkey`) || strings.Contains(err.Error(), `ignoreReceiver_fkey`) {
+		if strings.Contains(err.Error(), `ignores_sender_fkey`) || strings.Contains(err.Error(), `ignores_receiver_fkey`) {
 			return errors.UserNotExist
 		}
 		return errors.DatabaseQueryError.AddOriginalError(err)
@@ -41,7 +42,8 @@ func (conn ConnDB) SetNewIgnore(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Вы уже игнорируете этого пользователя",
+			"You are already ignoring this user")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Добавлено "+strconv.Itoa(int(nbr64))+" игнорирований",
@@ -64,7 +66,8 @@ func (conn ConnDB) SetNewIgnore(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Не получилось изменить рейтинг пользователя",
+			"Failed to change user rating")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Увеличено "+strconv.Itoa(int(nbr64))+" раз рейтинга",
@@ -93,7 +96,7 @@ func (conn ConnDB) UnsetIgnore(uidSender int, uidReceiver int) error {
 	/*
 	**	Unset ignore from its table
 	 */
-	stmt, err := tx.Prepare("DELETE FROM ignore WHERE uidSender=$1 AND uidReceiver=$2")
+	stmt, err := tx.Prepare("DELETE FROM ignores WHERE uidSender=$1 AND uidReceiver=$2")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
@@ -108,7 +111,8 @@ func (conn ConnDB) UnsetIgnore(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Вы не игнорируете этого пользователя",
+			"You are not ignoring this user")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Удалено "+strconv.Itoa(int(nbr64))+" игнорирований",
@@ -131,7 +135,8 @@ func (conn ConnDB) UnsetIgnore(uidSender int, uidReceiver int) error {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
 	if int(nbr64) == 0 {
-		return errors.ImpossibleToExecute
+		return errors.ImpossibleToExecute.WithArguments("Не получилось изменить рейтинг пользователя",
+			"Failed to change user rating")
 	}
 	if int(nbr64) != 1 {
 		return errors.NewArg("Добавлено "+strconv.Itoa(int(nbr64))+" раз рейтинга",
@@ -148,7 +153,7 @@ func (conn ConnDB) UnsetIgnore(uidSender int, uidReceiver int) error {
 }
 
 func (conn ConnDB) DropUserIgnores(uid int) error {
-	stmt, err := conn.db.Prepare("DELETE FROM ignore WHERE uidSender=$1 OR uidReceiver=$1")
+	stmt, err := conn.db.Prepare("DELETE FROM ignores WHERE uidSender=$1 OR uidReceiver=$1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
@@ -172,7 +177,7 @@ func (conn ConnDB) GetIgnoredUsers(uidSender int) ([]common.User, error) {
 
 	query := `SELECT ignored_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
 		latitude, longitude, interests, status, rating, src FROM
-	(SELECT * FROM users WHERE uid IN (SELECT uidReceiver FROM ignore WHERE uidSender = $1)) AS ignored_users
+	(SELECT * FROM users WHERE uid IN (SELECT uidReceiver FROM ignores WHERE uidSender = $1)) AS ignored_users
 	LEFT JOIN photos ON avaId=pid`
 	rows, err := conn.db.Query(query, uidSender)
 	if err != nil {

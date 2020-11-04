@@ -53,7 +53,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	} else if user.AvaID == 0 {
 		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no avatar")
@@ -82,7 +82,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to set like from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 			" to user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
-		server.error(w, errors.ImpossibleToExecute.WithArguments("Лайк уже существует", "like already exists"))
+		server.error(w, err.(errors.ApiError))
 		return
 	} else if errors.UserNotExist.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "User not exist - "+BLUE+err.Error()+NO_COLOR)

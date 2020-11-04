@@ -8,10 +8,10 @@ import (
 	"strconv"
 )
 
-// HTTP HANDLER FOR DOMAIN /ignore/unset/ . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /claim/set/ . IT HANDLES:
 // IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
 // REQUEST AND RESPONSE DATA IS JSON
-func (server *Server) IgnoreUnset(w http.ResponseWriter, r *http.Request) {
+func (server *Server) ClaimSet(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid64           float64
 		myUid, otherUid int
@@ -44,20 +44,24 @@ func (server *Server) IgnoreUnset(w http.ResponseWriter, r *http.Request) {
 	}
 	otherUid = int(uid64)
 
-	err = server.Db.UnsetIgnore(myUid, otherUid)
+	err = server.Db.SetNewClaim(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
-		server.Logger.LogWarning(r, "Imposible to unset ignore from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+		server.Logger.LogWarning(r, "Imposible to set claim from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 			" to user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
 		server.error(w, err.(errors.ApiError))
 		return
+	} else if errors.UserNotExist.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "User not exist - "+BLUE+err.Error()+NO_COLOR)
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Такого пользователя не существует", "User not exist"))
+		return
 	} else if err != nil {
-		server.Logger.LogError(r, "UnsetIgnore returned error - "+err.Error())
+		server.Logger.LogError(r, "SetNewClaim returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}
 
 	// This is my valid case
 	w.WriteHeader(http.StatusOK) // 200
-	server.Logger.LogSuccess(r, "Ignore was unset successfully from user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+	server.Logger.LogSuccess(r, "Claim was set successfully from user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
 		" to user #"+BLUE+strconv.Itoa(otherUid)+NO_COLOR)
 }

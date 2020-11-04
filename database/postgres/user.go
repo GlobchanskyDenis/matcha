@@ -47,17 +47,33 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 
 func (conn *ConnDB) UpdateUser(user common.User) error {
 	var interests = strings.Join(user.Interests, ",")
+	var searchVisibility bool
+	if user.Fname != "" && user.Lname != "" && user.AvaID != 0 {
+		stmt, err := conn.db.Prepare("SELECT uidSender FROM claims WHERE uidReceiver = $1")
+		if err != nil {
+			stmt.Close()
+			return errors.DatabasePreparingError.AddOriginalError(err)
+		}
+		rows, err := stmt.Query(user.Uid)
+		if err != nil {
+			stmt.Close()
+			return errors.DatabaseQueryError.AddOriginalError(err)
+		}
+		if !rows.Next() {
+			searchVisibility = true
+		}
+	}
 	stmt, err := conn.db.Prepare("UPDATE users SET " +
 		"mail=$2, encryptedPass=$3, fname=$4, lname=$5, birth=$6, gender=$7, " +
 		"orientation=$8, bio=$9, avaID=$10, latitude=$11, longitude=$12, " +
-		"interests='{" + interests + "}', status=$13, rating=$14 WHERE uid=$1")
+		"interests='{" + interests + "}', status=$13, rating=$14, search_visibility=$15 WHERE uid=$1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	result, err := stmt.Exec(user.Uid, user.Mail, user.EncryptedPass, user.Fname,
 		user.Lname, user.Birth.Time, user.Gender, user.Orientation,
-		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating)
+		user.Bio, user.AvaID, user.Latitude, user.Longitude, user.Status, user.Rating, searchVisibility)
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
 	}
