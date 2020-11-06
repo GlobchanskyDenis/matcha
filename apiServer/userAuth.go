@@ -45,7 +45,7 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
 func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, mail, pass, token, tokenWS, response string
+		message, mail, pass, token, response          string
 		err                                           error
 		requestParams                                 map[string]interface{}
 		isExist, ok                                   bool
@@ -131,16 +131,17 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenWS, err = server.Session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
-	if err != nil {
-		server.Logger.LogError(r, "cannot create web socket token - "+err.Error())
-		server.error(w, errors.WebSocketError.WithArguments(err))
-		return
-	}
+	// tokenWS, err = server.Session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
+	// if err != nil {
+	// 	server.Logger.LogError(r, "cannot create web socket token - "+err.Error())
+	// 	server.error(w, errors.WebSocketError.WithArguments(err))
+	// 	return
+	// }
 
 	// This is my valid case. Response status will be set automaticly to 200.
 	w.WriteHeader(http.StatusOK) // 200
-	response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
+	response = `{"x-auth-token":"` + token + `",` + string(jsonUser[1:])
+	// response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 	w.Write([]byte(response))
 	server.Logger.LogSuccess(r, "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
 }

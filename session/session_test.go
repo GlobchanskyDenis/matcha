@@ -24,7 +24,7 @@ func TestAddUser_1(t *testing.T) {
 		t.Errorf(RED_BG+"FAILED: %s"+NO_COLOR+"\n", err.Error())
 		return
 	}
-	user, err := sess.FindUserByToken(token)
+	user, err := sess.findUserByToken(token)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s"+NO_COLOR+"\n", err.Error())
 		return
@@ -51,12 +51,12 @@ func TestAddUser_2(t *testing.T) {
 		t.Errorf(RED_BG+"FAILED: %s"+NO_COLOR+"\n", err.Error())
 		return
 	}
-	user1, err := sess.FindUserByToken(token1)
+	user1, err := sess.findUserByToken(token1)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s"+NO_COLOR+"\n", err.Error())
 		return
 	}
-	user2, err := sess.FindUserByToken(token2)
+	user2, err := sess.findUserByToken(token2)
 	if err != nil {
 		t.Errorf(RED_BG+"FAILED: %s"+NO_COLOR+"\n", err.Error())
 		return
@@ -76,7 +76,7 @@ func TestAddUser_2(t *testing.T) {
 
 func TestAddUserInvalid_1(t *testing.T) {
 	sess := CreateSession()
-	_, err := sess.FindUserByToken("0000000")
+	_, err := sess.findUserByToken("0000000")
 
 	if err == nil {
 		t.Errorf(RED_BG + "FAILED: expected error. Something goes wrong" + NO_COLOR + "\n")

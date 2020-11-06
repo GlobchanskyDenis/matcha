@@ -2,6 +2,8 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
+	"MatchaServer/handlers"
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -11,6 +13,12 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+}
+
+type userMessage struct {
+	Type string `json:"type"`
+	UidReceiver int `json:"uidReceiver"`
+	Body string `json:"body"`
 }
 
 func (server *Server) wsWriteErrorMessage(r *http.Request, ws *websocket.Conn, messageBody string) error {
@@ -23,12 +31,61 @@ func (server *Server) wsWriteErrorMessage(r *http.Request, ws *websocket.Conn, m
 	return nil
 }
 
+func requestMessageValidator(message userMessage) error {
+	switch message.Type {
+	case "logout":
+		return nil
+	case "message":
+		if message.UidReceiver <= 0 || message.Body == "" {
+			return errors.NewArg("Невалидное сообщение", "Invalid message")
+		}
+		return nil
+	default:
+		return errors.NewArg("Незнакомый тип сообщения", "Unknown message type")
+	}
+	return errors.NewArg("Незнакомый тип сообщения", "Unknown message type")
+}
+
+func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, uid int, message userMessage) {
+	isExists, err := server.Db.IsUserExistsByUid(message.UidReceiver)
+	if !isExists {
+		server.Logger.LogWarning(r, `user #`+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+
+			` not exists in database. Skip request`)
+		err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(message.UidReceiver)+` not exists in database`)
+		if err != nil {
+			server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
+		}
+		return
+	}
+	_, err = server.Db.SetNewMessage(uid, message.UidReceiver, message.Body)
+	if err != nil {
+		server.Logger.LogWarning(r, `SetNewMessage returned error - `+err.Error())
+		err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(message.UidReceiver)+` not exists in database`)
+		if err != nil {
+			server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
+		}
+		return
+	}
+	err = server.Session.SendMessageToLoggedUser(message.UidReceiver, uid, message.Body)
+	if err != nil {
+		server.Logger.LogWarning(r, `SendMessageToLoggedUser returned error - `+err.Error())
+		err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(message.UidReceiver)+` not exists in database`)
+		if err != nil {
+			server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
+		}
+		return
+	}
+	server.Logger.LogSuccess(r, "message from user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
+			" ("+BLUE+r.Host+NO_COLOR+") to user #"+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+" transmitted")
+}
+
 // INFINITE LOOP THAT HANDLES MESSAGES FROM CURRENT USER
-func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
-	var decodedMessage map[string]interface{}
+func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) (logout bool) {
+	var message userMessage
 
 	for {
-		_, RequestMessage, err := ws.ReadMessage()
+		//  Получим сообщение от пользователя
+		_, jsonMessage, err := ws.ReadMessage()
 		if err != nil {
 			closeErr, ok := err.(*websocket.CloseError)
 			if ok && (closeErr.Code == 1000 || closeErr.Code == 1001) {
@@ -36,108 +93,51 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) {
 			} else {
 				server.Logger.LogError(r, "ws.ReadMessage returned error - "+err.Error())
 			}
-			return
+			return false
 		}
-		err = json.Unmarshal(RequestMessage, &decodedMessage)
+
+		// Распакуем сообщение из формата json
+		err = json.Unmarshal(jsonMessage, &message)
 		if err != nil {
 			server.Logger.LogError(r, "request json decode failed - "+err.Error()+`. Skip request`)
 			err = server.wsWriteErrorMessage(r, ws, "request json decode failed")
 			if err != nil {
 				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
-				return
+				return false
 			}
 			continue
 		}
-		arg, isExists := decodedMessage["uidReceiver"]
-		if !isExists {
-			server.Logger.LogWarning(r, `"uidReceiver" not exist in received by ws message. Skip request`)
-			err = server.wsWriteErrorMessage(r, ws, `"uidReceiver" not exist in received by ws message`)
-			if err != nil {
-				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
-				return
-			}
-			continue
-		}
-		uidReceiverFloat, ok := arg.(float64)
-		if !ok {
-			server.Logger.LogWarning(r, `wrong type of "uidReceiver". Skip request`)
-			err = server.wsWriteErrorMessage(r, ws, `wrong type of "uidReceiver"`)
-			if err != nil {
-				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
-				return
-			}
-			continue
-		}
-		uidReceiver := int(uidReceiverFloat)
-		server.Logger.Log(r, "user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" ("+BLUE+r.Host+NO_COLOR+
-			") wants to send message to user #"+BLUE+strconv.Itoa(uidReceiver)+NO_COLOR)
-		arg, isExists = decodedMessage["body"]
-		if !isExists {
-			server.Logger.LogWarning(r, `"body" not exist in received by ws message. Skip request`)
-			err = server.wsWriteErrorMessage(r, ws, `"body" not exist in received by ws message`)
-			if err != nil {
-				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
-				return
-			}
-			continue
-		}
-		messageBody, ok := arg.(string)
-		if !ok {
-			server.Logger.LogWarning(r, `wrong type of "body". Skip request`)
-			err = server.wsWriteErrorMessage(r, ws, `wrong type of "body"`)
-			if err != nil {
-				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
-				return
-			}
-			continue
-		}
-		isExists, err = server.Db.IsUserExistsByUid(uidReceiver)
-		if !isExists {
-			server.Logger.LogWarning(r, `user #`+BLUE+strconv.Itoa(uidReceiver)+NO_COLOR+
-				` not exists in database. Skip request`)
-			err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(uidReceiver)+` not exists in database`)
-			if err != nil {
-				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
-				return
-			}
-			continue
-		}
-		_, err = server.Db.SetNewMessage(uid, uidReceiver, messageBody)
+
+		//  Провалидируем сообщение
+		err = requestMessageValidator(message)
 		if err != nil {
-			server.Logger.LogWarning(r, `SetNewMessage returned error - `+err.Error())
-			return
+			server.Logger.LogError(r, `user message validation error. `+BLUE+err.Error()+NO_COLOR+` Skip request`)
+			err = server.wsWriteErrorMessage(r, ws, err.Error())
+			if err != nil {
+				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
+				return true
+			}
+			continue
 		}
-		err = server.Session.SendMessageToLoggedUser(uidReceiver, uid, messageBody)
-		if err != nil {
-			server.Logger.LogWarning(r, `SendMessageToLoggedUser returned error - `+err.Error())
-			return
+
+		//  В зависимости от типа сообщения - обработаем его
+		switch message.Type {
+		case "message":
+			server.sendMessage(r, ws, uid, message)
+		case "logout":
+			return true
 		}
-		server.Logger.LogSuccess(r, "message from user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
-			" ("+BLUE+r.Host+NO_COLOR+") to user #"+BLUE+strconv.Itoa(uidReceiver)+NO_COLOR+" transmitted")
 	}
+	return false
 }
 
 // WEB SOCKET HANDLER FOR DOMAIN /ws/auth/
 // GET PARAMS login AND ws-auth-token SHOULD BE IN REQUEST
 func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
-	var wsAuthToken = r.URL.Query().Get("ws-auth-token")
-	var message string
-	var uidStr = r.URL.Query().Get("uid")
-	var uid, err = strconv.Atoi(uidStr)
-	if err != nil {
-		server.Logger.LogError(r, "uid is invalid "+err.Error())
-		// I should open and close ws connection for browser didn't write errors in server..logs
-		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-		ws, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			return
-		}
-		ws.Close()
-		return
-	}
-
-	server.Logger.Log(r, "Request was recieved, uid="+BLUE+strconv.Itoa(uid)+NO_COLOR+
-		" ws-auth-token="+BLUE+wsAuthToken+NO_COLOR)
+	var xAuthToken = r.URL.Query().Get("x-auth-token")
+	var logMessage string
+	var uid int
+	var isLogged bool
 
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -145,42 +145,43 @@ func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "upgrader returned error - "+err.Error())
 		return
 	}
-	if uid < 1 || wsAuthToken == "" {
-		server.Logger.LogWarning(r, "wrong uid or ws-auth-token is empty")
-		ws.Close()
-		return
-	}
-	tokenWS, err := server.Session.GetTokenWS(uid)
+
+	uid, err = handlers.TokenUidDecode(xAuthToken)
 	if err != nil {
-		server.Logger.LogError(r, "GetTokenWS returned error - "+err.Error())
+		server.Logger.LogWarning(r, "TokenUidDecode returned error - "+err.Error())
 		ws.Close()
 		return
 	}
-	if tokenWS != wsAuthToken {
-		server.Logger.LogWarning(r, "ws-auth-token is wrong! Close Web Socket for user #"+
-			BLUE+strconv.Itoa(uid)+NO_COLOR)
+	isLogged = server.Session.IsUserLoggedByUid(uid)
+	if !isLogged {
+		server.Logger.LogWarning(r, "User #"+strconv.Itoa(uid)+" is not logged")
 		ws.Close()
 		return
 	}
 
-	server.Session.AddWSConnection(uid, ws)
+	userAgent := "default"
+	if len(r.Header["User-Agent"]) >= 1 {
+		userAgent = r.Header["User-Agent"][0]
+	}
 
-	server.Logger.LogSuccess(r, "WebSocket was created")
+	server.Logger.LogSuccess(r, "web socket was created. Uid="+BLUE+strconv.Itoa(uid)+NO_COLOR)
 
-	server.wsReader(r, ws, uid)
+	server.Session.AddWSConnection(uid, ws, userAgent)
 
-	userSessionWasClosed, err := server.Session.RemoveWSConnection(uid, ws)
+	isLogout := server.wsReader(r, ws, uid)
+
+	userSessionWasClosed, err := server.Session.RemoveWSConnection(uid, userAgent, isLogout)
 	if err != nil {
 		server.Logger.LogWarning(r, "RemoveWSConnection returned error: "+err.Error())
 	} else {
 		if userSessionWasClosed {
-			message = "remove ws connection from session. " +
+			logMessage = "remove ws connection from session. " +
 				"User session was closed"
 		} else {
-			message = "remove ws connection from session. " +
+			logMessage = "remove ws connection from session. " +
 				"User session wasn't close - other devices still logged"
 		}
-		server.Logger.Log(r, message)
+		server.Logger.Log(r, logMessage)
 	}
 	ws.Close()
 }

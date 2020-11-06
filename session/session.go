@@ -14,28 +14,31 @@ type tokenChanItem struct {
 	err   error
 }
 
-type SessionItem struct {
+type wsItem struct {
+	conn *websocket.Conn
+}
+
+type sessionItem struct {
 	Uid         int
 	Expires     time.Time
 	LastVisited time.Time
-	TokenWS     string
-	ws          []*websocket.Conn
+	ws          map[string]wsItem
 }
 
 type Session struct {
-	session map[int]SessionItem
+	session map[int]sessionItem
 	mu      *sync.Mutex
 }
 
 func CreateSession() Session {
 	var NewSession = Session{}
-	NewSession.session = map[int]SessionItem{}
+	NewSession.session = map[int]sessionItem{}
 	NewSession.mu = &sync.Mutex{}
 	return NewSession
 }
 
 func (T *Session) AddUserToSession(uid int) (string, error) {
-	var newItem SessionItem
+	var newItem sessionItem
 	var ch = make(chan tokenChanItem)
 	var ret tokenChanItem
 
@@ -52,7 +55,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 	} else {
 		newItem.Uid = uid
 		newItem.LastVisited = time.Now()
-		newItem.ws = []*websocket.Conn{}
+		newItem.ws = map[string]wsItem{}//[]*websocket.Conn{}
 		newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
 	}
 
@@ -113,28 +116,28 @@ func (T *Session) IsUserLoggedByUid(uid int) bool {
 	return true
 }
 
-func (T *Session) FindUserByToken(token string) (SessionItem, error) {
-	var item SessionItem
+func (T *Session) findUserByToken(token string) (sessionItem, error) {
+	var item sessionItem
 	var isExists bool
 	var uid int
 	var err error
 
 	uid, err = handlers.TokenUidDecode(token)
 	if err != nil {
-		return SessionItem{}, errors.NewArg("Ошибка декодирования токена", "Token decode error").AddOriginalError(err)
+		return sessionItem{}, errors.NewArg("Ошибка декодирования токена", "Token decode error").AddOriginalError(err)
 	}
 	T.mu.Lock()
 	item, isExists = T.session[uid]
 	T.mu.Unlock()
 	if !isExists {
-		return SessionItem{}, errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
+		return sessionItem{}, errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
 			"user #"+strconv.Itoa(uid)+" isnt logged")
 	}
 	if item.expiresDate() {
 		T.mu.Lock()
 		delete(T.session, uid)
 		T.mu.Unlock()
-		return SessionItem{}, errors.NewArg("Сессия просрочена", "this session is expired")
+		return sessionItem{}, errors.NewArg("Сессия просрочена", "this session is expired")
 	}
 	item.LastVisited = time.Now()
 	T.mu.Lock()
@@ -143,7 +146,7 @@ func (T *Session) FindUserByToken(token string) (SessionItem, error) {
 	return item, nil
 }
 
-func (T SessionItem) expiresDate() bool {
+func (T sessionItem) expiresDate() bool {
 	var now = time.Now()
 	var lastVisited time.Time
 
@@ -157,74 +160,24 @@ func (T SessionItem) expiresDate() bool {
 	return false
 }
 
-func (T *Session) CreateTokenWS(uid int) (string, error) {
-	var ch = make(chan string)
-	var item SessionItem
-	var isExists bool
-
-	go func(ch chan string, uid int) {
-		ch <- handlers.TokenWebSocketAuth(uid)
-	}(ch, uid)
-
-	T.mu.Lock()
-	item, isExists = T.session[uid]
-	T.mu.Unlock()
-	if !isExists {
-		return "", errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
-			"user #"+strconv.Itoa(uid)+" isnt logged")
-	}
-	if item.expiresDate() {
-		T.mu.Lock()
-		delete(T.session, uid)
-		T.mu.Unlock()
-		return "", errors.NewArg("Сессия просрочена", "this session is expired")
-	}
-	item.LastVisited = time.Now()
-	item.TokenWS = <-ch
-	T.mu.Lock()
-	T.session[uid] = item
-	T.mu.Unlock()
-	return item.TokenWS, nil
-}
-
-func (T *Session) GetTokenWS(uid int) (string, error) {
-	var item SessionItem
-	var isExists bool
-
-	T.mu.Lock()
-	item, isExists = T.session[uid]
-	T.mu.Unlock()
-	if !isExists {
-		return "", errors.NewArg("Пользователь #"+strconv.Itoa(uid)+"не залогинен",
-			"user #"+strconv.Itoa(uid)+" isnt logged")
-	}
-	if item.expiresDate() {
-		T.mu.Lock()
-		delete(T.session, uid)
-		T.mu.Unlock()
-		return "", errors.NewArg("Сессия просрочена", "this session is expired")
-	}
-	return item.TokenWS, nil
-}
-
-func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn) {
-	var item SessionItem
+func (T *Session) AddWSConnection(uid int, newWebSocket *websocket.Conn, userAgent string) {
+	var item sessionItem
 
 	T.mu.Lock()
 	item = T.session[uid]
-	T.mu.Unlock()
-	item.ws = append(item.ws, newWebSocket)
-	T.mu.Lock()
+	item.ws[userAgent] = wsItem{conn: newWebSocket}
 	T.session[uid] = item
 	T.mu.Unlock()
 }
 
-func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn) (bool, error) {
-	var item SessionItem
+func (T *Session) RemoveWSConnection(uid int, userAgent string, isLogout bool) (bool, error) {
+	var item sessionItem
 
 	T.mu.Lock()
 	item = T.session[uid]
 	T.mu.Unlock()
+
+	// invalid case
 	if len(item.ws) < 1 {
 		T.mu.Lock()
 		delete(T.session, uid)
@@ -232,43 +185,56 @@ func (T *Session) RemoveWSConnection(uid int, webSocketToRemove *websocket.Conn)
 		return true, errors.NewArg("у вашего пользователя нет открытых ws соединений",
 			"this user has no ws connections")
 	}
-	if len(item.ws) == 1 {
-		T.mu.Lock()
-		delete(T.session, uid)
-		T.mu.Unlock()
-		return true, nil
+	
+	// Проверяю чтобы такой юзер агент вообще существовал
+	item_, isExist := item.ws[userAgent]
+	if !isExist {
+		return false, errors.NewArg("не найден браузер", "user device is not found")
 	}
-	for i := 0; i < len(item.ws); i++ {
-		if item.ws[i] == webSocketToRemove {
-			if i == 0 {
-				item.ws = item.ws[1:]
-			} else if i == len(item.ws) {
-				item.ws = item.ws[:i]
-			} else {
-				item.ws = append(item.ws[:i], item.ws[(i+1):]...)
-			}
+
+	if isLogout {
+		if len(item.ws) == 1 {
+			// полное удаление сессии юзера (когда соединение последнее)
+			T.mu.Lock()
+			delete(T.session, uid)
+			T.mu.Unlock()
+			return true, nil
+		} else {
+			// удаление только конкретного юзер агента из сессии
+			delete(item.ws, userAgent)
 			T.mu.Lock()
 			T.session[uid] = item
 			T.mu.Unlock()
 			return false, nil
 		}
 	}
-	return false, errors.NewArg("Этот websocket не принадлежит вашему пользователю",
-		"this websocket isnt belong to this user")
+
+	// Удаляю ws из сессии. При этом элемент в мапе с именем юзер агента остается в сессии
+	// Никто не сможет нам написать, или отправить уведомление, но сессия будет ожидать
+	// Переподключения пользователя
+	item_.conn = nil
+	item.ws[userAgent] = item_
+	T.mu.Lock()
+	T.session[uid] = item
+	T.mu.Unlock()
+	return false, nil
 }
 
 func (T *Session) SendNotifToLoggedUser(uidReceiver int, uidSender int, notifBody string) error {
-	var item SessionItem
+	var item sessionItem
 	var message string
 	var err error
-	var ws *websocket.Conn
+	var ws wsItem
 
 	T.mu.Lock()
 	item = T.session[uidReceiver]
 	T.mu.Unlock()
 	for _, ws = range item.ws {
+		if ws.conn == nil {
+			continue
+		}
 		message = `{"type":"notif","uidSender":"` + strconv.Itoa(uidSender) + `","body":"` + notifBody + `"}`
-		err = ws.WriteMessage(1, []byte(message))
+		err = ws.conn.WriteMessage(1, []byte(message))
 		if err != nil {
 			return err
 		}
@@ -277,17 +243,20 @@ func (T *Session) SendNotifToLoggedUser(uidReceiver int, uidSender int, notifBod
 }
 
 func (T *Session) SendMessageToLoggedUser(uidReceiver int, uidSender int, messageBody string) error {
-	var item SessionItem
+	var item sessionItem
 	var message string
 	var err error
-	var ws *websocket.Conn
+	var ws wsItem
 
 	T.mu.Lock()
 	item = T.session[uidReceiver]
 	T.mu.Unlock()
 	for _, ws = range item.ws {
+		if ws.conn == nil {
+			continue
+		}
 		message = `{"type":"message","uidSender":"` + strconv.Itoa(uidSender) + `","body":"` + messageBody + `"}`
-		err = ws.WriteMessage(1, []byte(message))
+		err = ws.conn.WriteMessage(1, []byte(message))
 		if err != nil {
 			return err
 		}
