@@ -250,7 +250,12 @@ func TestLikes(t *testing.T) {
 	 */
 	t.Run("Delete test users and close connection", func(t_ *testing.T) {
 		var wasError bool
-		err := conn.DropUsersLikes(user1.Uid)
+		err := conn.DropUserIgnores(user1.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+		err = conn.DropUsersLikes(user1.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
 			wasError = true
@@ -261,6 +266,11 @@ func TestLikes(t *testing.T) {
 			wasError = true
 		}
 
+		err = conn.DropUserIgnores(user2.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
 		err = conn.DropUsersLikes(user2.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
@@ -272,6 +282,11 @@ func TestLikes(t *testing.T) {
 			wasError = true
 		}
 
+		err = conn.DropUserIgnores(user3.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
 		err = conn.DropUsersLikes(user3.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)

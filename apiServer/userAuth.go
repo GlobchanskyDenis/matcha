@@ -45,11 +45,11 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 // SEND HTTP OPTIONS IN CASE OF OPTIONS METHOD
 func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	var (
-		message, mail, pass, token, response          string
-		err                                           error
-		requestParams                                 map[string]interface{}
-		isExist, ok                                   bool
-		ctx                                           context.Context
+		message, mail, pass, token, response string
+		err                                  error
+		requestParams                        map[string]interface{}
+		isExist, ok                          bool
+		ctx                                  context.Context
 	)
 
 	ctx = r.Context()

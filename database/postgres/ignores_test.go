@@ -210,7 +210,7 @@ func TestIgnore(t *testing.T) {
 		var wasError bool
 		err := conn.DropUserIgnores(user1.Uid)
 		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user1.Uid)
@@ -221,7 +221,7 @@ func TestIgnore(t *testing.T) {
 
 		err = conn.DropUserIgnores(user2.Uid)
 		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user2.Uid)
@@ -232,7 +232,7 @@ func TestIgnore(t *testing.T) {
 
 		err = conn.DropUserIgnores(user3.Uid)
 		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user3.Uid)

@@ -44,7 +44,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	user, err := server.Db.GetUserByUid(uid)
 	if err != nil {
 		server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 		err = server.Db.DeleteDevice(device.Id)
 		if err != nil {
 			server.Logger.LogError(r, "Cannot delete user device - "+err.Error())
-			server.error(w, errors.DatabaseError.WithArguments(err))
+			server.error(w, errors.DatabaseError)
 			return
 		}
 	}
@@ -74,14 +74,14 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	notifs, err := server.Db.GetNotifByUidReceiver(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "GetNotifByUidReceiver returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 	for _, notif := range notifs {
 		err = server.Db.DeleteNotif(notif.Nid)
 		if err != nil {
 			server.Logger.LogError(r, "Cannot delete user notifications - "+err.Error())
-			server.error(w, errors.DatabaseError.WithArguments(err))
+			server.error(w, errors.DatabaseError)
 			return
 		}
 	}
@@ -90,22 +90,38 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	photos, err := server.Db.GetPhotosByUid(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "GetPhotosByUid returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 	for _, photo := range photos {
-		err = server.Db.DeleteNotif(photo.Pid)
+		err = server.Db.DeletePhoto(photo.Pid)
 		if err != nil {
 			server.Logger.LogError(r, "Cannot delete user photos - "+err.Error())
-			server.error(w, errors.DatabaseError.WithArguments(err))
+			server.error(w, errors.DatabaseError)
 			return
 		}
+	}
+
+	// Delete ignores of user before user
+	err = server.Db.DropUserIgnores(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "DropUserIgnores returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+
+	// Delete claims of user before user
+	err = server.Db.DropUserClaims(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "DropUserClaimes returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
 	}
 
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "DeleteUser returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

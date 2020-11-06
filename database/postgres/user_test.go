@@ -45,7 +45,18 @@ func TestUser(t *testing.T) {
 		return
 	}
 	t.Log(GREEN_BG + "SUCCESS: user created" + NO_COLOR)
-	defer conn.DeleteUser(user.Uid)
+	defer func(t *testing.T, conn *ConnDB, user User) {
+		err := conn.DeleteUser(user.Uid)
+		if err != nil {
+			t.Errorf(RED_BG + "ERROR: Cannot delete user - " + err.Error() + NO_COLOR)
+		}
+	}(t, conn, user)
+	defer func(t *testing.T, conn *ConnDB, user User) {
+		err := conn.DropUserIgnores(user.Uid)
+		if err != nil {
+			t.Errorf(RED_BG + "ERROR: Cannot drop user ignores - " + err.Error() + NO_COLOR)
+		}
+	}(t, conn, user)
 
 	user.Pass = pass
 	user.EncryptedPass = handlers.PassHash(pass)

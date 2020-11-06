@@ -44,6 +44,13 @@ func (server *Server) ClaimUnset(w http.ResponseWriter, r *http.Request) {
 	}
 	otherUid = int(uid64)
 
+	if myUid == otherUid {
+		server.Logger.LogWarning(r, "The user cannot unset claim from himself. Uid #"+BLUE+strconv.Itoa(myUid)+NO_COLOR)
+		server.error(w, errors.InvalidArgument.WithArguments("Пользователь не может снимать жалобы с себя",
+			"The user cannot unset claim from himself"))
+		return
+	}
+
 	err = server.Db.UnsetClaim(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to set claim from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+

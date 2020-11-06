@@ -11,7 +11,18 @@ import (
 
 func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, error) {
 	var user common.User
-	stmt, err := conn.db.Prepare("INSERT INTO users (mail, encryptedPass) VALUES ($1, $2) RETURNING uid, mail")
+	/*
+	**	Transaction start
+	 */
+	tx, err := conn.db.Begin()
+	if err != nil {
+		return user, errors.DatabaseTransactionError.AddOriginalError(err)
+	}
+	defer tx.Rollback()
+	/*
+	**	Set new user
+	 */
+	stmt, err := tx.Prepare("INSERT INTO users (mail, encryptedPass) VALUES ($1, $2) RETURNING uid, mail")
 	if err != nil {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
@@ -19,6 +30,45 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, e
 	err = stmt.QueryRow(mail, encryptedPass).Scan(&user.Uid, &user.Mail)
 	if err != nil {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	/*
+	**	Set user should ignore himself in search queries
+	 */
+	stmt, err = tx.Prepare("INSERT INTO ignores (uidSender, uidReceiver) VALUES ($1, $1)")
+	if err != nil {
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	defer stmt.Close()
+	result, err := stmt.Exec(user.Uid)
+	if err != nil {
+		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "ignores_pkey"`) {
+			return user, errors.ImpossibleToExecute.WithArguments("Вы уже игнорируете этого пользователя",
+				"You are already ignoring this user")
+		}
+		if strings.Contains(err.Error(), `ignores_sender_fkey`) || strings.Contains(err.Error(), `ignores_receiver_fkey`) {
+			return user, errors.UserNotExist
+		}
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	// handle results
+	nbr64, err := result.RowsAffected()
+	if err != nil {
+		return user, errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	if int(nbr64) == 0 {
+		return user, errors.ImpossibleToExecute.WithArguments("Вы уже игнорируете этого пользователя",
+			"You are already ignoring this user")
+	}
+	if int(nbr64) != 1 {
+		return user, errors.NewArg("Добавлено "+strconv.Itoa(int(nbr64))+" игнорирований",
+			strconv.Itoa(int(nbr64))+" ignores was added")
+	}
+	/*
+	**	Close transaction
+	 */
+	err = tx.Commit()
+	if err != nil {
+		return user, errors.DatabaseTransactionError.AddOriginalError(err)
 	}
 	return user, nil
 }

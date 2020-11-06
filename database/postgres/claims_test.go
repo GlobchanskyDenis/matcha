@@ -210,7 +210,12 @@ func TestClaims(t *testing.T) {
 		var wasError bool
 		err := conn.DropUserClaims(user1.Uid)
 		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
+			t_.Errorf(RED_BG + "ERROR: cannot drop claims - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+		err = conn.DropUserIgnores(user1.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user1.Uid)
@@ -221,7 +226,12 @@ func TestClaims(t *testing.T) {
 
 		err = conn.DropUserClaims(user2.Uid)
 		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
+			t_.Errorf(RED_BG + "ERROR: cannot drop claims - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+		err = conn.DropUserIgnores(user2.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user2.Uid)
@@ -232,7 +242,12 @@ func TestClaims(t *testing.T) {
 
 		err = conn.DropUserClaims(user3.Uid)
 		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
+			t_.Errorf(RED_BG + "ERROR: cannot drop claims - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+		err = conn.DropUserIgnores(user3.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user3.Uid)

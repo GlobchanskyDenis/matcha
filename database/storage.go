@@ -68,10 +68,12 @@ type Storage interface {
 	// ignores
 	SetNewIgnore(uidSender int, uidReceiver int) error
 	UnsetIgnore(uidSender int, uidReceiver int) error
+	DropUserIgnores(uid int) error
 	GetIgnoredUsers(uidSender int) ([]common.User, error)
 
 	// claims
 	SetNewClaim(uidSender int, uidReceiver int) error
 	UnsetClaim(uidSender int, uidReceiver int) error
+	DropUserClaims(uid int) error
 	GetClaimedUsers(uidSender int) ([]common.User, error)
 }

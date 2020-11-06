@@ -152,6 +152,13 @@ func TestUserCreate(t *testing.T) {
 					}
 				}
 				/*
+				** Drop user ignores
+				 */
+				err = server.Db.DropUserIgnores(uid)
+				if err != nil {
+					t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+				}
+				/*
 				**	Delete user
 				 */
 				err = server.Db.DeleteUser(uid)

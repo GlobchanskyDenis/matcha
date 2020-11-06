@@ -16,9 +16,9 @@ var upgrader = websocket.Upgrader{
 }
 
 type userMessage struct {
-	Type string `json:"type"`
-	UidReceiver int `json:"uidReceiver"`
-	Body string `json:"body"`
+	Type        string `json:"type"`
+	UidReceiver int    `json:"uidReceiver"`
+	Body        string `json:"body"`
 }
 
 func (server *Server) wsWriteErrorMessage(r *http.Request, ws *websocket.Conn, messageBody string) error {
@@ -76,7 +76,7 @@ func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, uid int, 
 		return
 	}
 	server.Logger.LogSuccess(r, "message from user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
-			" ("+BLUE+r.Host+NO_COLOR+") to user #"+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+" transmitted")
+		" ("+BLUE+r.Host+NO_COLOR+") to user #"+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+" transmitted")
 }
 
 // INFINITE LOOP THAT HANDLES MESSAGES FROM CURRENT USER

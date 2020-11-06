@@ -146,20 +146,42 @@ func TestMessages(t *testing.T) {
 	**	Delete test users and close connection
 	 */
 	t.Run("Delete test users and close connection", func(t_ *testing.T) {
-		err := conn.DeleteUser(user1.Uid)
+		var wasError bool
+		err := conn.DropUserIgnores(user1.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+		err = conn.DeleteUser(user1.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot delete - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+
+		err = conn.DropUserIgnores(user2.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
+			wasError = true
 		}
 		err = conn.DeleteUser(user2.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot delete - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+
+		err = conn.DropUserIgnores(user3.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
+			wasError = true
 		}
 		err = conn.DeleteUser(user3.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot delete - " + err.Error() + NO_COLOR)
+			wasError = true
 		}
-		t_.Log(GREEN_BG + "SUCCESS: all test users was deleted" + NO_COLOR)
-
+		if !wasError {
+			t_.Log(GREEN_BG + "SUCCESS: all test users was deleted" + NO_COLOR)
+		}
 		conn.Close()
 	})
 }

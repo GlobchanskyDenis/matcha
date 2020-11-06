@@ -120,7 +120,7 @@ func (conn ConnDB) UnsetClaim(uidSender int, uidReceiver int) error {
 	}
 	/*
 	**	Check is user still in black list from another user
-	*/
+	 */
 	stmt, err = tx.Prepare("SELECT uidSender FROM claims WHERE uidReceiver = $1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
@@ -135,7 +135,7 @@ func (conn ConnDB) UnsetClaim(uidSender int, uidReceiver int) error {
 	}
 	/*
 	**	Check is user fills required fields
-	*/
+	 */
 	stmt, err = tx.Prepare("SELECT fname, lname, avaID FROM users WHERE uid = $1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)

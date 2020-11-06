@@ -44,6 +44,13 @@ func (server *Server) IgnoreUnset(w http.ResponseWriter, r *http.Request) {
 	}
 	otherUid = int(uid64)
 
+	if myUid == otherUid {
+		server.Logger.LogWarning(r, "The user cannot unset ignore from himself. Uid #"+BLUE+strconv.Itoa(myUid)+NO_COLOR)
+		server.error(w, errors.InvalidArgument.WithArguments("Пользователь не может снимать игнорирования с себя",
+			"The user cannot unset ignore from himself"))
+		return
+	}
+
 	err = server.Db.UnsetIgnore(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to unset ignore from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
