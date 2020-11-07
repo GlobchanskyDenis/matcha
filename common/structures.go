@@ -19,7 +19,7 @@ type User struct {
 	Orientation   string     `json:"orientation,omitempty"`
 	Bio           string     `json:"bio,omitempty"`
 	AvaID         int        `json:"avaID,omitempty"`
-	Avatar		  *string	 `json:"avatar"`
+	Avatar        *string    `json:"avatar"`
 	Latitude      float32    `json:"latitude,omitempty"`
 	Longitude     float32    `json:"longitude,omitempty"`
 	Interests     []string   `json:"interests,omitempty"`
@@ -34,8 +34,8 @@ type SearchUser struct {
 
 type FriendUser struct {
 	User
-	UidSender *int `json:"uidSender"`
-	UidReceiver *int `json:"uidReceiver"`
+	UidSender       *int    `json:"uidSender"`
+	UidReceiver     *int    `json:"uidReceiver"`
 	LastMessageBody *string `json:"lastMessageBody"`
 }
 

@@ -55,7 +55,7 @@ func (T *Session) AddUserToSession(uid int) (string, error) {
 	} else {
 		newItem.Uid = uid
 		newItem.LastVisited = time.Now()
-		newItem.ws = map[string]wsItem{}//[]*websocket.Conn{}
+		newItem.ws = map[string]wsItem{}                                    //[]*websocket.Conn{}
 		newItem.Expires = newItem.LastVisited.Add(1000000000 * 60 * 60 * 3) // 3 hour
 	}
 
@@ -185,7 +185,7 @@ func (T *Session) RemoveWSConnection(uid int, userAgent string, isLogout bool) (
 		return true, errors.NewArg("у вашего пользователя нет открытых ws соединений",
 			"this user has no ws connections")
 	}
-	
+
 	// Проверяю чтобы такой юзер агент вообще существовал
 	item_, isExist := item.ws[userAgent]
 	if !isExist {

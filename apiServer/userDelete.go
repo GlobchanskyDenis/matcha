@@ -118,6 +118,14 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Delete likes of user before user
+	err = server.Db.DropUserLikes(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "DropUserClaimes returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "DeleteUser returned error - "+err.Error())

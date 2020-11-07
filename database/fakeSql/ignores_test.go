@@ -1,4 +1,4 @@
-package postgres
+package fakeSql
 
 import (
 	. "MatchaServer/common"
@@ -8,12 +8,12 @@ import (
 	"testing"
 )
 
-func TestLikes(t *testing.T) {
+func TestIgnore(t *testing.T) {
 	print(NO_COLOR)
 	defer print(YELLOW)
 
 	var (
-		conn  ConnDB
+		conn  ConnFake
 		user1 User
 		user2 User
 		user3 User
@@ -56,44 +56,44 @@ func TestLikes(t *testing.T) {
 	/*
 	**	Test cases - main part of testing
 	 */
-	testCasesSetLike := []struct {
+	testCasesSetIgnore := []struct {
 		name    string
 		uid1    int
 		uid2    int
 		isValid bool
 	}{
 		{
-			name:    "Set like uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
+			name:    "Set ignore uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
 			uid1:    user1.Uid,
 			uid2:    user2.Uid,
 			isValid: true,
 		}, {
-			name:    "Set like uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
+			name:    "Set ignore uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
 			uid1:    user1.Uid,
 			uid2:    user3.Uid,
 			isValid: true,
 		}, {
-			name:    "Set like uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user1.Uid),
+			name:    "Set ignore uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user1.Uid),
 			uid1:    user3.Uid,
 			uid2:    user1.Uid,
 			isValid: true,
 		}, {
-			name:    "Set like uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user1.Uid),
+			name:    "Set ignore uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user1.Uid),
 			uid1:    user2.Uid,
 			uid2:    user1.Uid,
 			isValid: true,
 		}, {
-			name:    "Set like uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
+			name:    "Set ignore uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
 			uid1:    user2.Uid,
 			uid2:    user3.Uid,
 			isValid: true,
 		}, {
-			name:    "Set like uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
+			name:    "Set ignore uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
 			uid1:    user3.Uid,
 			uid2:    user2.Uid,
 			isValid: true,
 		}, {
-			name:    "Invalid set like uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
+			name:    "Invalid set ignore uid=" + strconv.Itoa(user1.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
 			uid1:    user1.Uid,
 			uid2:    user2.Uid,
 			isValid: false,
@@ -103,63 +103,63 @@ func TestLikes(t *testing.T) {
 	/*
 	**	Test cases - main part of testing
 	 */
-	for _, tc := range testCasesSetLike {
+	for _, tc := range testCasesSetIgnore {
 		t.Run(tc.name, func(t_ *testing.T) {
-			err := conn.SetNewLike(tc.uid1, tc.uid2)
+			err := conn.SetNewIgnore(tc.uid1, tc.uid2)
 			if tc.isValid {
 				if err != nil {
 					t_.Errorf(RED_BG+"Error: %s"+NO_COLOR, err.Error())
 				} else {
-					t_.Logf(GREEN_BG+"Success: like was set from uid=%d to uid=%d"+NO_COLOR, tc.uid1, tc.uid2)
+					t_.Logf(GREEN_BG+"Success: ignore was set from uid=%d to uid=%d"+NO_COLOR, tc.uid1, tc.uid2)
 				}
 			} else {
 				if err == nil {
 					t_.Errorf(RED_BG + "Error: not found, but it should be" + NO_COLOR)
 				} else {
-					t_.Log(GREEN_BG + "Success: like was not set as it expected - " + err.Error() + NO_COLOR)
+					t_.Log(GREEN_BG + "Success: ignore was not set as it expected - " + err.Error() + NO_COLOR)
 				}
 			}
 		})
 	}
 
-	testCasesUnsetLike := []struct {
+	testCasesUnsetIgnore := []struct {
 		name    string
 		uid1    int
 		uid2    int
 		isValid bool
 	}{
 		{
-			name:    "Unset like uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
+			name:    "Unset ignore uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
 			uid1:    user2.Uid,
 			uid2:    user3.Uid,
 			isValid: true,
 		}, {
-			name:    "Unset like uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
+			name:    "Unset ignore uid=" + strconv.Itoa(user3.Uid) + " to uid=" + strconv.Itoa(user2.Uid),
 			uid1:    user3.Uid,
 			uid2:    user2.Uid,
 			isValid: true,
 		}, {
-			name:    "Invalid unset like uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
+			name:    "Invalid unset ignore uid=" + strconv.Itoa(user2.Uid) + " to uid=" + strconv.Itoa(user3.Uid),
 			uid1:    user2.Uid,
 			uid2:    user3.Uid,
 			isValid: false,
 		},
 	}
 
-	for _, tc := range testCasesUnsetLike {
+	for _, tc := range testCasesUnsetIgnore {
 		t.Run(tc.name, func(t_ *testing.T) {
-			err := conn.UnsetLike(tc.uid1, tc.uid2)
+			err := conn.UnsetIgnore(tc.uid1, tc.uid2)
 			if tc.isValid {
 				if err != nil {
 					t_.Errorf(RED_BG+"Error: %s"+NO_COLOR, err.Error())
 				} else {
-					t_.Logf(GREEN_BG+"Success: like was unset from uid=%d to uid=%d"+NO_COLOR, tc.uid1, tc.uid2)
+					t_.Logf(GREEN_BG+"Success: ignore was unset from uid=%d to uid=%d"+NO_COLOR, tc.uid1, tc.uid2)
 				}
 			} else {
 				if err == nil {
 					t_.Errorf(RED_BG + "Error: not found, but it should be" + NO_COLOR)
 				} else {
-					t_.Log(GREEN_BG + "Success: like was not unset as it expected: " + err.Error() + NO_COLOR)
+					t_.Log(GREEN_BG + "Success: ignore was not unset as it expected: " + err.Error() + NO_COLOR)
 				}
 			}
 		})
@@ -187,7 +187,7 @@ func TestLikes(t *testing.T) {
 
 	for _, tc := range testCasesGetUsers {
 		t.Run(tc.name, func(t_ *testing.T) {
-			users, err := conn.GetFriendUsers(tc.uid)
+			users, err := conn.GetIgnoredUsers(tc.uid)
 			if err != nil {
 				t_.Errorf(RED_BG+"Error: %s"+NO_COLOR, err.Error())
 				t_.FailNow()
@@ -203,48 +203,6 @@ func TestLikes(t *testing.T) {
 		})
 	}
 
-	testCasesIsCanSpeak := []struct {
-		name           string
-		uid1           int
-		uid2           int
-		expectedResult bool
-	}{
-		{
-			name:           "is can speak user #" + strconv.Itoa(user1.Uid) + " with user #" + strconv.Itoa(user2.Uid),
-			uid1:           user1.Uid,
-			uid2:           user2.Uid,
-			expectedResult: true,
-		}, {
-			name:           "is can speak user #" + strconv.Itoa(user2.Uid) + " with user #" + strconv.Itoa(user3.Uid),
-			uid1:           user2.Uid,
-			uid2:           user3.Uid,
-			expectedResult: false,
-		}, {
-			name:           "is can speak user #" + strconv.Itoa(user2.Uid) + " with user #" + strconv.Itoa(user1.Uid),
-			uid1:           user2.Uid,
-			uid2:           user1.Uid,
-			expectedResult: true,
-		}, {
-			name:           "is can speak user #" + strconv.Itoa(user3.Uid) + " with user #" + strconv.Itoa(user2.Uid),
-			uid1:           user3.Uid,
-			uid2:           user2.Uid,
-			expectedResult: false,
-		},
-	}
-
-	for _, tc := range testCasesIsCanSpeak {
-		t.Run(tc.name, func(t_ *testing.T) {
-			result, err := conn.IsICanSpeakWithUser(tc.uid1, tc.uid2)
-			if err != nil {
-				t_.Errorf(RED_BG+"Error: %s"+NO_COLOR, err.Error())
-			} else if tc.expectedResult != result {
-				t_.Errorf(RED_BG+"Unexpected result: expected %t got %t"+NO_COLOR, tc.expectedResult, result)
-			} else {
-				t_.Log(GREEN_BG + "Success" + NO_COLOR)
-			}
-		})
-	}
-
 	/*
 	**	Delete test users and close connection
 	 */
@@ -253,11 +211,6 @@ func TestLikes(t *testing.T) {
 		err := conn.DropUserIgnores(user1.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
-			wasError = true
-		}
-		err = conn.DropUserLikes(user1.Uid)
-		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user1.Uid)
@@ -271,11 +224,6 @@ func TestLikes(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
-		err = conn.DropUserLikes(user2.Uid)
-		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
-			wasError = true
-		}
 		err = conn.DeleteUser(user2.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot delete - " + err.Error() + NO_COLOR)
@@ -285,11 +233,6 @@ func TestLikes(t *testing.T) {
 		err = conn.DropUserIgnores(user3.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
-			wasError = true
-		}
-		err = conn.DropUserLikes(user3.Uid)
-		if err != nil {
-			t_.Errorf(RED_BG + "ERROR: cannot drop likes - " + err.Error() + NO_COLOR)
 			wasError = true
 		}
 		err = conn.DeleteUser(user3.Uid)

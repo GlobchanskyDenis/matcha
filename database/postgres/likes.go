@@ -151,7 +151,7 @@ func (conn ConnDB) UnsetLike(uidSender int, uidReceiver int) error {
 	return nil
 }
 
-func (conn ConnDB) DropUsersLikes(uid int) error {
+func (conn ConnDB) DropUserLikes(uid int) error {
 	stmt, err := conn.db.Prepare("DELETE FROM likes WHERE uidSender=$1 OR uidReceiver=$1")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)

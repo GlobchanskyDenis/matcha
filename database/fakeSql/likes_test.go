@@ -1,4 +1,4 @@
-package postgres
+package fakeSql
 
 import (
 	. "MatchaServer/common"
@@ -13,7 +13,7 @@ func TestLikes(t *testing.T) {
 	defer print(YELLOW)
 
 	var (
-		conn  ConnDB
+		conn  ConnFake
 		user1 User
 		user2 User
 		user3 User
