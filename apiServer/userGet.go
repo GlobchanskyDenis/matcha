@@ -14,16 +14,34 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	var (
-		user User
-		uid  int
-		err  error
-		ctx  context.Context
+		user            User
+		myUid, otherUid int
+		err             error
+		ctx             context.Context
+		requestParams   map[string]interface{}
+		item            interface{}
+		isExist, ok     bool
+		uid64           float64
 	)
 
 	ctx = r.Context()
-	uid = ctx.Value("uid").(int)
+	myUid = ctx.Value("uid").(int)
+	requestParams = ctx.Value("requestParams").(map[string]interface{})
+	item, isExist = requestParams["otherUid"]
+	if !isExist {
+		server.Logger.LogWarning(r, "Param otherUid expected")
+		server.error(w, errors.NoArgument.WithArguments("отсутствует параметр otherUid", "param otherUid expected"))
+		return
+	}
+	uid64, ok = item.(float64)
+	if !ok {
+		server.Logger.LogWarning(r, "Id of another user has wrong type")
+		server.error(w, errors.InvalidArgument.WithArguments("otherUid имеет неверный тип", "otherUid has wrong type"))
+		return
+	}
+	otherUid = int(uid64)
 
-	user, err = server.Db.GetUserByUid(uid)
+	user, err = server.Db.GetUserByUid(otherUid)
 	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "GetUserByUid - record not found")
 		server.error(w, errors.UserNotExist)
@@ -32,6 +50,10 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "GetUser returned error - "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))
 		return
+	}
+
+	if myUid != otherUid {
+		user.Mail = ""
 	}
 
 	jsonUser, err := json.Marshal(user)
