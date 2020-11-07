@@ -40,5 +40,6 @@ func (server *Server) NotificationGet(w http.ResponseWriter, r *http.Request) {
 	// This is my valid case
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonNotifs)
-	server.Logger.LogSuccess(r, "Notifications was handled successfully. Amount is #"+BLUE+strconv.Itoa(len(notifs))+NO_COLOR)
+	server.Logger.LogSuccess(r, "Notifications was handled successfully. Uid #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+		". Amount is #"+BLUE+strconv.Itoa(len(notifs))+NO_COLOR)
 }

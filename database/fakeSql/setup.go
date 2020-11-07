@@ -36,6 +36,7 @@ func (conn *ConnFake) Connect(conf *config.Sql) error {
 	conn.likes = []relationMock{}
 	conn.ignores = []relationMock{}
 	conn.claims = []relationMock{}
+	conn.SetNewUser("admin", "admin")
 	return nil
 }
 
@@ -55,7 +56,7 @@ func (conn ConnFake) TruncateAllTables() error {
 	return nil
 }
 
-func (conn ConnFake) DropAllTables() error {
+func (conn *ConnFake) DropAllTables() error {
 	conn.users = map[int]common.User{}
 	conn.devices = map[int]common.Device{}
 	conn.messages = map[int]common.Message{}
@@ -68,11 +69,11 @@ func (conn ConnFake) DropAllTables() error {
 	return nil
 }
 
-func (conn ConnFake) DropEnumTypes() error {
+func (conn *ConnFake) DropEnumTypes() error {
 	return nil
 }
 
-func (conn ConnFake) CreateEnumTypes() error {
+func (conn *ConnFake) CreateEnumTypes() error {
 	return nil
 }
 

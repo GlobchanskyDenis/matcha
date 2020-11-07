@@ -5,7 +5,7 @@ import (
 	"MatchaServer/errors"
 )
 
-func (conn ConnFake) SetNewPhoto(uid int, src string) (int, error) {
+func (conn *ConnFake) SetNewPhoto(uid int, src string) (int, error) {
 	var photo common.Photo
 
 	photo.Uid = uid
@@ -22,7 +22,7 @@ func (conn ConnFake) SetNewPhoto(uid int, src string) (int, error) {
 	return photo.Pid, nil
 }
 
-func (conn ConnFake) DeletePhoto(pid int) error {
+func (conn *ConnFake) DeletePhoto(pid int) error {
 	delete(conn.photos, pid)
 	return nil
 }

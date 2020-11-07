@@ -5,7 +5,7 @@ import (
 	"MatchaServer/errors"
 )
 
-func (conn ConnFake) SetNewUser(mail string, encryptedPass string) (common.User, error) {
+func (conn *ConnFake) SetNewUser(mail string, encryptedPass string) (common.User, error) {
 	var user common.User
 
 	user.Mail = mail
@@ -37,25 +37,51 @@ func (conn *ConnFake) GetUserByUid(uid int) (common.User, error) {
 	if !isExists {
 		return user, errors.RecordNotFound
 	}
+	if user.AvaID != 0 {
+		photo, _ := conn.GetPhotoByPid(user.AvaID)
+		user.Avatar = &photo.Src
+	}
 	return user, nil
 }
 
 func (conn *ConnFake) GetUserByMail(mail string) (common.User, error) {
 	for _, user := range conn.users {
 		if user.Mail == mail {
+			if user.AvaID != 0 {
+				photo, _ := conn.GetPhotoByPid(user.AvaID)
+				user.Avatar = &photo.Src
+			}
 			return user, nil
 		}
 	}
 	return common.User{}, errors.RecordNotFound
 }
 
+/*
+**	Данная функция возвращает абсолютно всех пользователей. Парсить запрос в мок объекте -
+**	неблагодарное дело
+ */
 func (conn *ConnFake) GetUsersByQuery(query string) ([]common.SearchUser, error) {
-	return nil, nil
+	var users []common.SearchUser
+
+	for _, user := range conn.users {
+		if user.AvaID != 0 {
+			photo, _ := conn.GetPhotoByPid(user.AvaID)
+			user.Avatar = &photo.Src
+		}
+		searchUser := common.SearchUser{User: user}
+		users = append(users, searchUser)
+	}
+	return users, nil
 }
 
 func (conn *ConnFake) GetUserForAuth(mail string, encryptedPass string) (common.User, error) {
 	for _, user := range conn.users {
 		if user.Mail == mail && user.EncryptedPass == encryptedPass {
+			if user.AvaID != 0 {
+				photo, _ := conn.GetPhotoByPid(user.AvaID)
+				user.Avatar = &photo.Src
+			}
 			return user, nil
 		}
 	}

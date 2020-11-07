@@ -58,6 +58,10 @@ func (conn ConnFake) GetClaimedUsers(uidSender int) ([]common.User, error) {
 		if claim.uidSender == uidSender {
 			for _, user := range conn.users {
 				if user.Uid == claim.uidReceiver {
+					if user.AvaID != 0 {
+						photo, _ := conn.GetPhotoByPid(user.AvaID)
+						user.Avatar = &photo.Src
+					}
 					users = append(users, user)
 					break
 				}

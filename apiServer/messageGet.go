@@ -63,5 +63,6 @@ func (server *Server) MessageGet(w http.ResponseWriter, r *http.Request) {
 	// This is my valid case
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write(jsonMessages)
-	server.Logger.LogSuccess(r, "Messages was handled successfully. Amount is #"+BLUE+strconv.Itoa(len(messages))+NO_COLOR)
+	server.Logger.LogSuccess(r, "Messages was handled successfully. Uid #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
+		". Amount is #"+BLUE+strconv.Itoa(len(messages))+NO_COLOR)
 }

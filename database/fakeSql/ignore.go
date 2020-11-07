@@ -60,6 +60,10 @@ func (conn ConnFake) GetIgnoredUsers(uidSender int) ([]common.User, error) {
 		if ignore.uidSender == uidSender {
 			for _, user := range conn.users {
 				if user.Uid == ignore.uidReceiver {
+					if user.AvaID != 0 {
+						photo, _ := conn.GetPhotoByPid(user.AvaID)
+						user.Avatar = &photo.Src
+					}
 					users = append(users, user)
 					break
 				}

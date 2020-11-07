@@ -4,7 +4,7 @@ import (
 	"MatchaServer/common"
 )
 
-func (conn ConnFake) SetNewDevice(uid int, deviceName string) error {
+func (conn *ConnFake) SetNewDevice(uid int, deviceName string) error {
 	var device common.Device
 
 	device.Uid = uid
@@ -21,7 +21,7 @@ func (conn ConnFake) SetNewDevice(uid int, deviceName string) error {
 	return nil
 }
 
-func (conn ConnFake) DeleteDevice(id int) error {
+func (conn *ConnFake) DeleteDevice(id int) error {
 	delete(conn.devices, id)
 	return nil
 }

@@ -60,6 +60,10 @@ func (conn ConnFake) GetFriendUsers(uidSender int) ([]common.FriendUser, error) 
 		if like.uidSender == uidSender {
 			for _, user := range conn.users {
 				if user.Uid == like.uidReceiver {
+					if user.AvaID != 0 {
+						photo, _ := conn.GetPhotoByPid(user.AvaID)
+						user.Avatar = &photo.Src
+					}
 					var friendUser = common.FriendUser{User: user}
 					// тут нужно присоединить последнее письмо между пользователями. Тестов нет
 					for i := len(conn.messages) - 1; i >= 0; i-- {

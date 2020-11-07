@@ -2,9 +2,10 @@ package fakeSql
 
 import (
 	"MatchaServer/common"
+	"MatchaServer/errors"
 )
 
-func (conn ConnFake) SetNewMessage(uidSender int, uidReceiver int, body string) (int, error) {
+func (conn *ConnFake) SetNewMessage(uidSender int, uidReceiver int, body string) (int, error) {
 	var message common.Message
 
 	message.UidSender = uidSender
@@ -22,8 +23,12 @@ func (conn ConnFake) SetNewMessage(uidSender int, uidReceiver int, body string) 
 	return message.Mid, nil
 }
 
-func (conn ConnFake) DeleteMessage(nid int) error {
-	delete(conn.messages, nid)
+func (conn *ConnFake) DeleteMessage(mid int) error {
+	_, isExists := conn.messages[mid]
+	if !isExists {
+		return errors.RecordNotFound
+	}
+	delete(conn.messages, mid)
 	return nil
 }
 
@@ -32,7 +37,7 @@ func (conn ConnFake) GetMessagesFromChat(uidSender int, uidReceiver int) ([]comm
 	var message common.Message
 
 	for _, message = range conn.messages {
-		if (message.UidSender == uidSender && message.UidReceiver == uidReceiver) &&
+		if (message.UidSender == uidSender && message.UidReceiver == uidReceiver) ||
 			(message.UidSender == uidReceiver && message.UidReceiver == uidSender) {
 			messages = append(messages, message)
 		}
