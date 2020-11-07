@@ -150,7 +150,7 @@ func TestNotifications(t *testing.T) {
 			)
 			// all request params should be handled in middlewares
 			// so new request body is nil
-			req = httptest.NewRequest("POST", url, nil)
+			req = httptest.NewRequest("DELETE", url, nil)
 
 			requestParams = map[string]interface{}{
 				"nid": float64(nid),
@@ -183,7 +183,7 @@ func TestNotifications(t *testing.T) {
 		)
 		// all request params should be handled in middlewares
 		// so new request body is nil
-		req = httptest.NewRequest("POST", url, nil)
+		req = httptest.NewRequest("DELETE", url, nil)
 
 		requestParams = map[string]interface{}{
 			"nid": float64(0),

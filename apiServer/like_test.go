@@ -124,13 +124,13 @@ func TestLikes(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
 				ctx context.Context
-				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
+				url = "http://localhost:" + strconv.Itoa(server.Port) + "/like/set/"
 				rec = httptest.NewRecorder()
 				req *http.Request
 			)
 			// all request params should be handled in middlewares
 			// so new request body is nil
-			req = httptest.NewRequest("POST", url, nil)
+			req = httptest.NewRequest("PUT", url, nil)
 
 			// put info from middlewares into context
 			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)
@@ -204,13 +204,13 @@ func TestLikes(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
 				ctx context.Context
-				url = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
+				url = "http://localhost:" + strconv.Itoa(server.Port) + "/like/unset/"
 				rec = httptest.NewRecorder()
 				req *http.Request
 			)
 			// all request params should be handled in middlewares
 			// so new request body is nil
-			req = httptest.NewRequest("POST", url, nil)
+			req = httptest.NewRequest("DELETE", url, nil)
 
 			// put info from middlewares into context
 			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)

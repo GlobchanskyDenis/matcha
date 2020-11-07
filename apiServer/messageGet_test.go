@@ -136,7 +136,7 @@ func TestMessageGet(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
 				ctx      context.Context
-				url      = "http://localhost:" + strconv.Itoa(server.Port) + "/search/"
+				url      = "http://localhost:" + strconv.Itoa(server.Port) + "/message/get/"
 				rec      = httptest.NewRecorder()
 				response []interface{}
 				req      *http.Request

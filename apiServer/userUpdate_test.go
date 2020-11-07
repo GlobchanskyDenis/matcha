@@ -291,7 +291,7 @@ func TestUserUpdate(t *testing.T) {
 		t.Run(tc.name, func(t_ *testing.T) {
 			var (
 				ctx context.Context
-				url = "http://localhost:" + strconv.Itoa(server.Port) + "/user/create/"
+				url = "http://localhost:" + strconv.Itoa(server.Port) + "/user/update/"
 				rec = httptest.NewRecorder()
 				req *http.Request
 			)

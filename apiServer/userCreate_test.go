@@ -98,7 +98,7 @@ func TestUserCreate(t *testing.T) {
 			)
 			// all request params should be handled in middlewares
 			// so new request body is nil
-			req = httptest.NewRequest("POST", url, nil)
+			req = httptest.NewRequest("PUT", url, nil)
 
 			// put info from middlewares into context
 			ctx = context.WithValue(req.Context(), "requestParams", tc.payload)

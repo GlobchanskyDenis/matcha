@@ -18,15 +18,23 @@ func router(server *apiServer.Server) http.Handler {
 	mux.Handle("/ws/auth/", server.GetMethodMiddleWare(
 		http.HandlerFunc(server.WebSocketAuth)))
 
+	// PUT
+	mux.Handle("/user/create/", server.PutMethodMiddleWare(
+		http.HandlerFunc(server.UserCreate)))
+	mux.Handle("/photo/upload/", server.PutMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoUpload))))
+	mux.Handle("/like/set/", server.PutMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeSet))))
+	mux.Handle("/ignore/set/", server.PutMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreSet))))
+	mux.Handle("/claim/set/", server.PutMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimSet))))
+
 	// POST
 	mux.Handle("/user/auth/", server.PostMethodMiddleWare(
 		http.HandlerFunc(server.UserAuth)))
-	mux.Handle("/user/create/", server.PostMethodMiddleWare(
-		http.HandlerFunc(server.UserCreate)))
 	mux.Handle("/photo/download/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoDownload))))
-	mux.Handle("/photo/upload/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoUpload))))
 	mux.Handle("/user/get/friends/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetFriends))))
 	mux.Handle("/user/get/ignored/", server.PostMethodMiddleWare(
@@ -41,18 +49,6 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageGet))))
 	mux.Handle("/notification/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationGet))))
-	mux.Handle("/like/set/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeSet))))
-	mux.Handle("/like/unset/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeUnset))))
-	mux.Handle("/ignore/set/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreSet))))
-	mux.Handle("/ignore/unset/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreUnset))))
-	mux.Handle("/claim/set/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimSet))))
-	mux.Handle("/claim/unset/", server.PostMethodMiddleWare(
-		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimUnset))))
 
 	// PATCH
 	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(
@@ -66,7 +62,13 @@ func router(server *apiServer.Server) http.Handler {
 	mux.Handle("/message/delete/", server.DeleteMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageDelete))))
 	mux.Handle("/notification/delete/", server.DeleteMethodMiddleWare(
-			server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationDelete))))
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationDelete))))
+	mux.Handle("/like/unset/", server.DeleteMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeUnset))))
+	mux.Handle("/ignore/unset/", server.DeleteMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreUnset))))
+	mux.Handle("/claim/unset/", server.DeleteMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimUnset))))
 
 	serveMux := server.PanicMiddleWare(mux)
 
