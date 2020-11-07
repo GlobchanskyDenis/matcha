@@ -14,7 +14,7 @@ type ConnFake struct {
 	users     map[int]common.User
 	devices   map[int]common.Device
 	messages  map[int]common.Message
-	notif     map[int]common.Notif
+	notifs    map[int]common.Notif
 	photos    map[int]common.Photo
 	interests map[int]common.Interest
 	likes     []relationMock
@@ -30,7 +30,7 @@ func (conn *ConnFake) Connect(conf *config.Sql) error {
 	conn.users = map[int]common.User{}
 	conn.devices = map[int]common.Device{}
 	conn.messages = map[int]common.Message{}
-	conn.notif = map[int]common.Notif{}
+	conn.notifs = map[int]common.Notif{}
 	conn.photos = map[int]common.Photo{}
 	conn.interests = map[int]common.Interest{}
 	conn.likes = []relationMock{}
@@ -47,7 +47,7 @@ func (conn ConnFake) TruncateAllTables() error {
 	conn.users = map[int]common.User{}
 	conn.devices = map[int]common.Device{}
 	conn.messages = map[int]common.Message{}
-	conn.notif = map[int]common.Notif{}
+	conn.notifs = map[int]common.Notif{}
 	conn.photos = map[int]common.Photo{}
 	conn.interests = map[int]common.Interest{}
 	conn.likes = []relationMock{}
@@ -60,7 +60,7 @@ func (conn *ConnFake) DropAllTables() error {
 	conn.users = map[int]common.User{}
 	conn.devices = map[int]common.Device{}
 	conn.messages = map[int]common.Message{}
-	conn.notif = map[int]common.Notif{}
+	conn.notifs = map[int]common.Notif{}
 	conn.photos = map[int]common.Photo{}
 	conn.interests = map[int]common.Interest{}
 	conn.likes = []relationMock{}
@@ -83,7 +83,7 @@ func (conn *ConnFake) CreateUsersTable() error {
 }
 
 func (conn *ConnFake) CreateNotifsTable() error {
-	conn.notif = map[int]common.Notif{}
+	conn.notifs = map[int]common.Notif{}
 	return nil
 }
 

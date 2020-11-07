@@ -45,6 +45,27 @@ func (conn ConnDB) DeleteNotif(nid int) error {
 	return nil
 }
 
+func (conn *ConnDB) GetNotifByNid(nid int) (common.Notif, error) {
+	var notif common.Notif
+
+	stmt, err := conn.db.Prepare("SELECT * FROM notifs WHERE nid=$1")
+	if err != nil {
+		return notif, errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	rows, err := stmt.Query(nid)
+	if err != nil {
+		return notif, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	if !rows.Next() {
+		return notif, errors.RecordNotFound
+	}
+	err = rows.Scan(&(notif.Nid), &(notif.UidSender), &(notif.UidReceiver), &(notif.Body))
+	if err != nil {
+		return notif, errors.DatabaseScanError.AddOriginalError(err)
+	}
+	return notif, nil
+}
+
 func (conn ConnDB) GetNotifByUidReceiver(uid int) ([]common.Notif, error) {
 	var notifs = []common.Notif{}
 	var notif common.Notif

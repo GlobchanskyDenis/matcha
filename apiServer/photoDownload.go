@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-// HTTP HANDLER FOR DOMAIN /photo/download . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /photo/download/ . IT HANDLES:
 // DOWNLOAD USER PHOTOS BY UID
 func (server *Server) PhotoDownload(w http.ResponseWriter, r *http.Request) {
 	var (

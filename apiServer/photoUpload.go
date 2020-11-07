@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// HTTP HANDLER FOR DOMAIN /photo/upload . IT HANDLES:
+// HTTP HANDLER FOR DOMAIN /photo/upload/ . IT HANDLES:
 // UPLOAD USER PHOTO
 func (server *Server) PhotoUpload(w http.ResponseWriter, r *http.Request) {
 	var (

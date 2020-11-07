@@ -42,6 +42,27 @@ func (conn ConnDB) DeleteMessage(mid int) error {
 	return nil
 }
 
+func (conn *ConnDB) GetMessageByMid(mid int) (common.Message, error) {
+	var message common.Message
+
+	stmt, err := conn.db.Prepare("SELECT * FROM messages WHERE mid=$1")
+	if err != nil {
+		return message, errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	rows, err := stmt.Query(mid)
+	if err != nil {
+		return message, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	if !rows.Next() {
+		return message, errors.RecordNotFound
+	}
+	err = rows.Scan(&(message.Mid), &(message.UidSender), &(message.UidReceiver), &(message.Body))
+	if err != nil {
+		return message, errors.DatabaseScanError.AddOriginalError(err)
+	}
+	return message, nil
+}
+
 func (conn ConnDB) GetMessagesFromChat(uidSender int, uidReceiver int) ([]common.Message, error) {
 	var messages = []common.Message{}
 	var message common.Message

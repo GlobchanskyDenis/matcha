@@ -157,7 +157,11 @@ func TestNotifications(t *testing.T) {
 			}
 			// put info from middlewares into context
 			ctx = context.WithValue(req.Context(), "requestParams", requestParams)
-			// ctx = context.WithValue(ctx, "uid", tc.uid)
+			notif, err := server.Db.GetNotifByNid(nid)
+			if err != nil {
+				t_.Errorf(RED_BG + "Error: cannot get notification by its id - " + err.Error() + NO_COLOR)
+			}
+			ctx = context.WithValue(ctx, "uid", notif.UidReceiver)
 
 			// start test
 			server.NotificationDelete(rec, req.WithContext(ctx))
@@ -186,7 +190,7 @@ func TestNotifications(t *testing.T) {
 		}
 		// put info from middlewares into context
 		ctx = context.WithValue(req.Context(), "requestParams", requestParams)
-		// ctx = context.WithValue(ctx, "uid", tc.uid)
+		ctx = context.WithValue(ctx, "uid", 1)
 
 		// start test
 		server.NotificationDelete(rec, req.WithContext(ctx))

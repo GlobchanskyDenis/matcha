@@ -42,11 +42,13 @@ type Storage interface {
 	// messages
 	SetNewMessage(uidSender int, uidReceiver int, body string) (int, error)
 	DeleteMessage(nid int) error
+	GetMessageByMid(mid int) (common.Message, error)
 	GetMessagesFromChat(uidSender int, uidReceiver int) ([]common.Message, error)
 
 	// notifications
 	SetNewNotif(uidReceiver int, uidSender int, body string) (int, error)
 	DeleteNotif(nid int) error
+	GetNotifByNid(nid int) (common.Notif, error)
 	GetNotifByUidReceiver(uid int) ([]common.Notif, error)
 
 	// interests
