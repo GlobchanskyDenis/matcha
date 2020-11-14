@@ -265,10 +265,9 @@ func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]com
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
-			&user.Lname, &birth, &user.Gender, &user.Orientation,
-			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
-			&user.Status, &user.Rating, &user.Avatar, &intPtr)
+		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &birth, &user.Gender,
+			&user.Orientation, &user.AvaID, &user.Latitude, &user.Longitude,
+			&interests, &user.Rating, &user.Avatar, &intPtr)
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}

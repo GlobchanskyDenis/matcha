@@ -121,10 +121,10 @@ func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) st
 	**	для заполнения поля типа bool - разрешено ли общение пользователей или нет
 	 */
 
-	var query = `SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-		bio, avaid, latitude, longitude, interests, status, rating, src, uidSender FROM
-	(SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-		bio, avaid, latitude, longitude, interests, status, rating, src FROM
+	var query = `SELECT uid, fname, lname, birth, gender, orientation, avaid,
+		latitude, longitude, interests, rating, src, uidSender FROM
+	(SELECT users.uid, fname, lname, birth, gender, orientation, avaid,
+		latitude, longitude, interests, rating, src FROM
 	users LEFT JOIN photos ON avaId = pid)
 	AS full_users LEFT JOIN
 	(SELECT uidSender FROM
