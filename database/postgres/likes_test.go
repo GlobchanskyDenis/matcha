@@ -13,10 +13,11 @@ func TestLikes(t *testing.T) {
 	defer print(YELLOW)
 
 	var (
-		conn  ConnDB
-		user1 User
-		user2 User
-		user3 User
+		conn    ConnDB
+		user1   User
+		user2   User
+		user3   User
+		photoID int
 	)
 
 	/*
@@ -40,14 +41,47 @@ func TestLikes(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
+		/*
+		**	Для того чтобы пользователя было видно в поисковых запросах, нужно заполнить
+		**	его поля имени, фамилии и аватарки. Последний тест без этого будет провален.
+		 */
+		photoID, err = conn.SetNewPhoto(user1.Uid, "test photo body")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot set new photo for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user1.Fname = "Fname"
+		user1.Lname = "Lname"
+		user1.AvaID = photoID
+		err = conn.UpdateUser(user1)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot update test user for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
 		user2, err = conn.SetNewUser("user2@gmail.com", "qwerty")
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
+		user2.Fname = "Fname"
+		user2.Lname = "Lname"
+		user2.AvaID = photoID
+		err = conn.UpdateUser(user2)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot update test user for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
 		user3, err = conn.SetNewUser("user3@gmail.com", "qwerty")
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user3.Fname = "Fname"
+		user3.Lname = "Lname"
+		user3.AvaID = photoID
+		err = conn.UpdateUser(user3)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot update test user for tests - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
 		t_.Log(GREEN_BG + "SUCCESS: test users was created" + NO_COLOR)
@@ -250,7 +284,12 @@ func TestLikes(t *testing.T) {
 	 */
 	t.Run("Delete test users and close connection", func(t_ *testing.T) {
 		var wasError bool
-		err := conn.DropUserIgnores(user1.Uid)
+		err := conn.DeletePhoto(photoID)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: cannot delete test photo - " + err.Error() + NO_COLOR)
+			wasError = true
+		}
+		err = conn.DropUserIgnores(user1.Uid)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: cannot drop ignores - " + err.Error() + NO_COLOR)
 			wasError = true

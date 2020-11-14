@@ -13,7 +13,7 @@ type User struct {
 	EncryptedPass string     `json:"-"`
 	Fname         string     `json:"fname"`
 	Lname         string     `json:"lname"`
-	Birth         CustomDate `json:"birth"`
+	Birth         CustomDate `json:"birth,omitempty"`
 	Age           int        `json:"age,omitempty"`
 	Gender        string     `json:"gender,omitempty"`
 	Orientation   string     `json:"orientation,omitempty"`
@@ -22,6 +22,7 @@ type User struct {
 	Avatar        *string    `json:"avatar"`
 	Latitude      float32    `json:"latitude,omitempty"`
 	Longitude     float32    `json:"longitude,omitempty"`
+	Range         float32    `json:"range,omitempty"`
 	Interests     []string   `json:"interests,omitempty"`
 	Status        string     `json:"-"`
 	Rating        int        `json:"rating"`

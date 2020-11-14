@@ -5,7 +5,7 @@ import (
 	"MatchaServer/errors"
 	"strconv"
 	"strings"
-	"time"
+	// "time"
 )
 
 func (conn ConnDB) SetNewIgnore(uidSender int, uidReceiver int) error {
@@ -167,48 +167,31 @@ func (conn ConnDB) DropUserIgnores(uid int) error {
 
 func (conn ConnDB) GetIgnoredUsers(uidSender int) ([]common.User, error) {
 	var (
-		user      common.User
-		users     []common.User
-		interests string
-		birth     interface{}
-		date      time.Time
-		ok        bool
+		user  common.User
+		users []common.User
+		// interests string
+		// birth     interface{}
+		// date      time.Time
+		// ok        bool
 	)
 
+	/* OLD QUERY
 	query := `SELECT ignored_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
 		latitude, longitude, interests, status, rating, src FROM
 	(SELECT * FROM users WHERE uid != $1 AND uid IN (SELECT uidReceiver FROM ignores WHERE uidSender = $1)) AS ignored_users
 	LEFT JOIN photos ON avaId=pid`
+	*/
+	query := `SELECT ignored_users.uid, fname, lname, rating, src FROM
+	(SELECT uid, fname, lname, avaId, rating FROM users WHERE uid != $1 AND uid IN 
+	(SELECT uidReceiver FROM ignores WHERE uidSender = $1)) AS ignored_users LEFT JOIN photos ON avaId=pid`
 	rows, err := conn.db.Query(query, uidSender)
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
-			&user.Lname, &birth, &user.Gender, &user.Orientation,
-			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
-			&user.Status, &user.Rating, &user.Avatar)
+		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &user.Rating, &user.Avatar)
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
-		}
-		// handle user Interests
-		if len(interests) > 2 {
-			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
-			for _, strItem := range strArr {
-				user.Interests = append(user.Interests, strItem)
-			}
-		}
-		// handle user birth and age
-		if birth != nil {
-			date, ok = birth.(time.Time)
-			if ok {
-				user.Birth.Time = &date
-				user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
-			} else {
-				return nil, errors.NewArg("не верный тип данных birth", "wrong type of birth")
-			}
-		} else {
-			user.Birth.Time = nil
 		}
 		users = append(users, user)
 	}

@@ -5,7 +5,7 @@ import (
 	"MatchaServer/errors"
 	"strconv"
 	"strings"
-	"time"
+	// "time"
 )
 
 func (conn ConnDB) SetNewLike(uidSender int, uidReceiver int) error {
@@ -166,17 +166,14 @@ func (conn ConnDB) DropUserLikes(uid int) error {
 
 func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	var (
-		user      common.FriendUser
-		users     []common.FriendUser
-		interests string
-		birth     interface{}
-		date      time.Time
-		ok        bool
+		user  common.FriendUser
+		users []common.FriendUser
 	)
 
 	// Стэк запроса: добавление последнего сообщения к пользователю, добавление фотографии к пользователю,
 	//  поиск пользователей удовлетворяющих условию - пользователи поставили друг другу лайк.
 
+	/* OLD QUERY
 	query := `SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
 		bio, avaid, latitude, longitude, interests, status, rating, src, uidSender, uidReceiver, body FROM
 	(SELECT permitted_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
@@ -192,19 +189,19 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	AS permitted_users LEFT JOIN photos ON avaId = pid WHERE permitted_users.uid != $1) AS T3 LEFT JOIN
 	(SELECT * FROM messages WHERE uidSender = $1 or uidReceiver = $1 ORDER BY mid DESC LIMIT 1) AS
 	T4 ON uid = uidSender OR uid = uidReceiver`
+	*/
 
-	// Неполный запрос - нет присоединенного тела сообщения
-	// query := `SELECT permitted_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-	//  							bio, avaid, latitude, longitude, interests, status, rating, src FROM
-	// (SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-	//  						bio, avaid, latitude, longitude, interests, status, rating FROM
-	// users INNER JOIN
-	// 	(SELECT uidSender FROM
-	// 	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
-	// 	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
-	// 	ON T1.uidSender = T2.uidReceiver)
-	// AS can_talk ON users.uid = can_talk.uidSender)
-	// AS permitted_users LEFT JOIN photos ON avaId = pid WHERE permitted_users.uid != $1`
+	query := `SELECT uid, fname, lname, rating, src, uidSender, uidReceiver, body FROM
+	(SELECT permitted_users.uid, fname, lname, rating, src FROM
+	(SELECT uid, fname, lname, avaId, rating FROM users INNER JOIN
+	(SELECT uidSender FROM
+	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
+	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
+	 ON T1.uidSender = T2.uidReceiver)
+	AS can_talk ON users.uid = can_talk.uidSender)
+	AS permitted_users LEFT JOIN photos ON avaId = pid WHERE permitted_users.uid != $1) AS T3 LEFT JOIN
+	(SELECT * FROM messages WHERE uidSender = $1 or uidReceiver = $1 ORDER BY mid DESC LIMIT 1) AS
+	T4 ON uid = uidSender OR uid = uidReceiver`
 
 	// Старый интересный запрос. Сохранить на будущее. По идее он менее эффективен чем новый
 	// query := "SELECT * FROM users WHERE uid IN (SELECT uidReceiver FROM likes " +
@@ -220,46 +217,21 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
-			&user.Lname, &birth, &user.Gender, &user.Orientation,
-			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
-			&user.Status, &user.Rating, &user.Avatar, &user.UidSender,
-			&user.UidReceiver, &user.LastMessageBody)
+		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &user.Rating, &user.Avatar,
+			&user.UidSender, &user.UidReceiver, &user.LastMessageBody)
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}
-		// handle user Interests
-		if len(interests) > 2 {
-			strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
-			for _, strItem := range strArr {
-				user.Interests = append(user.Interests, strItem)
-			}
-		}
-		// handle user birth and age
-		if birth != nil {
-			date, ok = birth.(time.Time)
-			if ok {
-				user.Birth.Time = &date
-				user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
-			} else {
-				return nil, errors.NewArg("не верный тип данных birth", "wrong type of birth")
-			}
-		} else {
-			user.Birth.Time = nil
-		}
-		// if stringPtr == nil {
-		// 	user.WasTalk = false
-		// } else {
-		// 	user.WasTalk = true
-		// }
 		users = append(users, user)
 	}
 	return users, nil
 }
 
 func (conn ConnDB) IsICanSpeakWithUser(myUid, otherUid int) (bool, error) {
-	query := "SELECT * FROM likes WHERE uidSender=$1 AND " +
-		"uidReceiver IN (SELECT uidSender FROM likes WHERE uidReceiver=$1 AND uidSender=$2)"
+	query := `SELECT * FROM likes WHERE uidSender=$1 AND uidReceiver IN 
+	(SELECT uidSender FROM likes WHERE uidReceiver=$1 AND uidSender=$2)
+	AND EXISTS (SELECT uid FROM users WHERE uid=$1 AND search_visibility = true)
+	AND EXISTS (SELECT uid FROM users WHERE uid=$2 AND search_visibility = true)`
 	stmt, err := conn.db.Prepare(query)
 	if err != nil {
 		return false, errors.DatabasePreparingError.AddOriginalError(err)
