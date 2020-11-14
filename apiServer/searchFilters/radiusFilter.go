@@ -85,8 +85,12 @@ func newRadiusFilter(in interface{}, uid int, connDB database.Storage) (*radiusF
 		if err != nil {
 			return nil, errors.NewArg("ошибка соединения с базой данных", "database connecting error").AddOriginalError(err)
 		}
-		filter.latitude = float64(user.Latitude)
-		filter.longitude = float64(user.Longitude)
+		if user.Latitude != nil {
+			filter.latitude = float64(*user.Latitude)
+		}
+		if user.Longitude != nil {
+			filter.longitude = float64(*user.Longitude)
+		}
 	}
 
 	return &filter, nil

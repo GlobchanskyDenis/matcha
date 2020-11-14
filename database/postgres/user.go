@@ -4,6 +4,7 @@ import (
 	"MatchaServer/common"
 	"MatchaServer/errors"
 	"database/sql"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -98,7 +99,7 @@ func (conn *ConnDB) DeleteUser(uid int) error {
 func (conn *ConnDB) UpdateUser(user common.User) error {
 	var interests = strings.Join(user.Interests, ",")
 	var searchVisibility bool
-	if user.Fname != "" && user.Lname != "" && user.AvaID != 0 {
+	if user.Fname != "" && user.Lname != "" && user.AvaID != nil {
 		stmt, err := conn.db.Prepare("SELECT uidSender FROM claims WHERE uidReceiver = $1")
 		if err != nil {
 			stmt.Close()
@@ -249,7 +250,7 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	return user, nil
 }
 
-func (conn *ConnDB) GetUsersByQuery(query string) ([]common.SearchUser, error) {
+func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]common.SearchUser, error) {
 	var (
 		user      common.SearchUser
 		users     []common.SearchUser
@@ -295,6 +296,13 @@ func (conn *ConnDB) GetUsersByQuery(query string) ([]common.SearchUser, error) {
 			user.IsLiked = false
 		} else {
 			user.IsLiked = true
+		}
+		if user.Latitude != nil && user.Longitude != nil &&
+			sourceUser.Latitude != nil && sourceUser.Longitude != nil {
+			deltaLat := *user.Latitude - *sourceUser.Latitude
+			deltaLong := *user.Longitude - *sourceUser.Longitude
+			Range := math.Sqrt(deltaLat*deltaLat+deltaLong*deltaLong) * 111
+			user.Range = &Range
 		}
 		users = append(users, user)
 	}

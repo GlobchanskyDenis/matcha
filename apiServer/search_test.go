@@ -37,8 +37,10 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		myUser.Longitude = 21.0
-		myUser.Latitude = 42.0
+		longitudeMyUser := 21.0
+		latitudeMyUser := 44.0
+		myUser.Longitude = &longitudeMyUser
+		myUser.Latitude = &latitudeMyUser
 		myUser.Gender = "female"
 		myUser.Orientation = ""
 		err = server.Db.UpdateUser(myUser)
@@ -51,8 +53,10 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user1.Longitude = 21.0
-		user1.Latitude = 42.0
+		longitude1 := 22.0
+		latitude1 := 42.0
+		user1.Longitude = &longitude1
+		user1.Latitude = &latitude1
 		user1.Gender = "male"
 		user1.Orientation = "hetero"
 		err = server.Db.UpdateUser(user1)
@@ -65,8 +69,10 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user2.Longitude = 21.0
-		user2.Latitude = 42.0
+		longitude2 := 21.0
+		latitude2 := 42.0
+		user2.Longitude = &longitude2
+		user2.Latitude = &latitude2
 		user2.Gender = "male"
 		user2.Orientation = "homo"
 		err = server.Db.UpdateUser(user2)

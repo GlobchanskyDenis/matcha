@@ -145,17 +145,18 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	if isExist {
 		usefullFieldsExists = true
 		tmpFloat, ok = arg.(float64)
-		user.AvaID = int(tmpFloat)
+		avaID := int(tmpFloat)
+		user.AvaID = &avaID
 		if !ok {
 			return user, message,
 				errors.InvalidArgument.WithArguments("Поле avaID имеет неверный тип",
 					"avaID field has wrong type"+fmt.Sprintf(" %#v %T", arg, arg))
 		}
-		if user.AvaID < 0 {
+		if *user.AvaID <= 0 {
 			return user, message, errors.InvalidArgument.WithArguments("Значение поля avaID недопустимо",
 				"avaID field has wrong value")
 		}
-		message += " avaID=" + BLUE + strconv.Itoa(user.AvaID) + NO_COLOR
+		message += " avaID=" + BLUE + strconv.Itoa(*user.AvaID) + NO_COLOR
 	}
 	arg, isExist = request["latitude"]
 	if isExist {
@@ -165,7 +166,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			return user, message,
 				errors.InvalidArgument.WithArguments("Поле latitude имеет неверный тип", "latitude field has wrong type")
 		}
-		user.Latitude = float32(tmpFloat)
+		user.Latitude = &tmpFloat
 		message += " latitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
 	}
 	arg, isExist = request["longitude"]
@@ -176,7 +177,7 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 			return user, message,
 				errors.InvalidArgument.WithArguments("Поле longitude имеет неверный тип", "longitude field has wrong type")
 		}
-		user.Longitude = float32(tmpFloat)
+		user.Longitude = &tmpFloat
 		message += " longitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
 	}
 	arg, isExist = request["interests"]

@@ -18,11 +18,11 @@ type User struct {
 	Gender        string     `json:"gender,omitempty"`
 	Orientation   string     `json:"orientation,omitempty"`
 	Bio           string     `json:"bio,omitempty"`
-	AvaID         int        `json:"avaID,omitempty"`
+	AvaID         *int       `json:"avaID,omitempty"`
 	Avatar        *string    `json:"avatar"`
-	Latitude      float32    `json:"latitude,omitempty"`
-	Longitude     float32    `json:"longitude,omitempty"`
-	Range         float32    `json:"range,omitempty"`
+	Latitude      *float64   `json:"latitude,omitempty"`
+	Longitude     *float64   `json:"longitude,omitempty"`
+	Range         *float64   `json:"range,omitempty"`
 	Interests     []string   `json:"interests,omitempty"`
 	Status        string     `json:"-"`
 	Rating        int        `json:"rating"`

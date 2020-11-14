@@ -38,7 +38,8 @@ func TestLikes(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user1.AvaID = 1
+		avaID1 := 1
+		user1.AvaID = &avaID1
 		err = server.Db.UpdateUser(user1)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot " + err.Error() + NO_COLOR)
@@ -49,7 +50,8 @@ func TestLikes(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user2.AvaID = 2
+		avaID2 := 2
+		user2.AvaID = &avaID2
 		err = server.Db.UpdateUser(user2)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot " + err.Error() + NO_COLOR)
@@ -60,7 +62,8 @@ func TestLikes(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
-		user3.AvaID = 3
+		avaID3 := 3
+		user3.AvaID = &avaID3
 		err = server.Db.UpdateUser(user3)
 		if err != nil {
 			t_.Errorf(RED_BG + "Error: cannot " + err.Error() + NO_COLOR)

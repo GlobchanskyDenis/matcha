@@ -52,7 +52,7 @@ func TestLikes(t *testing.T) {
 		}
 		user1.Fname = "Fname"
 		user1.Lname = "Lname"
-		user1.AvaID = photoID
+		user1.AvaID = &photoID
 		err = conn.UpdateUser(user1)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot update test user for tests - " + err.Error() + NO_COLOR)
@@ -65,7 +65,7 @@ func TestLikes(t *testing.T) {
 		}
 		user2.Fname = "Fname"
 		user2.Lname = "Lname"
-		user2.AvaID = photoID
+		user2.AvaID = &photoID
 		err = conn.UpdateUser(user2)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot update test user for tests - " + err.Error() + NO_COLOR)
@@ -78,7 +78,7 @@ func TestLikes(t *testing.T) {
 		}
 		user3.Fname = "Fname"
 		user3.Lname = "Lname"
-		user3.AvaID = photoID
+		user3.AvaID = &photoID
 		err = conn.UpdateUser(user3)
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot update test user for tests - " + err.Error() + NO_COLOR)

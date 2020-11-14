@@ -52,7 +52,7 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
 	query := filters.PrepareQuery(sexRestrictions, &server.Logger)
-	searchUsers, err = server.Db.GetUsersByQuery(query)
+	searchUsers, err = server.Db.GetUsersByQuery(query, user)
 	if err != nil {
 		server.Logger.LogError(r, "GetUsersByQuery returned error "+err.Error())
 		server.error(w, errors.DatabaseError.WithArguments(err))

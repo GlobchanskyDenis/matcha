@@ -442,7 +442,6 @@ func TestRadius(t *testing.T) {
 				}
 				return
 			}
-
 			err = f.Parse(params, uid, db, &sess)
 			if err != nil {
 				if tc.isInvalid {

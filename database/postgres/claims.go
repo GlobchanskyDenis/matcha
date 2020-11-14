@@ -152,7 +152,7 @@ func (conn ConnDB) UnsetClaim(uidSender int, uidReceiver int) error {
 	if err != nil {
 		return errors.DatabaseScanError.AddOriginalError(err)
 	}
-	if user.Fname == "" || user.Lname == "" || user.AvaID == 0 {
+	if user.Fname == "" || user.Lname == "" || user.AvaID == nil {
 		tx.Commit()
 		return nil
 	}

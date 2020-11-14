@@ -60,8 +60,8 @@ func (conn ConnFake) GetFriendUsers(uidSender int) ([]common.FriendUser, error) 
 		if like.uidSender == uidSender {
 			for _, user := range conn.users {
 				if user.Uid == like.uidReceiver {
-					if user.AvaID != 0 {
-						photo, _ := conn.GetPhotoByPid(user.AvaID)
+					if user.AvaID != nil {
+						photo, _ := conn.GetPhotoByPid(*user.AvaID)
 						user.Avatar = &photo.Src
 					}
 					var friendUser = common.FriendUser{User: user}

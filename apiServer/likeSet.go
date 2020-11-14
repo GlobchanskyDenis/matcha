@@ -55,7 +55,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
-	} else if user.AvaID == 0 {
+	} else if user.AvaID == nil {
 		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no avatar")
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Нельзя лайкать не имея аватарки",
 			"Forbidden to like without avatar"))
@@ -71,7 +71,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
-	} else if user.AvaID == 0 {
+	} else if user.AvaID == nil {
 		server.Logger.LogWarning(r, "User#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no photos")
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Нельзя лайкать пользователей без фото",
 			"Forbidden to like users without photo"))
