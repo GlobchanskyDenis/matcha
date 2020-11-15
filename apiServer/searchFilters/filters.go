@@ -5,7 +5,6 @@ import (
 	"MatchaServer/database"
 	"MatchaServer/errors"
 	"MatchaServer/session"
-	"strconv"
 )
 
 const (
@@ -124,14 +123,17 @@ func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) st
 	var query = `SELECT uid, fname, lname, birth, gender, orientation, avaid,
 		latitude, longitude, interests, rating, src, uidSender FROM
 	(SELECT users.uid, fname, lname, birth, gender, orientation, avaid,
-		latitude, longitude, interests, rating, src FROM
+		latitude, longitude, interests, search_visibility, rating, src FROM
 	users LEFT JOIN photos ON avaId = pid)
 	AS full_users LEFT JOIN
 	(SELECT uidSender FROM
-	(SELECT uidSender FROM likes WHERE uidReceiver = ` + strconv.Itoa(f.uid) + `) AS T1 INNER JOIN
-	(SELECT uidReceiver FROM likes WHERE uidSender = ` + strconv.Itoa(f.uid) + `) AS T2
+	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
+	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
 		ON T1.uidSender = T2.uidReceiver)
-	AS can_talk ON full_users.uid = can_talk.uidSender WHERE uid != ` + strconv.Itoa(f.uid)
+	AS can_talk ON full_users.uid = can_talk.uidSender WHERE
+		uid NOT IN (SELECT uidReceiver FROM ignores WHERE uidSender = $1)
+		AND uid NOT IN (SELECT uidReceiver FROM claims)
+		AND search_visibility = true `
 
 	if sexRestrictions != "" {
 		query += " AND " + sexRestrictions

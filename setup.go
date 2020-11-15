@@ -144,7 +144,6 @@ func main() {
 		println(common.RED + " - error: " + err.Error() + common.NO_COLOR)
 		return
 	}
-	user.Age = 30
 	user.Gender = "male"
 	user.Orientation = "hetero"
 	err = server.Db.UpdateUser(user)

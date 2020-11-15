@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestSearch(t *testing.T) {
@@ -16,10 +17,11 @@ func TestSearch(t *testing.T) {
 	defer print(YELLOW)
 
 	var (
-		server *Server
-		myUser User
-		user1  User
-		user2  User
+		server  *Server
+		myUser  User
+		user1   User
+		user2   User
+		photoID int
 	)
 
 	/*
@@ -37,10 +39,18 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot start test server - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
+		photoID, err = server.Db.SetNewPhoto(myUser.Uid, "test photo src")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot create test photo - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
 		longitudeMyUser := 21.0
 		latitudeMyUser := 44.0
 		myUser.Longitude = &longitudeMyUser
 		myUser.Latitude = &latitudeMyUser
+		myUser.AvaID = &photoID
+		myUser.Fname = "Fname"
+		myUser.Lname = "Lname"
 		myUser.Gender = "female"
 		myUser.Orientation = ""
 		err = server.Db.UpdateUser(myUser)
@@ -57,6 +67,15 @@ func TestSearch(t *testing.T) {
 		latitude1 := 42.0
 		user1.Longitude = &longitude1
 		user1.Latitude = &latitude1
+		user1.AvaID = &photoID
+		user1.Fname = "Fname"
+		user1.Lname = "Lname"
+		date, err := time.Parse("2006-01-02", "1989-10-23")
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot parse time - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user1.Birth.Time = &date
 		user1.Gender = "male"
 		user1.Orientation = "hetero"
 		err = server.Db.UpdateUser(user1)
@@ -73,6 +92,9 @@ func TestSearch(t *testing.T) {
 		latitude2 := 42.0
 		user2.Longitude = &longitude2
 		user2.Latitude = &latitude2
+		user2.AvaID = &photoID
+		user2.Fname = "Fname"
+		user2.Lname = "Lname"
 		user2.Gender = "male"
 		user2.Orientation = "homo"
 		err = server.Db.UpdateUser(user2)
@@ -193,7 +215,7 @@ func TestSearch(t *testing.T) {
 				if usersAmount == tc.expectedAmount {
 					t_.Logf(GREEN_BG+"SUCCESS: users amount #%d status code #%d"+NO_COLOR, usersAmount, rec.Code)
 				} else {
-					t_.Errorf(RED_BG+"ERROR: wrong message amount: got %d, expected %d"+NO_COLOR, usersAmount, tc.expectedAmount)
+					t_.Errorf(RED_BG+"ERROR: wrong users amount: got %d, expected %d"+NO_COLOR, usersAmount, tc.expectedAmount)
 				}
 				t_.Logf(GREEN_BG + "SUCCESS: search is done" + NO_COLOR)
 			}
@@ -218,6 +240,12 @@ func TestSearch(t *testing.T) {
 				t_.Errorf(RED_BG + "Error: cannot delete device of user - " + err.Error() + NO_COLOR)
 				// return
 			}
+		}
+
+		// delete test photo
+		err = server.Db.DeletePhoto(photoID)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot delete test photo - " + err.Error() + NO_COLOR)
 		}
 
 		//	Unset like

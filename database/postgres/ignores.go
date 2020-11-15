@@ -169,10 +169,6 @@ func (conn ConnDB) GetIgnoredUsers(uidSender int) ([]common.User, error) {
 	var (
 		user  common.User
 		users []common.User
-		// interests string
-		// birth     interface{}
-		// date      time.Time
-		// ok        bool
 	)
 
 	/* OLD QUERY

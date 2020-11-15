@@ -260,7 +260,7 @@ func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]com
 		date      time.Time
 		ok        bool
 	)
-	rows, err := conn.db.Query(query)
+	rows, err := conn.db.Query(query, sourceUser.Uid)
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
