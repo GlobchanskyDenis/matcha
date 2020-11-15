@@ -22,6 +22,7 @@ type Storage interface {
 	CreateLikesTable() error
 	CreateIgnoresTable() error
 	CreateClaimsTable() error
+	CreateHistoryTable() error
 
 	// user
 	SetNewUser(mail string, passwd string) (common.User, error)
@@ -79,4 +80,10 @@ type Storage interface {
 	UnsetClaim(uidSender int, uidReceiver int) error
 	DropUserClaims(uid int) error
 	GetClaimedUsers(uidSender int) ([]common.User, error)
+
+	// history
+	SetNewHistoryReference(uid int, targetUid int) error
+	GetHistoryReferencesByUid(uid int) ([]common.HistoryReference, error)
+	GetHistoryReferencesByTargetUid(uid int) ([]common.HistoryReference, error)
+	DropUserHistory(uid int) error
 }

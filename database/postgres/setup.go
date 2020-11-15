@@ -88,6 +88,10 @@ func (Conn ConnDB) DropAllTables() error {
 	if err != nil {
 		return err
 	}
+	_, err = db.Exec("DROP TABLE IF EXISTS history")
+	if err != nil {
+		return err
+	}
 
 	_, err = db.Exec("DROP TABLE IF EXISTS users")
 	if err != nil {
@@ -261,5 +265,16 @@ func (conn ConnDB) CreateClaimsTable() error {
 		"PRIMARY KEY (uidSender, uidReceiver), " +
 		"CONSTRAINT claims_sender_fkey FOREIGN KEY (uidSender) REFERENCES users(uid) ON DELETE RESTRICT, " +
 		"CONSTRAINT claims_receiver_fkey FOREIGN KEY (uidReceiver) REFERENCES users(uid) ON DELETE RESTRICT)")
+	return err
+}
+
+func (conn ConnDB) CreateHistoryTable() error {
+	db := conn.db
+	_, err := db.Exec(`CREATE TABLE history (id SERIAL PRIMARY KEY, 
+		uid INT NOT NULL, 
+		targetUid INT NOT NULL, 
+		time TIMESTAMP NOT NULL,
+		CONSTRAINT history_uid_fkey FOREIGN KEY (uid) REFERENCES users(uid) ON DELETE RESTRICT, 
+		CONSTRAINT history_target_uid_fkey FOREIGN KEY (targetUid) REFERENCES users(uid) ON DELETE RESTRICT)`)
 	return err
 }

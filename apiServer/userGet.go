@@ -53,7 +53,16 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if myUid != otherUid {
+		// Its a private field
 		user.Mail = ""
+
+		// Make record in users history
+		err = server.Db.SetNewHistoryReference(myUid, otherUid)
+		if err != nil {
+			server.Logger.LogError(r, "Cannot make new record in users history - "+err.Error())
+			server.error(w, errors.DatabaseError)
+			return
+		}
 	}
 
 	jsonUser, err := json.Marshal(user)

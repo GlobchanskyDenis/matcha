@@ -20,6 +20,7 @@ type ConnFake struct {
 	likes     []relationMock
 	ignores   []relationMock
 	claims    []relationMock
+	history   map[int]common.HistoryReference
 }
 
 func New() *ConnFake {
@@ -36,6 +37,7 @@ func (conn *ConnFake) Connect(conf *config.Sql) error {
 	conn.likes = []relationMock{}
 	conn.ignores = []relationMock{}
 	conn.claims = []relationMock{}
+	conn.history = map[int]common.HistoryReference{}
 	conn.SetNewUser("admin", "admin")
 	return nil
 }
@@ -53,6 +55,7 @@ func (conn ConnFake) TruncateAllTables() error {
 	conn.likes = []relationMock{}
 	conn.ignores = []relationMock{}
 	conn.claims = []relationMock{}
+	conn.history = map[int]common.HistoryReference{}
 	return nil
 }
 
@@ -66,6 +69,7 @@ func (conn *ConnFake) DropAllTables() error {
 	conn.likes = []relationMock{}
 	conn.ignores = []relationMock{}
 	conn.claims = []relationMock{}
+	conn.history = map[int]common.HistoryReference{}
 	return nil
 }
 
@@ -119,6 +123,11 @@ func (conn *ConnFake) CreateIgnoresTable() error {
 
 func (conn *ConnFake) CreateClaimsTable() error {
 	conn.claims = []relationMock{}
+	return nil
+}
+
+func (conn *ConnFake) CreateHistoryTable() error {
+	conn.history = map[int]common.HistoryReference{}
 	return nil
 }
 

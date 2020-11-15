@@ -40,6 +40,12 @@ type FriendUser struct {
 	LastMessageBody *string `json:"lastMessageBody"`
 }
 
+type HistoryReference struct {
+	Id   int	    `json:"id"`
+	Time CustomTime `json:"time"`
+	User
+}
+
 type Notif struct {
 	Nid         int    `json:"nid"`
 	UidSender   int    `json:"uidSender"`
@@ -92,8 +98,17 @@ func (d CustomDate) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	if d.Time.IsZero() {
-		println("zero")
 		return []byte(fmt.Sprintf(`"%s"`, time.Now().Format(layout))), nil
 	}
+	return []byte(fmt.Sprintf(`"%s"`, d.Time.Format(layout))), nil
+}
+
+type CustomTime struct {
+	Time time.Time
+}
+
+func (d CustomTime) MarshalJSON() ([]byte, error) {
+	layout := "2006-01-02 15:04"
+
 	return []byte(fmt.Sprintf(`"%s"`, d.Time.Format(layout))), nil
 }
