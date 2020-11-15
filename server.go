@@ -69,6 +69,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.IgnoreUnset))))
 	mux.Handle("/claim/unset/", server.DeleteMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.ClaimUnset))))
+	mux.Handle("/photo/delete/", server.DeleteMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.PhotoDelete))))
 
 	serveMux := server.PanicMiddleWare(mux)
 
