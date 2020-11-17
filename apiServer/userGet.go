@@ -14,7 +14,7 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	var (
-		user            User
+		myUser, user    User
 		myUid, otherUid int
 		err             error
 		ctx             context.Context
@@ -62,6 +62,33 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 			server.Logger.LogError(r, "Cannot make new record in users history - "+err.Error())
 			server.error(w, errors.DatabaseError)
 			return
+		}
+
+		myUser, err = server.Db.GetUserByUid(myUid)
+		if errors.RecordNotFound.IsOverlapWithError(err) {
+			server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+" not exists")
+			server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
+			return
+		} else if err != nil {
+			server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+			server.error(w, errors.DatabaseError)
+			return
+		}
+
+		// Create notification to target user
+		nid, err := server.Db.SetNewNotif(myUid, otherUid, myUser.Fname+" "+myUser.Lname+" watched your account")
+		if err != nil {
+			server.Logger.LogError(r, "SetNewNotif returned error - "+err.Error())
+			server.error(w, errors.DatabaseError)
+			return
+		}
+		if server.Session.IsUserLoggedByUid(otherUid) {
+			err = server.Session.SendNotifToLoggedUser(nid, otherUid, myUid, myUser.Fname+" "+myUser.Lname+" watched your account")
+			if err != nil {
+				server.Logger.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
+				server.error(w, errors.UnknownInternalError)
+				return
+			}
 		}
 	}
 

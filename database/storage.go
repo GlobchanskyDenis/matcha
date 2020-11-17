@@ -49,6 +49,7 @@ type Storage interface {
 	// notifications
 	SetNewNotif(uidReceiver int, uidSender int, body string) (int, error)
 	DeleteNotif(nid int) error
+	DropUserNotifs(uid int) error
 	GetNotifByNid(nid int) (common.Notif, error)
 	GetNotifByUidReceiver(uid int) ([]common.Notif, error)
 

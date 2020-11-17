@@ -18,7 +18,7 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 	devices, err := server.Db.GetDevicesByUid(uid)
 	if err != nil {
 		server.Logger.LogError(r, "GetDevicesByUid returned error - "+err.Error())
-		return errors.DatabaseError.WithArguments(err)
+		return errors.DatabaseError
 	}
 	for _, device := range devices {
 		if device.Device == r.UserAgent() {
@@ -29,9 +29,14 @@ func (server *Server) deviceHandler(w http.ResponseWriter, r *http.Request, uid 
 		err = server.Db.SetNewDevice(uid, r.UserAgent())
 		if err != nil {
 			server.Logger.LogError(r, "SetNewDevice returned error - "+err.Error())
-			return errors.DatabaseError.WithArguments(err)
+			return errors.DatabaseError
 		}
-		err = server.Session.SendNotifToLoggedUser(uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
+		nid, err := server.Db.SetNewNotif(uid, uid, `device from `+r.Host+" found:"+r.UserAgent())
+		if err != nil {
+			server.Logger.LogError(r, "SetNewNotif returned error - "+err.Error())
+			return errors.DatabaseError
+		}
+		err = server.Session.SendNotifToLoggedUser(nid, uid, 0, `device from `+r.Host+" found:"+r.UserAgent())
 		if err != nil {
 			server.Logger.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
 			return errors.WebSocketError.WithArguments(err)

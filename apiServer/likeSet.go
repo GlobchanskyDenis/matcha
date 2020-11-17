@@ -13,14 +13,14 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid64           float64
-		myUid, otherUid int
-		requestParams   map[string]interface{}
-		item            interface{}
-		ok, isExist     bool
-		err             error
-		ctx             context.Context
-		user            User
+		uid64             float64
+		myUid, otherUid   int
+		requestParams     map[string]interface{}
+		item              interface{}
+		ok, isExist       bool
+		err               error
+		ctx               context.Context
+		myUser, otherUser User
 	)
 
 	ctx = r.Context()
@@ -46,7 +46,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 	otherUid = int(uid64)
 
 	// Вот тут проверить чтобы у этого юзера были фотки
-	user, err = server.Db.GetUserByUid(myUid)
+	myUser, err = server.Db.GetUserByUid(myUid)
 	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+" not exists")
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
@@ -55,14 +55,14 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
-	} else if user.AvaID == nil {
+	} else if myUser.AvaID == nil {
 		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no avatar")
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Нельзя лайкать не имея аватарки",
 			"Forbidden to like without avatar"))
 		return
 	}
 
-	user, err = server.Db.GetUserByUid(otherUid)
+	otherUser, err = server.Db.GetUserByUid(otherUid)
 	if errors.RecordNotFound.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "User#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" not exists")
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Такого пользователя не существует", "This user isnt exist"))
@@ -71,7 +71,7 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
-	} else if user.AvaID == nil {
+	} else if otherUser.AvaID == nil {
 		server.Logger.LogWarning(r, "User#"+BLUE+strconv.Itoa(otherUid)+NO_COLOR+" have no photos")
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Нельзя лайкать пользователей без фото",
 			"Forbidden to like users without photo"))
@@ -92,6 +92,22 @@ func (server *Server) LikeSet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
+	}
+
+	// Create notification to target user
+	nid, err := server.Db.SetNewNotif(myUid, otherUid, myUser.Fname+" "+myUser.Lname+" liked you")
+	if err != nil {
+		server.Logger.LogError(r, "SetNewNotif returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+	if server.Session.IsUserLoggedByUid(otherUid) {
+		err = server.Session.SendNotifToLoggedUser(nid, otherUid, myUid, myUser.Fname+" "+myUser.Lname+" liked you")
+		if err != nil {
+			server.Logger.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
+			server.error(w, errors.UnknownInternalError)
+			return
+		}
 	}
 
 	// This is my valid case

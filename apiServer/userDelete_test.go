@@ -121,6 +121,11 @@ func TestUserDelete(t *testing.T) {
 								return
 							}
 						}
+						// Drop user notifications
+						err = server.Db.DropUserNotifs(user.Uid)
+						if err != nil {
+							t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+						}
 						// Drop user ignores
 						err = server.Db.DropUserIgnores(user.Uid)
 						if err != nil {
@@ -141,4 +146,6 @@ func TestUserDelete(t *testing.T) {
 			}
 		})
 	}
+
+	server.Db.Close()
 }

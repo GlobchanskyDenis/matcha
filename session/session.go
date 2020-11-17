@@ -220,20 +220,25 @@ func (T *Session) RemoveWSConnection(uid int, userAgent string, isLogout bool) (
 	return false, nil
 }
 
-func (T *Session) SendNotifToLoggedUser(uidReceiver int, uidSender int, notifBody string) error {
+func (T *Session) SendNotifToLoggedUser(nid int, uidReceiver int, uidSender int, notifBody string) error {
 	var item sessionItem
 	var message string
 	var err error
 	var ws wsItem
+	var isExist bool
 
 	T.mu.Lock()
-	item = T.session[uidReceiver]
+	item, isExist = T.session[uidReceiver]
 	T.mu.Unlock()
+	if !isExist {
+		return nil
+	}
 	for _, ws = range item.ws {
 		if ws.conn == nil {
 			continue
 		}
-		message = `{"type":"notif","uidSender":"` + strconv.Itoa(uidSender) + `","body":"` + notifBody + `"}`
+		message = `{"type":"notif","nid":` + strconv.Itoa(nid) + `,"uidSender":"` +
+			strconv.Itoa(uidSender) + `","body":"` + notifBody + `"}`
 		err = ws.conn.WriteMessage(1, []byte(message))
 		if err != nil {
 			return err
@@ -247,10 +252,14 @@ func (T *Session) SendMessageToLoggedUser(uidReceiver int, uidSender int, messag
 	var message string
 	var err error
 	var ws wsItem
+	var isExist bool
 
 	T.mu.Lock()
-	item = T.session[uidReceiver]
+	item, isExist = T.session[uidReceiver]
 	T.mu.Unlock()
+	if !isExist {
+		return nil
+	}
 	for _, ws = range item.ws {
 		if ws.conn == nil {
 			continue

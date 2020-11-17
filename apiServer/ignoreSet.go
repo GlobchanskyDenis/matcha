@@ -20,6 +20,7 @@ func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 		ok, isExist     bool
 		err             error
 		ctx             context.Context
+		myUser          User
 	)
 
 	ctx = r.Context()
@@ -51,6 +52,17 @@ func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	myUser, err = server.Db.GetUserByUid(myUid)
+	if errors.RecordNotFound.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+" not exists")
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
+		return
+	} else if err != nil {
+		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+
 	err = server.Db.SetNewIgnore(myUid, otherUid)
 	if errors.ImpossibleToExecute.IsOverlapWithError(err) {
 		server.Logger.LogWarning(r, "Imposible to set ignore from user#"+BLUE+strconv.Itoa(myUid)+NO_COLOR+
@@ -65,6 +77,23 @@ func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 		server.Logger.LogError(r, "SetNewIgnore returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
+	}
+
+	// Create notification to target user
+	nid, err := server.Db.SetNewNotif(myUid, otherUid, myUser.Fname+" "+myUser.Lname+" added you to ignore list")
+	if err != nil {
+		server.Logger.LogError(r, "SetNewNotif returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+	if server.Session.IsUserLoggedByUid(otherUid) {
+		err = server.Session.SendNotifToLoggedUser(nid, otherUid, myUid, myUser.Fname+" "+myUser.Lname+
+			" added you to ignore list")
+		if err != nil {
+			server.Logger.LogError(r, "SendNotifToLoggedUser returned error - "+err.Error())
+			server.error(w, errors.UnknownInternalError)
+			return
+		}
 	}
 
 	// This is my valid case

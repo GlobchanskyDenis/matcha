@@ -151,6 +151,11 @@ func TestUserCreate(t *testing.T) {
 						return
 					}
 				}
+				// Drop user notifications
+				err = server.Db.DropUserNotifs(uid)
+				if err != nil {
+					t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+				}
 				/*
 				** Drop user ignores
 				 */
@@ -169,4 +174,6 @@ func TestUserCreate(t *testing.T) {
 			}
 		})
 	}
+
+	server.Db.Close()
 }

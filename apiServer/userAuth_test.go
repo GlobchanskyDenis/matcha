@@ -175,6 +175,12 @@ func TestUserAuthenticate(t *testing.T) {
 			}
 		}
 
+		// Drop user notifications
+		err = server.Db.DropUserNotifs(user.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+		}
+
 		// Drop user ignores
 		err = server.Db.DropUserIgnores(user.Uid)
 		if err != nil {
@@ -187,5 +193,7 @@ func TestUserAuthenticate(t *testing.T) {
 			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
 			return
 		}
+
+		server.Db.Close()
 	})
 }

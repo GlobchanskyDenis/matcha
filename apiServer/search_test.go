@@ -254,6 +254,20 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
 		}
 
+		// Drop user notifications
+		err = server.Db.DropUserNotifs(user1.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+		}
+		err = server.Db.DropUserNotifs(user2.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+		}
+		err = server.Db.DropUserNotifs(myUser.Uid)
+		if err != nil {
+			t_.Errorf(RED_BG + "Error: cannot drop user ignores - " + err.Error() + NO_COLOR)
+		}
+
 		// Drop user ignores
 		err = server.Db.DropUserIgnores(user1.Uid)
 		if err != nil {
@@ -284,5 +298,7 @@ func TestSearch(t *testing.T) {
 			t_.Errorf(RED_BG + "Error: cannot delete user - " + err.Error() + NO_COLOR)
 			// return
 		}
+
+		server.Db.Close()
 	})
 }

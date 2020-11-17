@@ -46,7 +46,7 @@ func requestMessageValidator(message userMessage) error {
 	return errors.NewArg("Незнакомый тип сообщения", "Unknown message type")
 }
 
-func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, uid int, message userMessage) {
+func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, myUser User, message userMessage) {
 	isExists, err := server.Db.IsUserExistsByUid(message.UidReceiver)
 	if !isExists {
 		server.Logger.LogWarning(r, `user #`+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+
@@ -57,7 +57,7 @@ func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, uid int, 
 		}
 		return
 	}
-	_, err = server.Db.SetNewMessage(uid, message.UidReceiver, message.Body)
+	_, err = server.Db.SetNewMessage(myUser.Uid, message.UidReceiver, message.Body)
 	if err != nil {
 		server.Logger.LogWarning(r, `SetNewMessage returned error - `+err.Error())
 		err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(message.UidReceiver)+` not exists in database`)
@@ -66,7 +66,8 @@ func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, uid int, 
 		}
 		return
 	}
-	err = server.Session.SendMessageToLoggedUser(message.UidReceiver, uid, message.Body)
+
+	err = server.Session.SendMessageToLoggedUser(message.UidReceiver, myUser.Uid, message.Body)
 	if err != nil {
 		server.Logger.LogWarning(r, `SendMessageToLoggedUser returned error - `+err.Error())
 		err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(message.UidReceiver)+` not exists in database`)
@@ -75,12 +76,30 @@ func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, uid int, 
 		}
 		return
 	}
-	server.Logger.LogSuccess(r, "message from user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+
+	nid, err := server.Db.SetNewNotif(myUser.Uid, message.UidReceiver, myUser.Fname+" "+myUser.Lname+" send you a message")
+	if err != nil {
+		server.Logger.LogWarning(r, `SetNewNotif returned error - `+err.Error())
+		err = server.wsWriteErrorMessage(r, ws, `cannot send notification to user `+strconv.Itoa(message.UidReceiver))
+		if err != nil {
+			server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
+		}
+		return
+	}
+	err = server.Session.SendNotifToLoggedUser(nid, message.UidReceiver, myUser.Uid, myUser.Fname+" "+myUser.Lname+" send you a message")
+	if err != nil {
+		server.Logger.LogWarning(r, `SendNotifToLoggedUser returned error - `+err.Error())
+		err = server.wsWriteErrorMessage(r, ws, `user #`+strconv.Itoa(message.UidReceiver)+` not exists in database`)
+		if err != nil {
+			server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())
+		}
+		return
+	}
+	server.Logger.LogSuccess(r, "message from user #"+BLUE+strconv.Itoa(myUser.Uid)+NO_COLOR+
 		" ("+BLUE+r.Host+NO_COLOR+") to user #"+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+" transmitted")
 }
 
 // INFINITE LOOP THAT HANDLES MESSAGES FROM CURRENT USER
-func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) (logout bool) {
+func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, myUser User) (logout bool) {
 	var message userMessage
 
 	for {
@@ -123,7 +142,7 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, uid int) (lo
 		//  В зависимости от типа сообщения - обработаем его
 		switch message.Type {
 		case "message":
-			server.sendMessage(r, ws, uid, message)
+			server.sendMessage(r, ws, myUser, message)
 		case "logout":
 			return true
 		}
@@ -138,6 +157,7 @@ func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 	var logMessage string
 	var uid int
 	var isLogged bool
+	var myUser User
 
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -159,6 +179,17 @@ func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	myUser, err = server.Db.GetUserByUid(uid)
+	if errors.RecordNotFound.IsOverlapWithError(err) {
+		server.Logger.LogWarning(r, "Your user#"+BLUE+strconv.Itoa(uid)+NO_COLOR+" not exists")
+		ws.Close()
+		return
+	} else if err != nil {
+		server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
+		ws.Close()
+		return
+	}
+
 	userAgent := "default"
 	if len(r.Header["User-Agent"]) >= 1 {
 		userAgent = r.Header["User-Agent"][0]
@@ -168,7 +199,7 @@ func (server *Server) WebSocketAuth(w http.ResponseWriter, r *http.Request) {
 
 	server.Session.AddWSConnection(uid, ws, userAgent)
 
-	isLogout := server.wsReader(r, ws, uid)
+	isLogout := server.wsReader(r, ws, myUser)
 
 	userSessionWasClosed, err := server.Session.RemoveWSConnection(uid, userAgent, isLogout)
 	if err != nil {
