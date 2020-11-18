@@ -71,19 +71,11 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//	Delete notifs of user before user
-	notifs, err := server.Db.GetNotifByUidReceiver(user.Uid)
+	err = server.Db.DropUserNotifs(user.Uid)
 	if err != nil {
-		server.Logger.LogError(r, "GetNotifByUidReceiver returned error - "+err.Error())
+		server.Logger.LogError(r, "DropUserNotifs returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
-	}
-	for _, notif := range notifs {
-		err = server.Db.DeleteNotif(notif.Nid)
-		if err != nil {
-			server.Logger.LogError(r, "Cannot delete user notifications - "+err.Error())
-			server.error(w, errors.DatabaseError)
-			return
-		}
 	}
 
 	//	Delete photos of user before user
