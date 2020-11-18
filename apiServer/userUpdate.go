@@ -161,23 +161,23 @@ func fillUserStruct(request map[string]interface{}, user User) (User, string, er
 	arg, isExist = request["latitude"]
 	if isExist {
 		usefullFieldsExists = true
-		tmpFloat, ok = arg.(float64)
+		latitude, ok := arg.(float64)
 		if !ok {
 			return user, message,
 				errors.InvalidArgument.WithArguments("Поле latitude имеет неверный тип", "latitude field has wrong type")
 		}
-		user.Latitude = &tmpFloat
+		user.Latitude = &latitude
 		message += " latitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
 	}
 	arg, isExist = request["longitude"]
 	if isExist {
 		usefullFieldsExists = true
-		tmpFloat, ok = arg.(float64)
+		longitude, ok := arg.(float64)
 		if !ok {
 			return user, message,
 				errors.InvalidArgument.WithArguments("Поле longitude имеет неверный тип", "longitude field has wrong type")
 		}
-		user.Longitude = &tmpFloat
+		user.Longitude = &longitude
 		message += " longitude=" + BLUE + strconv.FormatFloat(tmpFloat, 'E', -1, 32) + NO_COLOR
 	}
 	arg, isExist = request["interests"]
