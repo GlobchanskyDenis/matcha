@@ -49,7 +49,7 @@ func (server *Server) MessageGet(w http.ResponseWriter, r *http.Request) {
 	messages, err = server.Db.GetMessagesFromChat(myUid, otherUid)
 	if err != nil {
 		server.Logger.LogError(r, "GetMessagesFromChat returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

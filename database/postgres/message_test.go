@@ -5,6 +5,7 @@ import (
 	"MatchaServer/config"
 	"strconv"
 	"testing"
+	"fmt"
 )
 
 func TestMessages(t *testing.T) {
@@ -39,14 +40,35 @@ func TestMessages(t *testing.T) {
 			t_.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
+		user1.Fname = "user1 fname"
+		user1.Lname = "user1 lname"
+		err = conn.UpdateUser(user1)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot update user for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
 		user2, err = conn.SetNewUser("user2@gmail.com", "qwerty")
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
+		user2.Fname = "user2 fname"
+		user2.Lname = "user2 lname"
+		err = conn.UpdateUser(user2)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot update user for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
 		user3, err = conn.SetNewUser("user3@gmail.com", "qwerty")
 		if err != nil {
 			t_.Errorf(RED_BG + "ERROR: Cannot set new user for tests - " + err.Error() + NO_COLOR)
+			t.FailNow()
+		}
+		user3.Fname = "user3 fname"
+		user3.Lname = "user3 lname"
+		err = conn.UpdateUser(user3)
+		if err != nil {
+			t_.Errorf(RED_BG + "ERROR: Cannot update user for tests - " + err.Error() + NO_COLOR)
 			t.FailNow()
 		}
 		t_.Log(GREEN_BG + "SUCCESS: test users was created" + NO_COLOR)
@@ -132,6 +154,7 @@ func TestMessages(t *testing.T) {
 			}
 			t_.Logf(GREEN_BG+"SUCCESS #%d: message was received from database"+NO_COLOR, nbr)
 			for _, message := range messages {
+				fmt.Printf("%#v\n", message)
 				err = conn.DeleteMessage(message.Mid)
 				if err != nil {
 					t_.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)

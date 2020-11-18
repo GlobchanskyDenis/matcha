@@ -55,3 +55,11 @@ func (conn ConnFake) GetMessagesFromChat(uidSender int, uidReceiver int) ([]comm
 	}
 	return messages, nil
 }
+
+func (conn ConnFake) GetActiveMessages(uidReceiver int) ([]common.Message, error) {
+	return nil, nil
+}
+
+func (conn ConnFake) SetMessageInactive(mid int) error {
+	return nil
+}

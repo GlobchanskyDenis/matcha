@@ -45,6 +45,8 @@ type Storage interface {
 	DeleteMessage(nid int) error
 	GetMessageByMid(mid int) (common.Message, error)
 	GetMessagesFromChat(uidSender int, uidReceiver int) ([]common.Message, error)
+	GetActiveMessages(uidReceiver int) ([]common.Message, error)
+	SetMessageInactive(mid int) error
 
 	// notifications
 	SetNewNotif(uidReceiver int, uidSender int, body string) (int, error)

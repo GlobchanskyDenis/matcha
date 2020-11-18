@@ -53,12 +53,16 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.HistoryScans))))
 	mux.Handle("/history/myViews/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.HistoryViews))))
+	mux.Handle("/message/get/active/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageGetActive))))
 
 	// PATCH
 	mux.Handle("/user/update/status/", server.PatchMethodMiddleWare(
 		http.HandlerFunc(server.UserUpdateStatus)))
 	mux.Handle("/user/update/", server.PatchMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserUpdate))))
+	mux.Handle("/message/set/inactive/", server.PatchMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageSetInactive))))
 
 	// DELETE
 	mux.Handle("/user/delete/", server.DeleteMethodMiddleWare(

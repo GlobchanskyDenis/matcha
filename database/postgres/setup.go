@@ -202,10 +202,11 @@ func (conn ConnDB) CreateNotifsTable() error {
 
 func (conn ConnDB) CreateMessagesTable() error {
 	db := conn.db
-	_, err := db.Exec("CREATE TABLE messages (mid SERIAL PRIMARY KEY, " +
-		"uidSender INT NOT NULL, " +
-		"uidReceiver INT NOT NULL, " +
-		"body VARCHAR(" + strconv.Itoa(config.MESSAGE_MAX_LEN) + ") NOT NULL)")
+	_, err := db.Exec(`CREATE TABLE messages (mid SERIAL PRIMARY KEY, 
+		uidSender INT NOT NULL, 
+		uidReceiver INT NOT NULL, 
+		body VARCHAR(` + strconv.Itoa(config.MESSAGE_MAX_LEN) + `) NOT NULL,
+		active BOOL DEFAULT TRUE)`)
 	return err
 }
 

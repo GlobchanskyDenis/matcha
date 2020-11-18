@@ -41,7 +41,7 @@ type FriendUser struct {
 }
 
 type HistoryReference struct {
-	Id   int	    `json:"id"`
+	Id   int        `json:"id"`
 	Time CustomTime `json:"time"`
 	User
 }
@@ -54,10 +54,16 @@ type Notif struct {
 }
 
 type Message struct {
-	Mid         int    `json:"mid"`
-	UidSender   int    `json:"uidSender"`
-	UidReceiver int    `json:"uidReceiver"`
-	Body        string `json:"body"`
+	Mid           int    `json:"mid"`
+	UidSender     int    `json:"uidSender"`
+	UidReceiver   int    `json:"uidReceiver"`
+	Body          string `json:"body"`
+	SenderFname   string `json:"senderFname"`
+	SenderLname   string `json:"senderLname"`
+	SenderAvatar  *string `json:"senderAvatar"`
+	ReceiverFname string `json:"receiverFname"`
+	ReceiverLname string `json:"receiverLname"`
+	ReceiverAvatar *string `json:"receiverAvatar"`
 }
 
 type Device struct {
