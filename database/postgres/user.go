@@ -195,6 +195,68 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 	return user, nil
 }
 
+func (conn *ConnDB) GetUserWithLikeInfo(targetUid int, myUid int) (common.SearchUser, error) {
+	var (
+		user      common.SearchUser
+		err       error
+		row       *sql.Rows
+		birth     interface{}
+		date      time.Time
+		ok        bool
+		interests string
+		intPtr    *int
+	)
+	query := `SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
+		latitude, longitude, interests, status, rating, src, uidReceiver FROM
+		users LEFT JOIN photos ON avaId = pid
+		LEFT JOIN (SELECT uidReceiver FROM likes WHERE uidSender=$2) AS T1 ON users.uid=uidReceiver WHERE users.uid=$1`
+	stmt, err := conn.db.Prepare(query)
+	if err != nil {
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	defer stmt.Close()
+	row, err = stmt.Query(targetUid, myUid)
+	if err != nil {
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	if row.Next() {
+		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar, &intPtr)
+		if err != nil {
+			return user, errors.DatabaseScanError.AddOriginalError(err)
+		}
+	} else {
+		return user, errors.RecordNotFound
+	}
+	// handle user Interests
+	if len(interests) > 2 {
+		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+		for _, strItem := range strArr {
+			user.Interests = append(user.Interests, strItem)
+		}
+	}
+	// handle user birth and age
+	if birth != nil {
+		date, ok = birth.(time.Time)
+		if ok {
+			user.Birth.Time = &date
+			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
+		} else {
+			return user, errors.NewArg("не верный тип данных birth", "wrong type of birth")
+		}
+	} else {
+		user.Birth.Time = nil
+	}
+	if intPtr != nil {
+		user.IsLiked = true
+	} else {
+		user.IsLiked = false
+	}
+	return user, nil
+}
+
 func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	var (
 		user      common.User

@@ -106,3 +106,7 @@ func (conn ConnFake) IsUserExistsByUid(uid int) (bool, error) {
 	}
 	return false, nil
 }
+
+func (conn ConnFake) GetUserWithLikeInfo(targetUid int, myUid int) (common.SearchUser, error) {
+	return common.SearchUser{}, nil
+}

@@ -34,6 +34,7 @@ type Storage interface {
 	GetUserForAuth(mail string, passwd string) (common.User, error)
 	IsUserExistsByMail(mail string) (bool, error)
 	IsUserExistsByUid(uid int) (bool, error)
+	GetUserWithLikeInfo(targetUid int, myUid int) (common.SearchUser, error)
 
 	// devices
 	SetNewDevice(uid int, device string) error

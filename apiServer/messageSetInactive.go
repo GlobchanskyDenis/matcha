@@ -13,14 +13,14 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) MessageSetInactive(w http.ResponseWriter, r *http.Request) {
 	var (
-		uid64           float64
-		message         Message
-		myUid, mid      int
-		requestParams   map[string]interface{}
-		item            interface{}
-		ok, isExist     bool
-		err             error
-		ctx             context.Context
+		uid64         float64
+		message       Message
+		myUid, mid    int
+		requestParams map[string]interface{}
+		item          interface{}
+		ok, isExist   bool
+		err           error
+		ctx           context.Context
 	)
 
 	ctx = r.Context()

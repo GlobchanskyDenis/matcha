@@ -15,6 +15,7 @@ import (
 func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	var (
 		myUser, user    User
+		otherUser       SearchUser
 		myUid, otherUid int
 		err             error
 		ctx             context.Context
@@ -22,6 +23,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 		item            interface{}
 		isExist, ok     bool
 		uid64           float64
+		jsonUser        []byte
 	)
 
 	ctx = r.Context()
@@ -41,20 +43,20 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	}
 	otherUid = int(uid64)
 
-	user, err = server.Db.GetUserByUid(otherUid)
-	if errors.RecordNotFound.IsOverlapWithError(err) {
-		server.Logger.LogWarning(r, "GetUserByUid - record not found")
-		server.error(w, errors.UserNotExist)
-		return
-	} else if err != nil {
-		server.Logger.LogError(r, "GetUser returned error - "+err.Error())
-		server.error(w, errors.DatabaseError)
-		return
-	}
-
 	if myUid != otherUid {
 		// Its a private field
 		user.Mail = ""
+
+		otherUser, err = server.Db.GetUserWithLikeInfo(otherUid, myUid)
+		if errors.RecordNotFound.IsOverlapWithError(err) {
+			server.Logger.LogWarning(r, "GetUserByUid - record not found")
+			server.error(w, errors.UserNotExist)
+			return
+		} else if err != nil {
+			server.Logger.LogError(r, "GetUser returned error - "+err.Error())
+			server.error(w, errors.DatabaseError)
+			return
+		}
 
 		// Make record in users history
 		err = server.Db.SetNewHistoryReference(myUid, otherUid)
@@ -90,13 +92,30 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	}
+		jsonUser, err = json.Marshal(otherUser)
+		if err != nil {
+			server.Logger.LogError(r, "Marshal returned error "+err.Error())
+			server.error(w, errors.MarshalError)
+			return
+		}
+	} else {
+		user, err = server.Db.GetUserByUid(otherUid)
+		if errors.RecordNotFound.IsOverlapWithError(err) {
+			server.Logger.LogWarning(r, "GetUserByUid - record not found")
+			server.error(w, errors.UserNotExist)
+			return
+		} else if err != nil {
+			server.Logger.LogError(r, "GetUser returned error - "+err.Error())
+			server.error(w, errors.DatabaseError)
+			return
+		}
 
-	jsonUser, err := json.Marshal(user)
-	if err != nil {
-		server.Logger.LogError(r, "Marshal returned error "+err.Error())
-		server.error(w, errors.MarshalError)
-		return
+		jsonUser, err = json.Marshal(user)
+		if err != nil {
+			server.Logger.LogError(r, "Marshal returned error "+err.Error())
+			server.error(w, errors.MarshalError)
+			return
+		}
 	}
 
 	// This is my valid case

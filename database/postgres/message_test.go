@@ -3,9 +3,9 @@ package postgres
 import (
 	. "MatchaServer/common"
 	"MatchaServer/config"
+	"fmt"
 	"strconv"
 	"testing"
-	"fmt"
 )
 
 func TestMessages(t *testing.T) {

@@ -14,10 +14,10 @@ import (
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) MessageGetActive(w http.ResponseWriter, r *http.Request) {
 	var (
-		messages        []Message
-		myUid           int
-		err             error
-		ctx             context.Context
+		messages []Message
+		myUid    int
+		err      error
+		ctx      context.Context
 	)
 
 	ctx = r.Context()
