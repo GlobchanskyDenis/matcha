@@ -16,6 +16,9 @@ func main() {
 	} else {
 		println(common.GREEN + " - done" + common.NO_COLOR)
 	}
+	defer func() {
+		server.Db.Close()
+	}()
 
 	print("Drop all tables\t\t\t")
 	err = server.Db.DropAllTables()

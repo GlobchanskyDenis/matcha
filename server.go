@@ -4,7 +4,10 @@ import (
 	"MatchaServer/apiServer"
 	"MatchaServer/common"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 func router(server *apiServer.Server) http.Handler {
@@ -92,7 +95,17 @@ func main() {
 	} else {
 		mux := router(server)
 		println(common.GREEN + "starting server at :" + strconv.Itoa(server.Port) + common.NO_COLOR)
-		http.ListenAndServe(":"+strconv.Itoa(server.Port), mux)
-		println(common.RED + "Порт " + strconv.Itoa(server.Port) + " занят" + common.NO_COLOR)
+
+		go func() {
+			http.ListenAndServe(":"+strconv.Itoa(server.Port), mux)
+			println(common.RED + "Порт " + strconv.Itoa(server.Port) + " занят" + common.NO_COLOR)
+		}()
+
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+		<-quit
+
+		server.Db.Close()
+		println("\n" + common.GREEN + "db connection was successfully closed" + common.NO_COLOR)
 	}
 }
