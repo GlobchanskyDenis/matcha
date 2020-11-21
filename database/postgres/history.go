@@ -39,7 +39,7 @@ func (conn ConnDB) GetHistoryReferencesByUid(uid int) ([]common.HistoryReference
 	)
 	stmt, err := conn.db.Prepare(`SELECT id, time, users.uid, fname, lname, rating, src FROM
 	(SELECT * FROM history WHERE uid=$1 ORDER BY id DESC) AS history_reference
-	LEFT JOIN users ON targetUid=users.uid
+	LEFT JOIN users ON history_reference.targetUid=users.uid
 	LEFT JOIN photos ON avaId=pid`)
 	if err != nil {
 		return nil, errors.DatabasePreparingError.AddOriginalError(err)
@@ -67,7 +67,7 @@ func (conn ConnDB) GetHistoryReferencesByTargetUid(targetUid int) ([]common.Hist
 	)
 	stmt, err := conn.db.Prepare(`SELECT id, time, users.uid, fname, lname, rating, src FROM
 	(SELECT * FROM history WHERE targetUid=$1 ORDER BY id DESC) AS history_reference
-	LEFT JOIN users ON targetUid=users.uid
+	LEFT JOIN users ON history_reference.uid=users.uid
 	LEFT JOIN photos ON avaId=pid`)
 	if err != nil {
 		return nil, errors.DatabasePreparingError.AddOriginalError(err)
