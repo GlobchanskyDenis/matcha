@@ -58,6 +58,19 @@ func (conn *ConnDB) DropUserNotifs(uid int) error {
 	return nil
 }
 
+func (conn *ConnDB) DropReceiverNotifs(uid int) error {
+	stmt, err := conn.db.Prepare("DELETE FROM notifs WHERE uidReceiver=$1")
+	if err != nil {
+		return errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(uid)
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	return nil
+}
+
 func (conn *ConnDB) GetNotifByNid(nid int) (common.Notif, error) {
 	var notif common.Notif
 

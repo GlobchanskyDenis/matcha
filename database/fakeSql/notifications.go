@@ -40,6 +40,15 @@ func (conn *ConnFake) DropUserNotifs(uid int) error {
 	return nil
 }
 
+func (conn *ConnFake) DropReceiverNotifs(uid int) error {
+	for nid, notif := range conn.notifs {
+		if notif.UidReceiver == uid {
+			delete(conn.notifs, nid)
+		}
+	}
+	return nil
+}
+
 func (conn ConnFake) GetNotifByNid(nid int) (common.Notif, error) {
 	var notif common.Notif
 

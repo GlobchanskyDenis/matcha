@@ -74,6 +74,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.MessageDelete))))
 	mux.Handle("/notification/delete/", server.DeleteMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationDelete))))
+	mux.Handle("/notification/delete/all/", server.DeleteMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.NotificationDeleteAll))))
 	mux.Handle("/like/unset/", server.DeleteMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.LikeUnset))))
 	mux.Handle("/ignore/unset/", server.DeleteMethodMiddleWare(
