@@ -236,10 +236,8 @@ func (server *Server) checkPid(r *http.Request, uid int, item interface{}) error
 			"Photo not exists")
 	} else if err != nil {
 		server.Logger.LogWarning(r, "GetPhotoByPid returned error "+err.Error())
-		return errors.DatabaseError.WithArguments(err)
+		return errors.DatabaseError
 	}
-	// fmt.Printf("photo: %#v\n", photo)
-	// fmt.Println("uid =", uid)
 	if photo.Uid != uid {
 		server.Logger.LogWarning(r, "Photo #"+strconv.Itoa(int(pidFloat64))+" not belongs to user #"+strconv.Itoa(uid))
 		return errors.ImpossibleToExecute.WithArguments("Это не ваше фото", "Photo is not yours")
@@ -253,7 +251,7 @@ func (server *Server) handleInterests(r *http.Request, item interface{}) error {
 	knownInterests, err := server.Db.GetInterests()
 	if err != nil {
 		server.Logger.LogWarning(r, "GetInterests returned error - "+err.Error())
-		return errors.DatabaseError.WithArguments(err)
+		return errors.DatabaseError
 	}
 	interfaceArr, ok := item.([]interface{})
 	if !ok {
@@ -270,7 +268,7 @@ func (server *Server) handleInterests(r *http.Request, item interface{}) error {
 		}
 		err = handlers.CheckInterest(interest)
 		if err != nil {
-			server.Logger.LogWarning(r, "invalid interest - "+err.Error())
+			server.Logger.LogWarning(r, "CheckInterest returned errors - "+err.Error())
 			return errors.InvalidArgument.WithArguments("Значение поля interests (item) недопустимо",
 				"interests (item) field has wrong value")
 		}
@@ -280,14 +278,14 @@ func (server *Server) handleInterests(r *http.Request, item interface{}) error {
 	err = server.Db.AddInterests(unknownInterests)
 	if err != nil {
 		server.Logger.LogError(r, "AddInterests returned error - "+err.Error())
-		return errors.DatabaseError.WithArguments(err)
+		return errors.DatabaseError
 	}
 	return nil
 }
 
 // HTTP HANDLER FOR DOMAIN /user/update/
-// REQUEST BODY IS JSON
-// RESPONSE BODY IS JSON ONLY IN CASE OF ERROR. IN OTHER CASE - NO RESPONSE BODY
+// IT UPDATES USER FIELDS IN DATABASE
+// REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid           int
@@ -315,7 +313,6 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	item, isExist = requestParams["avaID"]
 	if isExist {
-		// println("CHECK PID FUNC")
 		err = server.checkPid(r, uid, item)
 		if err != nil {
 			server.error(w, err.(errors.ApiError))
@@ -329,14 +326,14 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.UserNotExist)
 		return
 	} else if err != nil {
-		server.Logger.LogError(r, "GetUser returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
 		return
 	}
 
 	user, message, err = fillUserStruct(requestParams, user)
 	if err != nil {
-		server.Logger.LogWarning(r, err.Error())
+		server.Logger.LogWarning(r, "fillUserStruct returned error - "+err.Error())
 		server.error(w, err.(errors.ApiError))
 		return
 	}
@@ -346,7 +343,7 @@ func (server *Server) UserUpdate(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		server.Logger.LogError(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

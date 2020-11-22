@@ -25,7 +25,7 @@ func (server *Server) HistoryScans(w http.ResponseWriter, r *http.Request) {
 
 	history, err = server.Db.GetHistoryReferencesByTargetUid(uid)
 	if err != nil {
-		server.Logger.LogError(r, "GetUser returned error - "+err.Error())
+		server.Logger.LogError(r, "GetHistoryReferencesByTargetUid returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}

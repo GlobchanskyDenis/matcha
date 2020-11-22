@@ -9,7 +9,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /notification/delete/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT DELETES NOTIFICATION BY ITS ID IF IT BELONGS TO YOU.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) NotificationDelete(w http.ResponseWriter, r *http.Request) {
 	var (

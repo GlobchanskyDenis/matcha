@@ -10,7 +10,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /user/get/friends/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT RETURNS LIST OF USERS THAT YOU LIKED AND USER LIKES YOU.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	var (

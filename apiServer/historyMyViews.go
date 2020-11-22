@@ -25,7 +25,7 @@ func (server *Server) HistoryViews(w http.ResponseWriter, r *http.Request) {
 
 	history, err = server.Db.GetHistoryReferencesByUid(uid)
 	if err != nil {
-		server.Logger.LogError(r, "GetUser returned error - "+err.Error())
+		server.Logger.LogError(r, "GetHistoryReferencesByUid returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}

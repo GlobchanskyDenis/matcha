@@ -59,7 +59,7 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.Logger.LogWarning(r, "GetUserByMail returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 
@@ -68,7 +68,7 @@ func (server *Server) UserUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.UpdateUser(user)
 	if err != nil {
 		server.Logger.LogWarning(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

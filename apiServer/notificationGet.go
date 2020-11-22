@@ -10,7 +10,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /notification/get/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT REMOVES NOTIFICATION BY ITS ID.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) NotificationGet(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -26,7 +26,7 @@ func (server *Server) NotificationGet(w http.ResponseWriter, r *http.Request) {
 	notifs, err = server.Db.GetNotifByUidReceiver(myUid)
 	if err != nil {
 		server.Logger.LogError(r, "GetNotifByUidReceiver returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

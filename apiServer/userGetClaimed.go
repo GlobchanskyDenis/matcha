@@ -10,7 +10,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /user/get/claimed/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT RETURNS LIST OF USERS THAT YOU ADDED INTO BLACK LIST.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserGetClaimed(w http.ResponseWriter, r *http.Request) {
 	var (

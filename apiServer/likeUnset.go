@@ -9,7 +9,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /like/unset/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT REMOVES LIKE FROM TARGET USER.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -51,7 +51,7 @@ func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
 		return
 	} else if err != nil {
-		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}
@@ -64,7 +64,7 @@ func (server *Server) LikeUnset(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.Logger.LogError(r, "UnsetLike returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

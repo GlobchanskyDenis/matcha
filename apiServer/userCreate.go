@@ -11,6 +11,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /user/create/
+// IT CREATES USER WITH MAIL AND PASSWORD
 func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	var (
 		message, mail, pass, token string
@@ -78,8 +79,8 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 
 	isExist, err = server.Db.IsUserExistsByMail(mail)
 	if err != nil {
-		server.Logger.LogError(r, "IsUserExists returned error "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.Logger.LogError(r, "IsUserExistsByMail returned error "+err.Error())
+		server.error(w, errors.DatabaseError)
 		return
 	}
 	if isExist {
@@ -91,7 +92,7 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	user, err = server.Db.SetNewUser(mail, handlers.PassHash(pass))
 	if err != nil {
 		server.Logger.LogError(r, "SetNewUser returned error "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 
@@ -105,7 +106,7 @@ func (server *Server) UserCreate(w http.ResponseWriter, r *http.Request) {
 	err = server.Db.SetNewDevice(user.Uid, r.UserAgent())
 	if err != nil {
 		server.Logger.LogError(r, "SetNewDevice returned error "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

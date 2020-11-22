@@ -10,6 +10,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /user/delete/
+// IT DELETES YOUR USER. YOU SHOULD CONFIRM PASSWORD
 func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	var (
 		err                 error
@@ -58,13 +59,13 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	devices, err := server.Db.GetDevicesByUid(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "GetDevicesByUid returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 	for _, device := range devices {
 		err = server.Db.DeleteDevice(device.Id)
 		if err != nil {
-			server.Logger.LogError(r, "Cannot delete user device - "+err.Error())
+			server.Logger.LogError(r, "DeleteDevice returned error - "+err.Error())
 			server.error(w, errors.DatabaseError)
 			return
 		}
@@ -88,7 +89,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	for _, photo := range photos {
 		err = server.Db.DeletePhoto(photo.Pid)
 		if err != nil {
-			server.Logger.LogError(r, "Cannot delete user photos - "+err.Error())
+			server.Logger.LogError(r, "DeletePhoto returned error - "+err.Error())
 			server.error(w, errors.DatabaseError)
 			return
 		}
@@ -113,7 +114,7 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 	// Delete likes of user before user
 	err = server.Db.DropUserLikes(user.Uid)
 	if err != nil {
-		server.Logger.LogError(r, "DropUserClaimes returned error - "+err.Error())
+		server.Logger.LogError(r, "DropUserLikes returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}

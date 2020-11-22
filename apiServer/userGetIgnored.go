@@ -10,7 +10,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /user/get/ignored/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT RETURNS LIST OF USERS THAT YOU ADDED INTO IGNORE.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserGetIgnored(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -26,7 +26,7 @@ func (server *Server) UserGetIgnored(w http.ResponseWriter, r *http.Request) {
 	users, err = server.Db.GetIgnoredUsers(uid)
 	if err != nil {
 		server.Logger.LogError(r, "GetIgnoredUsers returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

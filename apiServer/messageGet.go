@@ -10,7 +10,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /message/get/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT RETURNS MESSAGES BETWEEN TWO USERS.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) MessageGet(w http.ResponseWriter, r *http.Request) {
 	var (

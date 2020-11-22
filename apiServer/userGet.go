@@ -10,7 +10,8 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /user/get/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT RETURNS TARGET USER DATA IN RESPONSE BY POST METHOD.
+// IT MAKES RECORD IN USER HISTORY IF TARGET USER IS NOT YOU.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -49,7 +50,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 
 		otherUser, err = server.Db.GetUserWithLikeInfo(otherUid, myUid)
 		if errors.RecordNotFound.IsOverlapWithError(err) {
-			server.Logger.LogWarning(r, "GetUserByUid - record not found")
+			server.Logger.LogWarning(r, "GetUserWithLikeInfo - record not found")
 			server.error(w, errors.UserNotExist)
 			return
 		} else if err != nil {
@@ -61,7 +62,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 		// Make record in users history
 		err = server.Db.SetNewHistoryReference(myUid, otherUid)
 		if err != nil {
-			server.Logger.LogError(r, "Cannot make new record in users history - "+err.Error())
+			server.Logger.LogError(r, "SetNewHistoryReference returned error - "+err.Error())
 			server.error(w, errors.DatabaseError)
 			return
 		}
@@ -72,7 +73,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 			server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
 			return
 		} else if err != nil {
-			server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+			server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
 			server.error(w, errors.DatabaseError)
 			return
 		}
@@ -105,7 +106,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 			server.error(w, errors.UserNotExist)
 			return
 		} else if err != nil {
-			server.Logger.LogError(r, "GetUser returned error - "+err.Error())
+			server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
 			server.error(w, errors.DatabaseError)
 			return
 		}

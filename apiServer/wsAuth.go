@@ -48,6 +48,10 @@ func requestMessageValidator(message userMessage) error {
 
 func (server *Server) sendMessage(r *http.Request, ws *websocket.Conn, myUser User, message userMessage) {
 	isExists, err := server.Db.IsUserExistsByUid(message.UidReceiver)
+	if err != nil {
+		server.Logger.LogWarning(r, `IsUserExistsByUid returned error - `+err.Error())
+		return
+	}
 	if !isExists {
 		server.Logger.LogWarning(r, `user #`+BLUE+strconv.Itoa(message.UidReceiver)+NO_COLOR+
 			` not exists in database. Skip request`)
@@ -130,7 +134,7 @@ func (server *Server) wsReader(r *http.Request, ws *websocket.Conn, myUser User)
 		//  Провалидируем сообщение
 		err = requestMessageValidator(message)
 		if err != nil {
-			server.Logger.LogError(r, `user message validation error. `+BLUE+err.Error()+NO_COLOR+` Skip request`)
+			server.Logger.LogError(r, `requestMessageValidator returned error. `+BLUE+err.Error()+NO_COLOR+` Skip request`)
 			err = server.wsWriteErrorMessage(r, ws, err.Error())
 			if err != nil {
 				server.Logger.LogError(r, "wsWriteErrorMessage returned error - "+err.Error())

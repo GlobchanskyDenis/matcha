@@ -14,8 +14,8 @@ func (server *Server) InterestsGet(w http.ResponseWriter, r *http.Request) {
 
 	interests, err := server.Db.GetInterests()
 	if err != nil {
-		server.Logger.LogError(r, "database returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.Logger.LogError(r, "GetInterests returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

@@ -41,8 +41,8 @@ func (server *Server) PhotoUpload(w http.ResponseWriter, r *http.Request) {
 
 	pid, err = server.Db.SetNewPhoto(uid, src)
 	if err != nil {
-		server.Logger.LogError(r, "UpdateUser returned error - "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.Logger.LogError(r, "SetNewPhoto returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
 		return
 	}
 

@@ -9,7 +9,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /claim/set/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT ADDS TARGET USER TO BLACK LIST.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) ClaimSet(w http.ResponseWriter, r *http.Request) {
 	var (

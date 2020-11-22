@@ -47,7 +47,7 @@ func (server *Server) MessageSetInactive(w http.ResponseWriter, r *http.Request)
 
 	message, err = server.Db.GetMessageByMid(mid)
 	if err != nil {
-		server.Logger.LogError(r, "GetMessagesFromChat returned error - "+err.Error())
+		server.Logger.LogError(r, "GetMessageByMid returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}

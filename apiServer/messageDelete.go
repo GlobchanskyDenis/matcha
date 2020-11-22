@@ -9,7 +9,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /message/delete/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT REMOVES MESSAGE BY ITS ID IF IT BELONGS TO THIS USER.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) MessageDelete(w http.ResponseWriter, r *http.Request) {
 	var (

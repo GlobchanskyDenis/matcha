@@ -105,7 +105,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		server.Logger.LogError(r, "GetUserForAuth returned error "+err.Error())
-		server.error(w, errors.DatabaseError.WithArguments(err))
+		server.error(w, errors.DatabaseError)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 	token, err = server.Session.AddUserToSession(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "Cannot add user to session - "+err.Error())
-		server.error(w, errors.UnknownInternalError.WithArguments(err))
+		server.error(w, errors.UnknownInternalError)
 		return
 	}
 
@@ -136,17 +136,9 @@ func (server *Server) UserAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// tokenWS, err = server.Session.CreateTokenWS(user.Uid) //handlers.TokenWebSocketAuth(mail)
-	// if err != nil {
-	// 	server.Logger.LogError(r, "cannot create web socket token - "+err.Error())
-	// 	server.error(w, errors.WebSocketError.WithArguments(err))
-	// 	return
-	// }
-
 	// This is my valid case. Response status will be set automaticly to 200.
 	w.WriteHeader(http.StatusOK) // 200
 	response = `{"x-auth-token":"` + token + `",` + string(jsonUser[1:])
-	// response = `{"x-auth-token":"` + token + `","ws-auth-token":"` + tokenWS + `",` + string(jsonUser[1:])
 	w.Write([]byte(response))
 	server.Logger.LogSuccess(r, "User "+BLUE+mail+NO_COLOR+" was authenticated successfully")
 }

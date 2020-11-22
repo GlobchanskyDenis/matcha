@@ -9,7 +9,7 @@ import (
 )
 
 // HTTP HANDLER FOR DOMAIN /ignore/set/ . IT HANDLES:
-// IT RETURNS OWN USER DATA IN RESPONSE BY POST METHOD.
+// IT ADD IGNORE TO TARGET USER.
 // REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -58,7 +58,7 @@ func (server *Server) IgnoreSet(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.ImpossibleToExecute.WithArguments("Вашего пользователя не существует", "Your user isnt exist"))
 		return
 	} else if err != nil {
-		server.Logger.LogError(r, "SetNewLike returned error - "+err.Error())
+		server.Logger.LogError(r, "GetUserByUid returned error - "+err.Error())
 		server.error(w, errors.DatabaseError)
 		return
 	}
