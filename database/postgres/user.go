@@ -318,13 +318,13 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 
 func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]common.SearchUser, error) {
 	var (
-		user      common.SearchUser
-		users     []common.SearchUser
-		interests string
-		birth     interface{}
-		intPtr    *int
-		date      time.Time
-		ok        bool
+		user             common.SearchUser
+		users            []common.SearchUser
+		interests        string
+		birth            interface{}
+		intPtr1, intPtr2 *int
+		date             time.Time
+		ok               bool
 	)
 	rows, err := conn.db.Query(query, sourceUser.Uid)
 	if err != nil {
@@ -333,7 +333,7 @@ func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]com
 	for rows.Next() {
 		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &birth, &user.Gender,
 			&user.Orientation, &user.AvaID, &user.Latitude, &user.Longitude,
-			&interests, &user.Rating, &user.Avatar, &intPtr)
+			&interests, &user.Rating, &user.Avatar, &intPtr1, &intPtr2)
 		if err != nil {
 			return nil, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -357,7 +357,12 @@ func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]com
 			user.Birth.Time = nil
 		}
 		// handle flag that user was liked by user who searches
-		if intPtr == nil {
+		if intPtr1 == nil {
+			user.IsMatch = false
+		} else {
+			user.IsMatch = true
+		}
+		if intPtr2 == nil {
 			user.IsLiked = false
 		} else {
 			user.IsLiked = true

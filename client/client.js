@@ -29,11 +29,11 @@ function clearPhotoList() {
 	}
 }
 
-function setNewItem(uid, fname, lname) {
+function setNewItem(uid, fname, lname, isLiked, isMatch) {
 	var list = document.getElementById("userList");
 	var newItem = document.createElement("div");
 	newItem.setAttribute("class", "item");
-	newItem.innerHTML = uid + " : " + fname + " " + lname;
+	newItem.innerHTML = uid + " : " + fname + " " + lname + " " + isLiked + " " + isMatch;
 	list.appendChild(newItem);
 }
 
@@ -116,7 +116,7 @@ function getUsers() {
 	// console.log("tx: get users, filter = " + filter)
 	xhr.send(JSON.stringify(filters));
 	xhr.onload = function () {
-		console.log("rx: " + xhr.status + " : " + xhr.response);
+		console.log("rx: " + xhr.status);
 		if (xhr.response) {
 			// console.log("response:")
 			var requestAsync = JSON.parse(xhr.response);
@@ -146,7 +146,7 @@ function getUsers() {
 		}
 		clearUserList();
 		for (i = 0; requestAsync[i]; i++) {
-			setNewItem(requestAsync[i].uid, requestAsync[i].fname, requestAsync[i].lname)
+			setNewItem(requestAsync[i].uid, requestAsync[i].fname, requestAsync[i].lname, requestAsync[i].isLiked, requestAsync[i].isMatch)
 		}
 	}
 }

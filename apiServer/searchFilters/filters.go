@@ -119,9 +119,11 @@ func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) st
 	**	null - если кто-то (или оба) еще не поставили лайк. Фактически в следующем коде это поле используется
 	**	для заполнения поля типа bool - разрешено ли общение пользователей или нет
 	 */
-
+	
 	var query = `SELECT uid, fname, lname, birth, gender, orientation, avaid,
-		latitude, longitude, interests, rating, src, uidSender FROM
+	latitude, longitude, interests, rating, src, uidSender, uidReceiver FROM 
+	(SELECT uid, fname, lname, birth, gender, orientation, avaid,
+		latitude, longitude, interests, search_visibility, rating, src, uidSender FROM
 	(SELECT users.uid, fname, lname, birth, gender, orientation, avaid,
 		latitude, longitude, interests, search_visibility, rating, src FROM
 	users LEFT JOIN photos ON avaId = pid)
@@ -130,10 +132,28 @@ func (f *Filters) PrepareQuery(sexRestrictions string, logger *logger.Logger) st
 	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
 	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
 		ON T1.uidSender = T2.uidReceiver)
-	AS can_talk ON full_users.uid = can_talk.uidSender WHERE
+	AS can_talk ON full_users.uid = can_talk.uidSender)
+	AS users_with_match LEFT JOIN 
+	(SELECT uidReceiver FROM likes WHERE uidSender = $1)
+	AS my_likes ON users_with_match.uid = my_likes.uidReceiver WHERE
 		uid NOT IN (SELECT uidReceiver FROM ignores WHERE uidSender = $1)
 		AND uid NOT IN (SELECT uidReceiver FROM claims)
 		AND search_visibility = true `
+
+	// var query = `SELECT uid, fname, lname, birth, gender, orientation, avaid,
+	// 	latitude, longitude, interests, rating, src, uidSender FROM
+	// (SELECT users.uid, fname, lname, birth, gender, orientation, avaid,
+	// 	latitude, longitude, interests, search_visibility, rating, src FROM
+	// users LEFT JOIN photos ON avaId = pid)
+	// AS full_users LEFT JOIN
+	// (SELECT uidSender FROM
+	// (SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
+	// (SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
+	// 	ON T1.uidSender = T2.uidReceiver)
+	// AS can_talk ON full_users.uid = can_talk.uidSender WHERE
+	// 	uid NOT IN (SELECT uidReceiver FROM ignores WHERE uidSender = $1)
+	// 	AND uid NOT IN (SELECT uidReceiver FROM claims)
+	// 	AND search_visibility = true `
 
 	if sexRestrictions != "" {
 		query += " AND " + sexRestrictions

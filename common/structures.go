@@ -31,6 +31,7 @@ type User struct {
 type SearchUser struct {
 	User
 	IsLiked bool `json:"isLiked"`
+	IsMatch bool `json:"isMatch"`
 }
 
 type FriendUser struct {
