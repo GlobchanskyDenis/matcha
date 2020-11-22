@@ -13,12 +13,13 @@ func (conn ConnDB) SetNewPhoto(uid int, src string) (int, error) {
 		return pid, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err := stmt.Query(uid, src)
+	rows, err := stmt.Query(uid, src)
 	if err != nil {
 		return pid, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
-		err = row.Scan(&pid)
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&pid)
 		if err != nil {
 			return pid, errors.DatabaseScanError.AddOriginalError(err)
 		}
@@ -60,6 +61,7 @@ func (conn ConnDB) GetPhotosByUid(uid int) ([]common.Photo, error) {
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&(photo.Pid), &(photo.Uid), &(photo.Src))
 		if err != nil {
@@ -77,12 +79,13 @@ func (conn ConnDB) GetPhotoByPid(pid int) (common.Photo, error) {
 	if err != nil {
 		return photo, errors.DatabasePreparingError.AddOriginalError(err)
 	}
-	row, err := stmt.Query(pid)
+	rows, err := stmt.Query(pid)
 	if err != nil {
 		return photo, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
-		err = row.Scan(&(photo.Pid), &(photo.Uid), &(photo.Src))
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&(photo.Pid), &(photo.Uid), &(photo.Src))
 		if err != nil {
 			return photo, errors.DatabaseScanError.AddOriginalError(err)
 		}

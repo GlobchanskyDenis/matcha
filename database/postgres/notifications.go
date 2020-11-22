@@ -69,6 +69,7 @@ func (conn *ConnDB) GetNotifByNid(nid int) (common.Notif, error) {
 	if err != nil {
 		return notif, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return notif, errors.RecordNotFound
 	}
@@ -91,6 +92,7 @@ func (conn ConnDB) GetNotifByUidReceiver(uid int) ([]common.Notif, error) {
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&(notif.Nid), &(notif.UidSender), &(notif.UidReceiver), &(notif.Body))
 		if err != nil {

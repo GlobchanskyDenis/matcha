@@ -232,7 +232,7 @@ function RegUser() {
 	var pass = document.forms['reg']['pass'].value
 	var request = JSON.stringify({ "mail": mail, "pass": pass })
 	let xhr = new XMLHttpRequest();
-	xhr.open("POST", "http://localhost:3000/user/create/");
+	xhr.open("PUT", "http://localhost:3000/user/create/");
 	console.log("tx: " + request)
 	xhr.send(request);
 	xhr.onload = function () {
@@ -307,7 +307,7 @@ function Upload() {
 	var request = `{"x-auth-token":"` + document.token + `","src":"` + image.src + `"}` //btoa(image.src)
 	document.buffer = image.src
 	let xhr = new XMLHttpRequest();
-	xhr.open("POST", "http://localhost:3000/photo/upload/");
+	xhr.open("PUT", "http://localhost:3000/photo/upload/");
 	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 	console.log("upload tx (not display img source)")
 	xhr.send(request);
@@ -493,6 +493,147 @@ function UpdateUser() {
 		document.forms['update_3']['latitude'].value = "";
 		document.forms['update_3']['longitude'].value = "";
 		document.forms['update_3']['interests'].value = "";
+	}
+	xhr.onerror = function () {
+		console.log("onError event")
+	}
+}
+
+function SetClaim() {
+	var uid = document.forms['claim']['uid'].value
+	var request = {
+		"x-auth-token": document.token,
+		"otherUid":	Number(uid),
+	}
+	console.log(JSON.stringify(request))
+
+	let xhr = new XMLHttpRequest();
+	xhr.open("PUT", "http://localhost:3000/claim/set/");
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send(JSON.stringify(request));
+
+	xhr.onload = function () {
+		if (xhr.response) {
+			var responseAsync = JSON.parse(xhr.response);
+		} else {
+			var responseAsync = "";
+		}
+		if (xhr.status != 200) {
+			document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+			document.getElementById("errorField").innerHTML += ((responseAsync.error) ? responseAsync.error : xhr.statusText)
+			document.getElementById("responseField").innerHTML = "";
+			console.log(responseAsync)
+			return
+		} else {
+			document.getElementById("errorField").innerHTML = ""
+			document.getElementById("responseField").innerHTML = "Success";
+		}
+	}
+	xhr.onerror = function () {
+		console.log("onError event")
+	}
+}
+
+function UnsetClaim() {
+	var uid = document.forms['claim']['uid'].value
+	console.log(uid)
+	var request = {
+		"x-auth-token": document.token,
+		"otherUid":	Number(uid),
+	}
+	console.log(JSON.stringify(request))
+
+	let xhr = new XMLHttpRequest();
+	xhr.open("DELETE", "http://localhost:3000/claim/unset/");
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send(JSON.stringify(request));
+
+	xhr.onload = function () {
+		if (xhr.response) {
+			var responseAsync = JSON.parse(xhr.response);
+		} else {
+			var responseAsync = "";
+		}
+		if (xhr.status != 200) {
+			document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+			document.getElementById("errorField").innerHTML += ((responseAsync.error) ? responseAsync.error : xhr.statusText)
+			document.getElementById("responseField").innerHTML = "";
+			console.log(responseAsync)
+			return
+		} else {
+			document.getElementById("errorField").innerHTML = ""
+			document.getElementById("responseField").innerHTML = "Success";
+		}
+	}
+	xhr.onerror = function () {
+		console.log("onError event")
+	}
+}
+
+function SetIgnore() {
+	var uid = document.forms['ignore']['uid'].value
+	var request = {
+		"x-auth-token": document.token,
+		"otherUid":	Number(uid),
+	}
+	console.log(JSON.stringify(request))
+
+	let xhr = new XMLHttpRequest();
+	xhr.open("PUT", "http://localhost:3000/ignore/set/");
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send(JSON.stringify(request));
+
+	xhr.onload = function () {
+		if (xhr.response) {
+			var responseAsync = JSON.parse(xhr.response);
+		} else {
+			var responseAsync = "";
+		}
+		if (xhr.status != 200) {
+			document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+			document.getElementById("errorField").innerHTML += ((responseAsync.error) ? responseAsync.error : xhr.statusText)
+			document.getElementById("responseField").innerHTML = "";
+			console.log(responseAsync)
+			return
+		} else {
+			document.getElementById("errorField").innerHTML = ""
+			document.getElementById("responseField").innerHTML = "Success";
+		}
+	}
+	xhr.onerror = function () {
+		console.log("onError event")
+	}
+}
+
+function UnsetIgnore() {
+	var uid = document.forms['ignore']['uid'].value
+	var request = {
+		"x-auth-token": document.token,
+		"otherUid":	Number(uid),
+	}
+	console.log(JSON.stringify(request))
+
+	let xhr = new XMLHttpRequest();
+	xhr.open("DELETE", "http://localhost:3000/ignore/unset/");
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send(JSON.stringify(request));
+
+	xhr.onload = function () {
+		if (xhr.response) {
+			var responseAsync = JSON.parse(xhr.response);
+		} else {
+			var responseAsync = "";
+		}
+		if (xhr.status != 200) {
+			document.getElementById("errorField").innerHTML = "Что-то пошло не так: " + xhr.status + " : "
+			document.getElementById("errorField").innerHTML += ((responseAsync.error) ? responseAsync.error : xhr.statusText)
+			document.getElementById("responseField").innerHTML = "";
+			console.log(responseAsync)
+			return
+		} else {
+			document.getElementById("errorField").innerHTML = ""
+			document.getElementById("responseField").innerHTML = "Success";
+		}
 	}
 	xhr.onerror = function () {
 		console.log("onError event")

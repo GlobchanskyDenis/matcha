@@ -49,6 +49,7 @@ func (conn ConnDB) GetHistoryReferencesByUid(uid int) ([]common.HistoryReference
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&reference.Id, &reference.Time.Time, &reference.User.Uid, &reference.User.Fname,
 			&reference.User.Lname, &reference.User.Rating, &reference.User.Avatar)
@@ -72,11 +73,12 @@ func (conn ConnDB) GetHistoryReferencesByTargetUid(targetUid int) ([]common.Hist
 	if err != nil {
 		return nil, errors.DatabasePreparingError.AddOriginalError(err)
 	}
+	defer stmt.Close()
 	rows, err := stmt.Query(targetUid)
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	defer stmt.Close()
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&reference.Id, &reference.Time.Time, &reference.User.Uid, &reference.User.Fname,
 			&reference.User.Lname, &reference.User.Rating, &reference.User.Avatar)

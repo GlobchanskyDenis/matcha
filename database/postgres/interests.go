@@ -46,6 +46,7 @@ func (conn ConnDB) GetInterests() ([]common.Interest, error) {
 	if err != nil {
 		return interests, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&interest.Id, &interest.Name)
 		if err != nil {

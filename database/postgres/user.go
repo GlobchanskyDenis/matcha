@@ -110,6 +110,7 @@ func (conn *ConnDB) UpdateUser(user common.User) error {
 			stmt.Close()
 			return errors.DatabaseQueryError.AddOriginalError(err)
 		}
+		defer rows.Close()
 		if !rows.Next() {
 			searchVisibility = true
 		}
@@ -144,7 +145,7 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 	var (
 		user      common.User
 		err       error
-		row       *sql.Rows
+		rows      *sql.Rows
 		birth     interface{}
 		date      time.Time
 		ok        bool
@@ -158,12 +159,13 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err = stmt.Query(uid)
+	rows, err = stmt.Query(uid)
 	if err != nil {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
-		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
 			&user.Lname, &birth, &user.Gender, &user.Orientation,
 			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
 			&user.Status, &user.Rating, &user.Avatar)
@@ -199,7 +201,7 @@ func (conn *ConnDB) GetUserWithLikeInfo(targetUid int, myUid int) (common.Search
 	var (
 		user      common.SearchUser
 		err       error
-		row       *sql.Rows
+		rows      *sql.Rows
 		birth     interface{}
 		date      time.Time
 		ok        bool
@@ -215,12 +217,13 @@ func (conn *ConnDB) GetUserWithLikeInfo(targetUid int, myUid int) (common.Search
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err = stmt.Query(targetUid, myUid)
+	rows, err = stmt.Query(targetUid, myUid)
 	if err != nil {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
-		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
 			&user.Lname, &birth, &user.Gender, &user.Orientation,
 			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
 			&user.Status, &user.Rating, &user.Avatar, &intPtr)
@@ -261,7 +264,7 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 	var (
 		user      common.User
 		err       error
-		row       *sql.Rows
+		rows      *sql.Rows
 		birth     interface{}
 		date      time.Time
 		ok        bool
@@ -275,12 +278,13 @@ func (conn *ConnDB) GetUserByMail(mail string) (common.User, error) {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err = stmt.Query(mail)
+	rows, err = stmt.Query(mail)
 	if err != nil {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
-		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
 			&user.Lname, &birth, &user.Gender, &user.Orientation,
 			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
 			&user.Status, &user.Rating, &user.Avatar)
@@ -374,7 +378,7 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 	var (
 		user      common.User
 		err       error
-		row       *sql.Rows
+		rows      *sql.Rows
 		birth     interface{}
 		date      time.Time
 		interests string
@@ -389,12 +393,13 @@ func (conn *ConnDB) GetUserForAuth(mail string, encryptedPass string) (common.Us
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err = stmt.Query(mail, encryptedPass)
+	rows, err = stmt.Query(mail, encryptedPass)
 	if err != nil {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
-		err = row.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
 			&user.Lname, &birth, &user.Gender, &user.Orientation,
 			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
 			&user.Status, &user.Rating, &user.Avatar)
@@ -433,11 +438,12 @@ func (conn ConnDB) IsUserExistsByMail(mail string) (bool, error) {
 		return false, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err := stmt.Query(mail)
+	rows, err := stmt.Query(mail)
 	if err != nil {
 		return false, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
+	defer rows.Close()
+	if rows.Next() {
 		return true, nil
 	}
 	return false, nil
@@ -449,11 +455,12 @@ func (conn ConnDB) IsUserExistsByUid(uid int) (bool, error) {
 		return false, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	row, err := stmt.Query(uid)
+	rows, err := stmt.Query(uid)
 	if err != nil {
 		return false, errors.DatabaseQueryError.AddOriginalError(err)
 	}
-	if row.Next() {
+	defer rows.Close()
+	if rows.Next() {
 		return true, nil
 	}
 	return false, nil

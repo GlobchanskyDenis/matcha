@@ -53,6 +53,7 @@ func (conn ConnDB) GetDevicesByUid(uid int) ([]common.Device, error) {
 	if err != nil {
 		return devices, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&(device.Id), &(device.Uid), &(device.Device))
 		if err != nil {

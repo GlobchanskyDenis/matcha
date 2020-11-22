@@ -97,8 +97,7 @@ func (conn ConnDB) UnsetClaim(uidSender int, uidReceiver int) error {
 	 */
 	stmt, err := tx.Prepare("DELETE FROM claims WHERE uidSender=$1 AND uidReceiver=$2")
 	if err != nil {
-		return errors.NewArg("ошибка во время подготовки к запросу 11",
-		"error during preparing 11").AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
 	result, err := stmt.Exec(uidSender, uidReceiver)
@@ -123,38 +122,40 @@ func (conn ConnDB) UnsetClaim(uidSender int, uidReceiver int) error {
 	 */
 	stmt, err = tx.Prepare("SELECT uidSender FROM claims WHERE uidReceiver = $1")
 	if err != nil {
-		return errors.NewArg("ошибка во время подготовки к запросу 22",
-		"error during preparing 22").AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	rows, err := stmt.Query(uidReceiver)
 	if err != nil {
 		return errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if rows.Next() {
+		rows.Close()
 		tx.Commit()
 		return nil
 	}
+	rows.Close()
 	/*
 	**	Check is user fills required fields
 	 */
 	stmt, err = tx.Prepare("SELECT fname, lname, avaID FROM users WHERE uid = $1")
 	if err != nil {
-		return errors.NewArg("ошибка во время подготовки к запросу 33",
-		"error during preparing 33").AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
-	// defer stmt.Close()
 	rows, err = stmt.Query(uidReceiver)
 	if err != nil {
 		return errors.DatabaseQueryError.AddOriginalError(err)
 	}
 	if !rows.Next() {
+		rows.Close()
 		return errors.UserNotExist
 	}
 	var user common.User
 	err = rows.Scan(&user.Fname, &user.Lname, &user.AvaID)
 	if err != nil {
+		rows.Close()
 		return errors.DatabaseScanError.AddOriginalError(err)
 	}
+	rows.Close()
 	if user.Fname == "" || user.Lname == "" || user.AvaID == nil {
 		tx.Commit()
 		return nil
@@ -164,8 +165,7 @@ func (conn ConnDB) UnsetClaim(uidSender int, uidReceiver int) error {
 	 */
 	stmt, err = tx.Prepare("UPDATE users SET search_visibility=true WHERE uid=$1")
 	if err != nil {
-		return errors.NewArg("ошибка во время подготовки к запросу 44",
-		"error during preparing 44").AddOriginalError(err)
+		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	result, err = stmt.Exec(uidReceiver)
 	if err != nil {

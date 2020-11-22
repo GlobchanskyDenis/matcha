@@ -60,6 +60,7 @@ func (conn *ConnDB) GetMessageByMid(mid int) (common.Message, error) {
 	if err != nil {
 		return message, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return message, errors.RecordNotFound
 	}
@@ -90,6 +91,7 @@ func (conn ConnDB) GetMessagesFromChat(uidSender int, uidReceiver int) ([]common
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&message.Mid, &message.UidSender, &message.UidReceiver, &message.Body,
 			&message.SenderFname, &message.SenderLname, &message.SenderAvatar,
@@ -121,6 +123,7 @@ func (conn ConnDB) GetActiveMessages(uidReceiver int) ([]common.Message, error) 
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&message.Mid, &message.UidSender, &message.UidReceiver, &message.Body,
 			&message.SenderFname, &message.SenderLname, &message.SenderAvatar,

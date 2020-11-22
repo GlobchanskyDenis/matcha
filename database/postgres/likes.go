@@ -216,6 +216,7 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	if err != nil {
 		return nil, errors.DatabaseQueryError.AddOriginalError(err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &user.Rating, &user.Avatar,
 			&user.UidSender, &user.UidReceiver, &user.LastMessageBody)
