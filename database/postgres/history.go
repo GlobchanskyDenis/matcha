@@ -7,11 +7,33 @@ import (
 )
 
 func (conn ConnDB) SetNewHistoryReference(uid int, targetUid int) error {
-	stmt, err := conn.db.Prepare("INSERT INTO history (uid, targetUid, time) VALUES ($1, $2, NOW())")
+	/*
+	**	Transaction start
+	 */
+	tx, err := conn.db.Begin()
+	if err != nil {
+		return errors.DatabaseTransactionError.AddOriginalError(err)
+	}
+	defer tx.Rollback()
+	/*
+	**	Remove all records of users
+	 */
+	stmt, err := tx.Prepare("DELETE FROM history WHERE uid=$1 AND targetUid=$2")
 	if err != nil {
 		return errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
+	_, err = stmt.Exec(uid, targetUid)
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	/*
+	**	Create new record
+	 */
+	stmt, err = tx.Prepare("INSERT INTO history (uid, targetUid, time) VALUES ($1, $2, NOW())")
+	if err != nil {
+		return errors.DatabasePreparingError.AddOriginalError(err)
+	}
 	result, err := stmt.Exec(uid, targetUid)
 	if err != nil {
 		return errors.DatabaseExecutingError.AddOriginalError(err)
@@ -28,6 +50,13 @@ func (conn ConnDB) SetNewHistoryReference(uid int, targetUid int) error {
 	if int(nbr64) != 1 {
 		return errors.NewArg("Создано "+strconv.Itoa(int(nbr64))+" записей",
 			strconv.Itoa(int(nbr64))+" times of historycal reference was created")
+	}
+	/*
+	**	Close transaction
+	 */
+	err = tx.Commit()
+	if err != nil {
+		return errors.DatabaseTransactionError.AddOriginalError(err)
 	}
 	return nil
 }
