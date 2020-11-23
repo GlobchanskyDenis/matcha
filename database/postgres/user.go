@@ -23,12 +23,13 @@ func (conn ConnDB) SetNewUser(mail string, encryptedPass string) (common.User, e
 	/*
 	**	Set new user
 	 */
-	stmt, err := tx.Prepare("INSERT INTO users (mail, encryptedPass) VALUES ($1, $2) RETURNING uid, mail")
+	stmt, err := tx.Prepare(`INSERT INTO users (mail, encryptedPass, status) VALUES ($1, $2, 'not confirmed')
+		RETURNING uid, mail, status`)
 	if err != nil {
 		return user, errors.DatabasePreparingError.AddOriginalError(err)
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(mail, encryptedPass).Scan(&user.Uid, &user.Mail)
+	err = stmt.QueryRow(mail, encryptedPass).Scan(&user.Uid, &user.Mail, &user.Status)
 	if err != nil {
 		return user, errors.DatabaseQueryError.AddOriginalError(err)
 	}
