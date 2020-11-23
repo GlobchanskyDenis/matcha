@@ -179,6 +179,55 @@ func (server *Server) PatchMethodMiddleWare(next http.Handler) http.Handler {
 	})
 }
 
+func (server *Server) PatchPostGetMethodMiddleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var (
+			requestParams = map[string]interface{}{}
+			err           error
+			ctx           context.Context
+		)
+
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS")
+		w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Content-Length")
+
+		if r.Method == "OPTIONS" {
+			server.Logger.Log(r, "client wants to know what methods are allowed")
+			return
+		} else if r.Method != "PATCH" && r.Method != "POST" && r.Method != "GET" {
+			server.Logger.LogWarning(r, "wrong request method. Should be PATCH or POST or GET method")
+			w.WriteHeader(http.StatusMethodNotAllowed) // 405
+			return
+		}
+
+		server.Logger.Log(r, "request from client was received")
+
+		if r.Method == "PATCH" {
+			err = json.NewDecoder(r.Body).Decode(&requestParams)
+			if err != nil {
+				server.Logger.LogError(r, "request body json decode failed - "+err.Error())
+				server.error(w, errors.InvalidRequestBody)
+				return
+			}
+			ctx = context.WithValue(r.Context(), "requestParams", requestParams)
+		} else if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				server.Logger.LogError(r, "parse form failed - "+err.Error())
+				server.error(w, errors.InvalidRequestBody)
+				return
+			}
+			for key, value := range r.PostForm {
+				requestParams[key] = value
+			}
+			ctx = context.WithValue(r.Context(), "requestParams", requestParams)
+		} else if r.Method == "GET" {
+			ctx = r.Context()
+		}
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func (server *Server) DeleteMethodMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (

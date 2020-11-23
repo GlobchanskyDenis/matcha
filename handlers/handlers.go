@@ -376,9 +376,16 @@ func SendMail(to string, xRegToken string, mailConf *config.Mail) error {
 	message := `To: <` + to + `>
 From: "Matcha administration" <` + mailConf.Mail + `>
 Subject: Confirm registration in Matcha
+MIME-Version: 1.0
+Content-type: text/html; charset=utf8
 
-Hello, ` + to + `, I have registration code for you!
-` + xRegToken + `
+<span style="font-size: 1.3em; color: green;">Hello, ` + to + `, click below to confirm your email
+<form method="POST" action="http://localhost:3000/user/update/status/">
+	<input type="hidden" name="x-reg-token" value="`+xRegToken+`">
+	<input type="submit" value="Click to confirm mail">
+</form>
+<a href="http://localhost:3000/user/update/status/?x-reg-token=`+xRegToken+`">click to confirm mail</a>
+if this letter came by mistake - delete it</span>
 `
 
 	if err := smtp.SendMail(mailConf.Host+":587",
