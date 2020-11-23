@@ -228,6 +228,44 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	return users, nil
 }
 
+func (conn ConnDB) GetUsersLikedMe(myUid int) ([]common.User, error) {
+	var (
+		user  common.User
+		users []common.User
+	)
+
+	//	Стэк запроса: добавление фотографий к пользователям,
+	//  поиск пользователей удовлетворяющих условию - пользователи поставили тебе лайк,
+	//	но ответного лайка не было
+
+
+	query := `SELECT liked_users.uid, fname, lname, rating, src FROM
+	(SELECT uid, fname, lname, avaId, rating FROM users WHERE uid IN
+	(SELECT uidSender FROM likes WHERE uidReceiver = $1 AND uidSender NOT IN
+	(SELECT uidReceiver FROM likes WHERE uidSender = $1))) AS liked_users
+	LEFT JOIN photos ON liked_users.avaId = photos.pid
+	`
+
+	stmt, err := conn.db.Prepare(query)
+	if err != nil {
+		return nil, errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(myUid)
+	if err != nil {
+		return nil, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &user.Rating, &user.Avatar)
+		if err != nil {
+			return nil, errors.DatabaseScanError.AddOriginalError(err)
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
 func (conn ConnDB) IsICanSpeakWithUser(myUid, otherUid int) (bool, error) {
 	query := `SELECT * FROM likes WHERE uidSender=$1 AND uidReceiver IN 
 	(SELECT uidSender FROM likes WHERE uidReceiver=$1 AND uidSender=$2)

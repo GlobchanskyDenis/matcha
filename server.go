@@ -44,6 +44,8 @@ func router(server *apiServer.Server) http.Handler {
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetIgnored))))
 	mux.Handle("/user/get/claimed/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetClaimed))))
+	mux.Handle("/user/get/likedMe/", server.PostMethodMiddleWare(
+		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGetLikedMe))))
 	mux.Handle("/user/get/", server.PostMethodMiddleWare(
 		server.CheckAuthMiddleWare(http.HandlerFunc(server.UserGet))))
 	mux.Handle("/search/", server.PostMethodMiddleWare(

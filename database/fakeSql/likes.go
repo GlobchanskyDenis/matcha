@@ -85,6 +85,22 @@ func (conn ConnFake) GetFriendUsers(uidSender int) ([]common.FriendUser, error) 
 	return users, nil
 }
 
+func (conn ConnFake) GetUsersLikedMe(myUid int) ([]common.User, error) {
+	var users []common.User
+
+	for _, user := range conn.users {
+		if myUid == user.Uid {
+			continue
+		}
+		if user.AvaID != nil {
+			photo, _ := conn.GetPhotoByPid(*user.AvaID)
+			user.Avatar = &photo.Src
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
 func (conn ConnFake) IsICanSpeakWithUser(myUid, otherUid int) (bool, error) {
 	for _, like := range conn.likes {
 		if like.uidSender == myUid && like.uidReceiver == otherUid {

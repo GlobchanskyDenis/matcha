@@ -72,6 +72,7 @@ type Storage interface {
 	UnsetLike(uidSender int, uidReceiver int) error
 	DropUserLikes(uid int) error
 	GetFriendUsers(myUid int) ([]common.FriendUser, error)
+	GetUsersLikedMe(myUid int) ([]common.User, error)
 	IsICanSpeakWithUser(myUid, otherUid int) (bool, error)
 
 	// ignores
