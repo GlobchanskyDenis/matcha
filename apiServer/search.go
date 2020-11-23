@@ -30,15 +30,6 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 	ctx = r.Context()
 	uid = ctx.Value("uid").(int)
 	requestParams = ctx.Value("requestParams").(map[string]interface{})
-	filters = searchFilters.New()
-	err = filters.Parse(requestParams, uid, server.Db, &server.Session)
-	if err != nil {
-		server.Logger.LogWarning(r, "Cannot parse filter: "+BLUE+err.Error()+NO_COLOR)
-		server.error(w, errors.InvalidArgument.WithArguments(err))
-		return
-	}
-
-	server.Logger.Log(r, "search filters: "+BLUE+filters.Print()+NO_COLOR)
 
 	user, err = server.Db.GetUserByUid(uid)
 	if errors.RecordNotFound.IsOverlapWithError(err) {
@@ -50,6 +41,23 @@ func (server *Server) Search(w http.ResponseWriter, r *http.Request) {
 		server.error(w, errors.DatabaseError)
 		return
 	}
+	if user.AvaID == nil || user.Fname == "" || user.Lname == "" {
+		server.Logger.LogWarning(r, "Your user #"+BLUE+strconv.Itoa(uid)+NO_COLOR+" cannot make search")
+		server.error(w, errors.ImpossibleToExecute.WithArguments("Сначала нужно заполнить ваши имя, фамилию и аватар",
+			"You need to fill name, surname and avatar first"))
+		return
+	}
+
+	filters = searchFilters.New()
+	err = filters.Parse(requestParams, uid, server.Db, &server.Session)
+	if err != nil {
+		server.Logger.LogWarning(r, "Cannot parse filter: "+BLUE+err.Error()+NO_COLOR)
+		server.error(w, errors.InvalidArgument.WithArguments(err))
+		return
+	}
+
+	server.Logger.Log(r, "search filters: "+BLUE+filters.Print()+NO_COLOR)
+
 	sexRestrictions = searchFilters.PrepareSexRestrictions(user)
 	query := filters.PrepareQuery(sexRestrictions, &server.Logger)
 	searchUsers, err = server.Db.GetUsersByQuery(query, user)

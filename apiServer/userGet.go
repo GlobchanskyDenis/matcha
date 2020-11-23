@@ -77,6 +77,12 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 			server.error(w, errors.DatabaseError)
 			return
 		}
+		if myUser.AvaID == nil || myUser.Fname == "" || myUser.Lname == "" {
+			server.Logger.LogWarning(r, "Your user #"+BLUE+strconv.Itoa(myUid)+NO_COLOR+" cannot make search")
+			server.error(w, errors.ImpossibleToExecute.WithArguments("Сначала нужно заполнить ваши имя, фамилию и аватар",
+				"You need to fill name, surname and avatar first"))
+			return
+		}
 
 		// Create notification to target user
 		nid, err := server.Db.SetNewNotif(myUid, otherUid, myUser.Fname+" "+myUser.Lname+" watched your account")
