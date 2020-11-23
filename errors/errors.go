@@ -96,39 +96,43 @@ func (e ApiError) IsOverlapWithError(err error) bool {
 }
 
 var (
+	unauthorized = 202
+	mailNotConfirmed = 203
+	badRequest = 204
+	impossibleToExecute = 205
 	// Common errors (Code 1000 - 1999)
-	RecordNotFound = new(1000, http.StatusUnprocessableEntity, // 422
+	RecordNotFound = new(1000, impossibleToExecute, //http.StatusUnprocessableEntity, // 422
 		"Такой записи не существует в базе данных",
 		"Record not found in database")
-	ImpossibleToExecute = new(1001, http.StatusNotAcceptable, // 406
+	ImpossibleToExecute = new(1001, impossibleToExecute, //http.StatusNotAcceptable, // 406
 		"Невозможно выполнить команду - не выполнены ключевые условия",
 		"Imposible to execute command")
 
 	// User errors (Code 2000 - 2999)
-	UserNotLogged = new(2000, http.StatusUnauthorized, // 401
+	UserNotLogged = new(2000, unauthorized, //http.StatusUnauthorized, // 401
 		"Пользователь не авторизован",
 		"User not authorized")
-	NotConfirmedMail = new(2001, http.StatusUnauthorized, // 401 - не нашел более подходящего статуса
+	NotConfirmedMail = new(2001, mailNotConfirmed, //http.StatusUnauthorized, // 401 - не нашел более подходящего статуса
 		"Пожалуйста, подтвердите вашу почту. Письмо выслано на ваш почтовый ящик",
 		"Please confirm your mail. Mail was sent to your email address")
-	UserNotExist = new(2002, http.StatusUnauthorized, // 401 - не нашел более подходящего статуса
+	UserNotExist = new(2002, impossibleToExecute,//http.StatusUnauthorized, // 401 - не нашел более подходящего статуса
 		"Пользователь не существует",
 		"User not exists")
-	AuthFail = new(2003, http.StatusUnprocessableEntity, // 422
+	AuthFail = new(2003, impossibleToExecute,//http.StatusUnprocessableEntity, // 422
 		"Не могу авторизовать пользователя. Неверная почта или пароль",
 		"Cannot authorize user. Wrong mail or password")
-	RegFailUserExists = new(2004, http.StatusNotAcceptable, //406
+	RegFailUserExists = new(2004, impossibleToExecute,//http.StatusNotAcceptable, //406
 		"Такой пользователь уже существует",
 		"Same user already exists")
 
 	// Request errors
-	InvalidRequestBody = new(4000, http.StatusBadRequest, // 400
+	InvalidRequestBody = new(4000, badRequest, //http.StatusBadRequest, // 400
 		"Тело запроса содержит ошибку",
 		"Request body is invalid")
-	NoArgument = new(4002, http.StatusBadRequest, // 400
+	NoArgument = new(4002, badRequest, //http.StatusBadRequest, // 400
 		"Отстутствует одно из обязательных полей",
 		"One of the required fields is missing")
-	InvalidArgument = new(4003, http.StatusUnprocessableEntity, // 422
+	InvalidArgument = new(4003, badRequest, //http.StatusUnprocessableEntity, // 422
 		"Ошибка в аргументе",
 		"Argument error")
 
