@@ -56,23 +56,23 @@ func TestUserDelete(t *testing.T) {
 			payload: map[string]interface{}{
 				"pass": passFail,
 			},
-			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty password",
 			payload: map[string]interface{}{
 				"pass": "",
 			},
-			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid no useful fields at all",
 			payload: map[string]interface{}{
 				"Abrakadabra": "asdsad",
 			},
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		}, {
 			name:           "invalid only token in body",
 			payload:        map[string]interface{}{},
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		}, {
 			name: "valid",
 			payload: map[string]interface{}{

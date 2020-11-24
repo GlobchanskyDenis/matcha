@@ -173,24 +173,6 @@ func (conn ConnDB) GetFriendUsers(myUid int) ([]common.FriendUser, error) {
 	// Стэк запроса: добавление последнего сообщения к пользователю, добавление фотографии к пользователю,
 	//  поиск пользователей удовлетворяющих условию - пользователи поставили друг другу лайк.
 
-	/* OLD QUERY
-	query := `SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-		bio, avaid, latitude, longitude, interests, status, rating, src, uidSender, uidReceiver, body FROM
-	(SELECT permitted_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-		bio, avaid, latitude, longitude, interests, status, rating, src FROM
-	(SELECT uid, mail, encryptedpass, fname, lname, birth, gender, orientation,
-		bio, avaid, latitude, longitude, interests, status, rating FROM
-	users INNER JOIN
-	(SELECT uidSender FROM
-	(SELECT uidSender FROM likes WHERE uidReceiver = $1) AS T1 INNER JOIN
-	(SELECT uidReceiver FROM likes WHERE uidSender = $1) AS T2
-	 ON T1.uidSender = T2.uidReceiver)
-	AS can_talk ON users.uid = can_talk.uidSender)
-	AS permitted_users LEFT JOIN photos ON avaId = pid WHERE permitted_users.uid != $1) AS T3 LEFT JOIN
-	(SELECT * FROM messages WHERE uidSender = $1 or uidReceiver = $1 ORDER BY mid DESC LIMIT 1) AS
-	T4 ON uid = uidSender OR uid = uidReceiver`
-	*/
-
 	query := `SELECT uid, fname, lname, rating, src, uidSender, uidReceiver, body FROM
 	(SELECT permitted_users.uid, fname, lname, rating, src FROM
 	(SELECT uid, fname, lname, avaId, rating FROM users INNER JOIN
@@ -237,7 +219,6 @@ func (conn ConnDB) GetUsersLikedMe(myUid int) ([]common.User, error) {
 	//	Стэк запроса: добавление фотографий к пользователям,
 	//  поиск пользователей удовлетворяющих условию - пользователи поставили тебе лайк,
 	//	но ответного лайка не было
-
 
 	query := `SELECT liked_users.uid, fname, lname, rating, src FROM
 	(SELECT uid, fname, lname, avaId, rating FROM users WHERE uid IN

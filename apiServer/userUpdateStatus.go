@@ -157,8 +157,8 @@ func (server *Server) userUpdateStatusPost(w http.ResponseWriter, r *http.Reques
 // USER MAIL CONFIRM. REQUEST AND RESPONSE DATA IS JSON
 func (server *Server) userUpdateStatusGet(w http.ResponseWriter, r *http.Request) {
 	var (
-		mail, token   string
-		err           error
+		mail, token string
+		err         error
 	)
 
 	token = r.URL.Query().Get("x-reg-token")

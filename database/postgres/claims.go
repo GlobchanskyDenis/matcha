@@ -212,12 +212,7 @@ func (conn ConnDB) GetClaimedUsers(uidSender int) ([]common.User, error) {
 		user  common.User
 		users []common.User
 	)
-	/* OLD QUERY
-	query := `SELECT claimed_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
-		latitude, longitude, interests, status, rating, src FROM
-	(SELECT * FROM users WHERE uid IN (SELECT uidReceiver FROM claims WHERE uidSender = $1)) AS claimed_users
-	LEFT JOIN photos ON avaId=pid`
-	*/
+
 	query := `SELECT claimed_users.uid, fname, lname, rating, src FROM
 	(SELECT uid, fname, lname, avaId, rating FROM users WHERE uid IN
 	(SELECT uidReceiver FROM claims WHERE uidSender = $1)) AS claimed_users LEFT JOIN photos ON avaId=pid`

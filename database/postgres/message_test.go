@@ -3,7 +3,6 @@ package postgres
 import (
 	. "MatchaServer/common"
 	"MatchaServer/config"
-	"fmt"
 	"strconv"
 	"testing"
 )
@@ -154,7 +153,6 @@ func TestMessages(t *testing.T) {
 			}
 			t_.Logf(GREEN_BG+"SUCCESS #%d: message was received from database"+NO_COLOR, nbr)
 			for _, message := range messages {
-				fmt.Printf("%#v\n", message)
 				err = conn.DeleteMessage(message.Mid)
 				if err != nil {
 					t_.Errorf(RED_BG + "ERROR: database returned error - " + err.Error() + NO_COLOR)

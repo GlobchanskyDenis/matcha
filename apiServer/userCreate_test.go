@@ -45,14 +45,14 @@ func TestUserCreate(t *testing.T) {
 				"mail": mailFail,
 				"pass": pass,
 			},
-			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid password",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": passFail,
 			},
-			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 		}, {
 			name: "valid",
 			payload: map[string]interface{}{
@@ -65,27 +65,27 @@ func TestUserCreate(t *testing.T) {
 			payload: map[string]interface{}{
 				"mail": mail,
 			},
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		}, {
 			name: "mail not exists",
 			payload: map[string]interface{}{
 				"pass": pass,
 			},
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		}, {
 			name: "mail is empty",
 			payload: map[string]interface{}{
 				"mail": "",
 				"pass": pass,
 			},
-			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 		}, {
 			name: "password is empty",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": "",
 			},
-			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 		},
 	}
 

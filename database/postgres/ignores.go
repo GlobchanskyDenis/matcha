@@ -171,12 +171,6 @@ func (conn ConnDB) GetIgnoredUsers(uidSender int) ([]common.User, error) {
 		users []common.User
 	)
 
-	/* OLD QUERY
-	query := `SELECT ignored_users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid,
-		latitude, longitude, interests, status, rating, src FROM
-	(SELECT * FROM users WHERE uid != $1 AND uid IN (SELECT uidReceiver FROM ignores WHERE uidSender = $1)) AS ignored_users
-	LEFT JOIN photos ON avaId=pid`
-	*/
 	query := `SELECT ignored_users.uid, fname, lname, rating, src FROM
 	(SELECT uid, fname, lname, avaId, rating FROM users WHERE uid != $1 AND uid IN 
 	(SELECT uidReceiver FROM ignores WHERE uidSender = $1)) AS ignored_users LEFT JOIN photos ON avaId=pid`

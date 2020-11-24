@@ -333,6 +333,8 @@ func (conn *ConnDB) GetUsersByQuery(query string, sourceUser common.User) ([]com
 	}
 	for rows.Next() {
 		user.Interests = nil
+		user.Birth.Time = nil
+
 		err = rows.Scan(&user.Uid, &user.Fname, &user.Lname, &birth, &user.Gender,
 			&user.Orientation, &user.AvaID, &user.Latitude, &user.Longitude,
 			&interests, &user.Rating, &user.Avatar, &intPtr1, &intPtr2)

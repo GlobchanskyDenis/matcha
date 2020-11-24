@@ -129,7 +129,7 @@ func TestMessageGet(t *testing.T) {
 			uid:            user2.Uid,
 			payload:        map[string]interface{}{},
 			expectedAmount: 0,
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		},
 	}
 

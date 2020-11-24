@@ -115,14 +115,14 @@ func TestIgnores(t *testing.T) {
 			name:           "invalid no otherUid",
 			uid:            user2.Uid,
 			payload:        map[string]interface{}{},
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		}, {
 			name: "invalid - repeating like from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
 			},
-			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus,//http.StatusNotAcceptable,
+			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus, //http.StatusNotAcceptable,
 		},
 	}
 
@@ -261,14 +261,14 @@ func TestIgnores(t *testing.T) {
 			name:           "invalid no otherUid",
 			uid:            user2.Uid,
 			payload:        map[string]interface{}{},
-			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus, //http.StatusBadRequest,
 		}, {
 			name: "invalid - repeating unset ignore from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
 			},
-			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus,//http.StatusNotAcceptable,
+			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus, //http.StatusNotAcceptable,
 		},
 	}
 
