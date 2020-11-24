@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -145,145 +146,145 @@ func TestUserUpdate(t *testing.T) {
 			payload: map[string]interface{}{
 				"mail": mailFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid password",
 			payload: map[string]interface{}{
 				"pass": passFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid fname",
 			payload: map[string]interface{}{
 				"fname": fnameFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid lname",
 			payload: map[string]interface{}{
 				"lname": lnameFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid birth date",
 			payload: map[string]interface{}{
 				"birth": "2020-08-23",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid birth date - bad parsing",
 			payload: map[string]interface{}{
 				"birth": "198910-23",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid gender",
 			payload: map[string]interface{}{
 				"gender": genderFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid orientation",
 			payload: map[string]interface{}{
 				"orientation": orientationFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid biography",
 			payload: map[string]interface{}{
 				"bio": bioFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid avaPhotoID wrong type",
+			name: "invalid avaID wrong type",
 			payload: map[string]interface{}{
 				"avaID": avaIDFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
-			name: "invalid avaPhotoID not found",
+			name: "invalid avaID not found",
 			payload: map[string]interface{}{
 				"avaID": float64(100500),
 			},
-			expectedStatus: http.StatusNotAcceptable,
+			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus,//http.StatusNotAcceptable,
 		}, {
-			name: "invalid avaPhotoID wrong owner",
+			name: "invalid avaID wrong owner",
 			payload: map[string]interface{}{
 				"avaID": float64(invalidPid),
 			},
-			expectedStatus: http.StatusNotAcceptable,
+			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus,//http.StatusNotAcceptable,
 		}, {
 			name: "invalid latitude",
 			payload: map[string]interface{}{
 				"latitude": latitudeFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid longitude",
 			payload: map[string]interface{}{
 				"longitude": longitudeFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid interests #1",
 			payload: map[string]interface{}{
 				"interests": interests1Fail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid interests #2",
 			payload: map[string]interface{}{
 				"interests": interests2Fail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid interests #3",
 			payload: map[string]interface{}{
 				"interests": interests3Fail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty mail",
 			payload: map[string]interface{}{
 				"mail": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty passwd",
 			payload: map[string]interface{}{
 				"pass": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty fname",
 			payload: map[string]interface{}{
 				"fname": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty lname",
 			payload: map[string]interface{}{
 				"lname": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty gender",
 			payload: map[string]interface{}{
 				"gender": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty orientation",
 			payload: map[string]interface{}{
 				"orientation": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid update no usefull fields at all",
 			payload: map[string]interface{}{
 				"asd": "asddasda",
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		},
 	}
 

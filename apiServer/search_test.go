@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -170,7 +171,7 @@ func TestSearch(t *testing.T) {
 					"longitude": 52.0,
 				},
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus, //http.StatusUnprocessableEntity,
 			expectedAmount: 0,
 		}, {
 			name: "valid - search users that wasnt liked",

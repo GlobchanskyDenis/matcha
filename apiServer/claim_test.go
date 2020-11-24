@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -114,14 +115,14 @@ func TestClaims(t *testing.T) {
 			name:           "invalid no otherUid",
 			uid:            user2.Uid,
 			payload:        map[string]interface{}{},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "invalid - repeating claim from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
 			},
-			expectedStatus: http.StatusNotAcceptable,
+			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus,//http.StatusNotAcceptable,
 		},
 	}
 
@@ -163,17 +164,17 @@ func TestClaims(t *testing.T) {
 		expectedAmount int
 	}{
 		{
-			name:           "get ignored users of user#" + strconv.Itoa(user1.Uid),
+			name:           "get claimed users of user#" + strconv.Itoa(user1.Uid),
 			uid:            user1.Uid,
 			expectedStatus: http.StatusOK,
 			expectedAmount: 2,
 		}, {
-			name:           "get ignored users of user#" + strconv.Itoa(user2.Uid),
+			name:           "get claimed users of user#" + strconv.Itoa(user2.Uid),
 			uid:            user2.Uid,
 			expectedStatus: http.StatusOK,
 			expectedAmount: 2,
 		}, {
-			name:           "get ignored users of user#" + strconv.Itoa(user3.Uid),
+			name:           "get claimed users of user#" + strconv.Itoa(user3.Uid),
 			uid:            user3.Uid,
 			expectedStatus: http.StatusOK,
 			expectedAmount: 0,
@@ -260,14 +261,14 @@ func TestClaims(t *testing.T) {
 			name:           "invalid no otherUid",
 			uid:            user2.Uid,
 			payload:        map[string]interface{}{},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "invalid - repeating unset claim from uid#" + strconv.Itoa(user1.Uid) + " and uid#" + strconv.Itoa(user2.Uid),
 			uid:  user1.Uid,
 			payload: map[string]interface{}{
 				"otherUid": float64(user2.Uid),
 			},
-			expectedStatus: http.StatusNotAcceptable,
+			expectedStatus: errors.ImpossibleToExecute.HttpResponseStatus,//http.StatusNotAcceptable,
 		},
 	}
 

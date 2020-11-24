@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -194,7 +195,7 @@ func TestNotifications(t *testing.T) {
 
 		// start test
 		server.NotificationDelete(rec, req.WithContext(ctx))
-		if rec.Code == http.StatusUnprocessableEntity {
+		if rec.Code == errors.RecordNotFound.HttpResponseStatus {//http.StatusUnprocessableEntity {
 			t_.Logf(GREEN_BG+"SUCCESS: notification #%d was not deleted as it expected"+NO_COLOR, 0)
 		} else {
 			t_.Errorf(RED_BG+"ERROR: wrong StatusCode: got %d, expected %d"+NO_COLOR, rec.Code, http.StatusUnprocessableEntity)

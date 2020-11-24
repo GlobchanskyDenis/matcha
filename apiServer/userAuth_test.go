@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -52,54 +53,54 @@ func TestUserAuthenticate(t *testing.T) {
 				"mail": mailFail,
 				"pass": pass,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.AuthFail.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid passwd",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": passFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.AuthFail.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty passwd",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.AuthFail.HttpResponseStatus,//StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty mail",
 			payload: map[string]interface{}{
 				"mail": "",
 				"pass": pass,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.AuthFail.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid no mail",
 			payload: map[string]interface{}{
 				"pass": pass,
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "invalid no passwd",
 			payload: map[string]interface{}{
 				"mail": mail,
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "invalid wrong password",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": passNew,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.AuthFail.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid not existing mail",
 			payload: map[string]interface{}{
 				"mail": mailNew,
 				"pass": pass,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.AuthFail.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "valid",
 			payload: map[string]interface{}{

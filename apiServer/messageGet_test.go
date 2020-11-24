@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -128,7 +129,7 @@ func TestMessageGet(t *testing.T) {
 			uid:            user2.Uid,
 			payload:        map[string]interface{}{},
 			expectedAmount: 0,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		},
 	}
 

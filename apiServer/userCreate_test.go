@@ -2,6 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
+	"MatchaServer/errors"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -44,14 +45,14 @@ func TestUserCreate(t *testing.T) {
 				"mail": mailFail,
 				"pass": pass,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid password",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": passFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "valid",
 			payload: map[string]interface{}{
@@ -64,27 +65,27 @@ func TestUserCreate(t *testing.T) {
 			payload: map[string]interface{}{
 				"mail": mail,
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "mail not exists",
 			payload: map[string]interface{}{
 				"pass": pass,
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "mail is empty",
 			payload: map[string]interface{}{
 				"mail": "",
 				"pass": pass,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "password is empty",
 			payload: map[string]interface{}{
 				"mail": mail,
 				"pass": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		},
 	}
 

@@ -2,7 +2,7 @@ package apiServer
 
 import (
 	. "MatchaServer/common"
-	// "MatchaServer/handlers"
+	"MatchaServer/errors"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -56,23 +56,23 @@ func TestUserDelete(t *testing.T) {
 			payload: map[string]interface{}{
 				"pass": passFail,
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid empty password",
 			payload: map[string]interface{}{
 				"pass": "",
 			},
-			expectedStatus: http.StatusUnprocessableEntity,
+			expectedStatus: errors.InvalidArgument.HttpResponseStatus,//http.StatusUnprocessableEntity,
 		}, {
 			name: "invalid no useful fields at all",
 			payload: map[string]interface{}{
 				"Abrakadabra": "asdsad",
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name:           "invalid only token in body",
 			payload:        map[string]interface{}{},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: errors.NoArgument.HttpResponseStatus,//http.StatusBadRequest,
 		}, {
 			name: "valid",
 			payload: map[string]interface{}{
