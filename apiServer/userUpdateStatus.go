@@ -148,7 +148,7 @@ func (server *Server) userUpdateStatusPost(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	http.Redirect(w, r, "http://localhost:3001/confirm/mail", http.StatusFound)
+	http.Redirect(w, r, "http://localhost:3001/confirm/mail/success", http.StatusFound)
 	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated its status successfully. Redirect to front page success")
 }
@@ -196,7 +196,7 @@ func (server *Server) userUpdateStatusGet(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	http.Redirect(w, r, "http://localhost:3001/confirm/mail", http.StatusFound)
+	http.Redirect(w, r, "http://localhost:3001/confirm/mail/success", http.StatusFound)
 	server.Logger.LogSuccess(r, "user #"+BLUE+strconv.Itoa(user.Uid)+NO_COLOR+
 		" was updated its status successfully. Redirect to front page success")
 }
