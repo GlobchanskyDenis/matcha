@@ -384,7 +384,7 @@ Content-type: text/html; charset=utf8
 	<input type="hidden" name="x-reg-token" value="`+xRegToken+`">
 	<input type="submit" value="Click to confirm mail">
 </form>
-<a href="http://localhost:3000/user/update/status/?x-reg-token=`+xRegToken+`">click to confirm mail</a> 
+<a target="_blank" href="http://localhost:3000/user/update/status/?x-reg-token=`+xRegToken+`">click to confirm mail</a> 
  `+xRegToken+` 
 if this letter came by mistake - delete it 
 </span>
