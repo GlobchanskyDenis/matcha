@@ -16,7 +16,7 @@ import (
 func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 	var (
 		myUser, user    User
-		otherUser       SearchUser
+		otherUser       TargetUser
 		myUid, otherUid int
 		err             error
 		ctx             context.Context
@@ -48,7 +48,7 @@ func (server *Server) UserGet(w http.ResponseWriter, r *http.Request) {
 		// Its a private field
 		user.Mail = ""
 
-		otherUser, err = server.Db.GetUserWithLikeInfo(otherUid, myUid)
+		otherUser, err = server.Db.GetTargetUserByUid(myUid, otherUid)
 		if errors.RecordNotFound.IsOverlapWithError(err) {
 			server.Logger.LogWarning(r, "GetUserWithLikeInfo - record not found")
 			server.error(w, errors.UserNotExist)

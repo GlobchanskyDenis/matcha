@@ -44,6 +44,18 @@ func (conn *ConnFake) GetUserByUid(uid int) (common.User, error) {
 	return user, nil
 }
 
+func (conn *ConnFake) GetTargetUserByUid(myUid int, targetUid int) (common.TargetUser, error) {
+	user, isExists := conn.users[myUid]
+	if !isExists {
+		return common.TargetUser{}, errors.RecordNotFound
+	}
+	if user.AvaID != nil {
+		photo, _ := conn.GetPhotoByPid(*user.AvaID)
+		user.Avatar = &photo.Src
+	}
+	return common.TargetUser{User: user}, nil
+}
+
 func (conn *ConnFake) GetUserByMail(mail string) (common.User, error) {
 	for _, user := range conn.users {
 		if user.Mail == mail {

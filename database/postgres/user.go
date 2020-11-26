@@ -198,6 +198,88 @@ func (conn *ConnDB) GetUserByUid(uid int) (common.User, error) {
 	return user, nil
 }
 
+func (conn *ConnDB) GetTargetUserByUid(myUid int, targetUid int) (common.TargetUser, error) {
+	var (
+		user             common.TargetUser
+		err              error
+		rows             *sql.Rows
+		birth            interface{}
+		date             time.Time
+		ok               bool
+		interests        string
+		ptr1, ptr2, ptr3 *int
+	)
+	query := `SELECT users.uid, mail, encryptedpass, fname, lname, birth, gender, orientation, bio, avaid, latitude,
+	longitude, interests, status, rating, src, is_ignored.uidReceiver, is_claimed.uidReceiver, is_liked.uidReceiver FROM
+	users LEFT JOIN photos ON avaId = pid
+	LEFT JOIN (SELECT uidReceiver FROM ignores WHERE uidSender=$2)
+		AS is_ignored ON users.uid=is_ignored.uidReceiver
+	LEFT JOIN (SELECT uidReceiver FROM claims WHERE uidSender=$2)
+		AS is_claimed ON users.uid=is_claimed.uidReceiver
+	LEFT JOIN (SELECT uidReceiver FROM likes WHERE uidSender=$2)
+		AS is_liked ON users.uid=is_liked.uidReceiver
+	WHERE users.uid=$1`
+	stmt, err := conn.db.Prepare(query)
+	if err != nil {
+		return user, errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	defer stmt.Close()
+	rows, err = stmt.Query(targetUid, myUid)
+	if err != nil {
+		return user, errors.DatabaseQueryError.AddOriginalError(err)
+	}
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&user.Uid, &user.Mail, &user.EncryptedPass, &user.Fname,
+			&user.Lname, &birth, &user.Gender, &user.Orientation,
+			&user.Bio, &user.AvaID, &user.Latitude, &user.Longitude, &interests,
+			&user.Status, &user.Rating, &user.Avatar, &ptr1, &ptr2, &ptr3)
+		if err != nil {
+			return user, errors.DatabaseScanError.AddOriginalError(err)
+		}
+	} else {
+		return user, errors.RecordNotFound
+	}
+	// handle user Interests
+	if len(interests) > 2 {
+		strArr := strings.Split(string(interests[1:len(interests)-1]), ",")
+		for _, strItem := range strArr {
+			user.Interests = append(user.Interests, strItem)
+		}
+	}
+	// handle user birth and age
+	if birth != nil {
+		date, ok = birth.(time.Time)
+		if ok {
+			user.Birth.Time = &date
+			user.Age = int(time.Since(*user.Birth.Time).Hours() / 24 / 365.27)
+		} else {
+			return user, errors.NewArg("не верный тип данных birth", "wrong type of birth")
+		}
+	} else {
+		user.Birth.Time = nil
+	}
+	// handle isIgnored param
+	if ptr1 != nil {
+		user.IsIgnored = true
+	} else {
+		user.IsIgnored = false
+	}
+	// handle isClaimed param
+	if ptr2 != nil {
+		user.IsClaimed = true
+	} else {
+		user.IsClaimed = false
+	}
+	// handle isLiked param
+	if ptr3 != nil {
+		user.IsLiked = true
+	} else {
+		user.IsLiked = false
+	}
+	return user, nil
+}
+
 func (conn *ConnDB) GetUserWithLikeInfo(targetUid int, myUid int) (common.SearchUser, error) {
 	var (
 		user      common.SearchUser

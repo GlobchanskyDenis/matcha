@@ -28,6 +28,13 @@ type User struct {
 	Rating        int        `json:"rating"`
 }
 
+type TargetUser struct {
+	User
+	IsIgnored bool `json:"isIgnored"`
+	IsClaimed bool `json:"isClaimed"`
+	IsLiked   bool `json:"isLiked"`
+}
+
 type SearchUser struct {
 	User
 	IsLiked bool `json:"isLiked"`
@@ -55,15 +62,15 @@ type Notif struct {
 }
 
 type Message struct {
-	Mid           int    `json:"mid"`
-	UidSender     int    `json:"uidSender"`
-	UidReceiver   int    `json:"uidReceiver"`
-	Body          string `json:"body"`
-	SenderFname   string `json:"senderFname"`
-	SenderLname   string `json:"senderLname"`
-	SenderAvatar  *string `json:"senderAvatar"`
-	ReceiverFname string `json:"receiverFname"`
-	ReceiverLname string `json:"receiverLname"`
+	Mid            int     `json:"mid"`
+	UidSender      int     `json:"uidSender"`
+	UidReceiver    int     `json:"uidReceiver"`
+	Body           string  `json:"body"`
+	SenderFname    string  `json:"senderFname"`
+	SenderLname    string  `json:"senderLname"`
+	SenderAvatar   *string `json:"senderAvatar"`
+	ReceiverFname  string  `json:"receiverFname"`
+	ReceiverLname  string  `json:"receiverLname"`
 	ReceiverAvatar *string `json:"receiverAvatar"`
 }
 

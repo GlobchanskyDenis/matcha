@@ -29,6 +29,7 @@ type Storage interface {
 	DeleteUser(uid int) error
 	UpdateUser(user common.User) error
 	GetUserByUid(uid int) (common.User, error)
+	GetTargetUserByUid(myUid int, targetUid int) (common.TargetUser, error)
 	GetUserByMail(mail string) (common.User, error)
 	GetUsersByQuery(query string, sourceUser common.User) ([]common.SearchUser, error)
 	GetUserForAuth(mail string, passwd string) (common.User, error)
