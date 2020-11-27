@@ -2,7 +2,7 @@ package errors
 
 import (
 	"encoding/json"
-	"net/http"
+	// "net/http"
 )
 
 type ApiError struct {
