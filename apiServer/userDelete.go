@@ -119,6 +119,22 @@ func (server *Server) UserDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Delete user history
+	err = server.Db.DropUserHistory(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "DropUserHistory returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+
+	// Delete all messages that user send and received
+	err = server.Db.DropUserMessages(user.Uid)
+	if err != nil {
+		server.Logger.LogError(r, "DropUserMessages returned error - "+err.Error())
+		server.error(w, errors.DatabaseError)
+		return
+	}
+
 	err = server.Db.DeleteUser(user.Uid)
 	if err != nil {
 		server.Logger.LogError(r, "DeleteUser returned error - "+err.Error())

@@ -32,6 +32,17 @@ func (conn *ConnFake) DeleteMessage(mid int) error {
 	return nil
 }
 
+func (conn *ConnFake) DropUserMessages(uid int) error {
+	var message common.Message
+
+	for _, message = range conn.messages {
+		if message.UidSender == uid || message.UidReceiver == uid {
+			delete(conn.messages, message.Mid)
+		}
+	}
+	return nil
+}
+
 func (conn ConnFake) GetMessageByMid(mid int) (common.Message, error) {
 	var message common.Message
 

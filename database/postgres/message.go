@@ -42,6 +42,19 @@ func (conn ConnDB) DeleteMessage(mid int) error {
 	return nil
 }
 
+func (conn ConnDB) DropUserMessages(uid int) error {
+	stmt, err := conn.db.Prepare("DELETE FROM messages WHERE uidReceiver=$1 OR uidSender=$1")
+	if err != nil {
+		return errors.DatabasePreparingError.AddOriginalError(err)
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(uid)
+	if err != nil {
+		return errors.DatabaseExecutingError.AddOriginalError(err)
+	}
+	return nil
+}
+
 func (conn *ConnDB) GetMessageByMid(mid int) (common.Message, error) {
 	var message common.Message
 	query := `SELECT
